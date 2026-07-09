@@ -12,6 +12,7 @@ Install once:  py -m pip install -U yt-dlp
 import argparse
 import glob
 import os
+import shutil
 import sys
 
 
@@ -35,24 +36,42 @@ def download(url, out_basename="vod"):
         "format": "bestvideo+bestaudio/best",
         "merge_output_format": "mp4",
     }
-    # let yt-dlp use the pip-bundled FFmpeg (so you don't need FFmpeg on PATH)
-    # as a fallback - the Dockerfile now apt-installs a real ffmpeg on PATH
-    # for the deployed server, which yt-dlp finds automatically with no
-    # config needed, so this block is mainly for a local dev machine that
-    # hasn't installed ffmpeg itself. Deliberately prints (not silently
-    # swallows) any failure here: a bare `except: pass` on this exact line
-    # is what turned a real "ffmpeg isn't working" problem into a confusing
-    # unrelated-looking "m3u8 download detected but ffmpeg could not be
-    # found" error out of yt-dlp instead (found 2026-07-09 chasing a live
-    # Twitch VOD download failure) - if this fallback can't set up ffmpeg,
-    # that's worth knowing about immediately, not discovering three layers
-    # of stack trace later.
-    try:
-        import imageio_ffmpeg
-        opts["ffmpeg_location"] = os.path.dirname(imageio_ffmpeg.get_ffmpeg_exe())
-    except Exception as e:
-        print(f"Note: could not set up the pip-bundled ffmpeg fallback ({e}). "
-              f"Relying on a system ffmpeg being on PATH instead.", file=sys.stderr)
+    # Prefer a REAL system ffmpeg (the Dockerfile apt-installs one on PATH for
+    # the deployed server) over the pip-bundled imageio_ffmpeg fallback below.
+    # This check has to come FIRST and be decisive: yt-dlp prioritizes an
+    # explicit `ffmpeg_location` over its own PATH auto-detection, so if the
+    # imageio_ffmpeg block unconditionally set ffmpeg_location whenever
+    # get_ffmpeg_exe() didn't raise - the original bug here - it would
+    # SILENTLY OVERRIDE a perfectly good system ffmpeg with a broken
+    # pip-bundled one, even after the system ffmpeg was installed and
+    # confirmed working. That's exactly what happened 2026-07-09: apt-
+    # installing ffmpeg in the Dockerfile alone did NOT fix a live "ffmpeg
+    # could not be found" failure, because get_ffmpeg_exe() returning A path
+    # doesn't mean that path's binary is actually executable - it can return
+    # successfully while pointing at a binary that fails the moment yt-dlp
+    # tries to run it, and by then ffmpeg_location has already been pinned to
+    # the bad path instead of ever letting yt-dlp look at PATH itself.
+    system_ffmpeg = shutil.which("ffmpeg")
+    if system_ffmpeg:
+        print(f"Using system ffmpeg: {system_ffmpeg}", file=sys.stderr)
+    else:
+        # No system ffmpeg found (e.g. a local dev machine that hasn't
+        # installed it) - fall back to the pip-bundled binary. Deliberately
+        # prints (not silently swallows) any failure here: a bare
+        # `except: pass` on this exact line is what turned a real
+        # "ffmpeg isn't working" problem into a confusing unrelated-looking
+        # "m3u8 download detected but ffmpeg could not be found" error out of
+        # yt-dlp instead of a clear diagnostic.
+        try:
+            import imageio_ffmpeg
+            opts["ffmpeg_location"] = os.path.dirname(imageio_ffmpeg.get_ffmpeg_exe())
+            print(f"No system ffmpeg found - using pip-bundled fallback at "
+                  f"{opts['ffmpeg_location']}", file=sys.stderr)
+        except Exception as e:
+            print(f"Note: no system ffmpeg found, and the pip-bundled ffmpeg fallback "
+                  f"also failed ({e}). Video download will likely fail if this format "
+                  f"needs ffmpeg (e.g. an HLS/m3u8 stream, which is how Twitch serves VODs).",
+                  file=sys.stderr)
 
     with YoutubeDL(opts) as ydl:
         info = ydl.extract_info(url, download=True)
