@@ -45,8 +45,19 @@ ENV PYTHONUNBUFFERED=1
 # - libgl1/libglib2.0-0/libsm6/libxext6/libxrender1: opencv-python expects
 #   these even in headless/no-display server use - a very common "ImportError:
 #   libGL.so.1" crash on slim/minimal base images otherwise.
+# - ffmpeg: fetch_vod.py's yt-dlp download needs a REAL ffmpeg binary to mux
+#   HLS/m3u8 streams (which is how Twitch serves VODs) - it falls back to the
+#   pip-bundled imageio-ffmpeg binary if this isn't on PATH, but that bundled
+#   binary was confirmed NOT working in this container (2026-07-09 live
+#   failure: "m3u8 download detected but ffmpeg could not be found", swallowed
+#   silently by fetch_vod.py's bare `except: pass` around the imageio_ffmpeg
+#   fallback - almost certainly the extracted binary losing its executable
+#   bit, a known pip-wheel-on-some-filesystems footgun). A real apt-installed
+#   ffmpeg is on PATH with guaranteed-correct permissions, so yt-dlp finds it
+#   automatically with no extra config - more reliable than the pip fallback.
 RUN apt-get update && apt-get install -y --no-install-recommends \
     tesseract-ocr \
+    ffmpeg \
     libgl1 \
     libglib2.0-0 \
     libsm6 \
