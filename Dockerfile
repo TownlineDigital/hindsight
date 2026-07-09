@@ -25,6 +25,11 @@ ENV VITE_SUPABASE_ANON_KEY=$VITE_SUPABASE_ANON_KEY
 COPY frontend/package.json frontend/package-lock.json* ./
 RUN npm install
 COPY frontend/ ./
+# frontend/vite.config.js sets build.outDir to "../backend/static" (this app
+# is served BY the FastAPI backend, not a separate Node server - see that
+# file's own comments), so the build output lands at /app/backend/static in
+# THIS stage, not the Vite-default /app/frontend/dist. The COPY --from below
+# in stage 2 has to match that real path, not the default.
 RUN npm run build
 
 # ---- Stage 2: the actual server ----
@@ -59,8 +64,9 @@ RUN pip install --no-cache-dir -r requirements-server.txt
 COPY . .
 
 # Overwrite the checked-in placeholder dashboard build with the real one
-# from stage 1.
-COPY --from=frontend-builder /app/frontend/dist/. ./backend/static/
+# from stage 1 - copying from /app/backend/static (where vite.config.js's
+# outDir actually puts it in that stage), not the Vite-default dist/.
+COPY --from=frontend-builder /app/backend/static/. ./backend/static/
 
 # backend/jobs.py's JOBS_DIR = BASE_DIR/"jobs" (BASE_DIR is this WORKDIR,
 # since backend/main.py's BASE_DIR = Path(__file__).resolve().parent.parent)
