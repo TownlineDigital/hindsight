@@ -76,7 +76,10 @@ export default function App() {
     setJobs(list);
     if (!list.length) return null;
     const preferred = list.find((j) => j.job_id === "demo") || list.find((j) => j.status === "done") || list[0];
-    return preferred.job_id;
+    // Return the list alongside the pick, not just its id - the caller needs
+    // the FRESH list (not React's possibly-still-stale `jobs` state right
+    // after this setJobs() call) to correctly decide poll-vs-load below.
+    return { list, preferred };
   }
 
   async function loadDashboard(id) {
@@ -152,15 +155,30 @@ export default function App() {
     pollJob(newJobId);
   }
 
-  function handleJobChange(id) {
+  // The one place that decides "is this job still processing, or can we
+  // safely fetch its analytics?" - reused by handleJobChange, the header's
+  // refresh button, AND the initial-mount effect below, since all three
+  // used to independently (and inconsistently) make this same decision.
+  // Loading a queued/running job's dashboard data directly used to throw a
+  // hard "events.json not ready yet" error instead of just polling - most
+  // visible on a fresh account with no "done" job yet to prefer, where the
+  // very first job (still running) becomes the initial pick. `list`
+  // defaults to the current `jobs` state, but callers that just fetched a
+  // fresh list themselves (loadJobs) should pass it explicitly rather than
+  // rely on that state having already re-rendered.
+  function openJob(id, list) {
     setJobId(id);
-    const job = jobs.find((j) => j.job_id === id);
+    const job = (list || jobs).find((j) => j.job_id === id);
     if (job && (job.status === "queued" || job.status === "running")) {
       setLoading(true);
       pollJob(id);
     } else {
       loadDashboard(id);
     }
+  }
+
+  function handleJobChange(id) {
+    openJob(id);
   }
 
   // Step 1: ask the backend whether real accounts are required at all. Fails
@@ -193,10 +211,9 @@ export default function App() {
     if (!ready) return;
     (async () => {
       try {
-        const id = await loadJobs();
-        if (!id) { setLoading(false); return; }
-        setJobId(id);
-        await loadDashboard(id);
+        const result = await loadJobs();
+        if (!result) { setLoading(false); return; }
+        openJob(result.preferred.job_id, result.list);
       } catch (e) {
         setError(`Couldn't reach the API: ${e.message}. Is uvicorn running?`);
         setLoading(false);
@@ -231,7 +248,7 @@ export default function App() {
       <Header
         jobs={jobs} jobId={jobId}
         onJobChange={handleJobChange}
-        onRefresh={() => (tab === "career" ? loadCareer() : loadDashboard(jobId))}
+        onRefresh={() => (tab === "career" ? loadCareer() : openJob(jobId))}
         tab={tab}
         onTabChange={(nextTab) => { setTab(nextTab); api.track("tab_viewed", { tab: nextTab }); }}
         userEmail={accountsRequired ? session.user?.email : null}
