@@ -77,7 +77,16 @@ export default function NewJobPanel({ onClose, onJobCreated }) {
   const [replayMode, setReplayMode] = useState("files"); // "files" | "urls"
   const [replayFiles, setReplayFiles] = useState([]);
   const [replayUrlsText, setReplayUrlsText] = useState("");
-  const [player, setPlayer] = useState("p1");
+  // No "p1" default on purpose (changed 2026-07-09, direct user request) -
+  // the old default silently treated the upload as "you're P1" unless you
+  // remembered to change it, which is exactly the confusing behavior being
+  // fixed here. Left blank, submit() below requires a real value instead of
+  // quietly falling back - showdown_import.py's --player already accepts
+  // either a raw side ("p1"/"p2") or a Showdown username and matches it
+  // case-insensitively against the |player| lines in the replay itself
+  // (see its _resolve_player_side docstring); it only falls back to p1 as a
+  // last resort, after the whole log's been read and neither side matched.
+  const [player, setPlayer] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState(null);
 
@@ -103,8 +112,12 @@ export default function NewJobPanel({ onClose, onJobCreated }) {
       formData.append("source_type", "upload");
       formData.append("file", videoFile[0]);
     } else {
+      if (!player.trim()) {
+        setError('Enter your Showdown username (or type p1/p2 if you already know which side you were).');
+        return;
+      }
       formData.append("source_type", "showdown");
-      formData.append("player", player.trim() || "p1");
+      formData.append("player", player.trim());
       if (replayMode === "files") {
         if (!replayFiles.length) { setError("Choose or drop at least one replay file."); return; }
         replayFiles.forEach((f) => formData.append("files", f));
@@ -229,11 +242,18 @@ export default function NewJobPanel({ onClose, onJobCreated }) {
               )}
 
               <label className="field">
-                <span>Which side is "you"?</span>
+                <span>Your Showdown username</span>
                 <input
                   value={player} onChange={(e) => setPlayer(e.target.value)}
-                  placeholder="Showdown username, or p1/p2"
+                  placeholder="e.g. Geordivgc"
                 />
+                <small className="field-hint">
+                  Matched against the two player names in the replay itself (not
+                  case-sensitive), so it works even if you were P2. If it doesn't
+                  match either name exactly, this defaults to P1 - if you're not
+                  sure of your exact in-battle name, you can also just type p1 or
+                  p2 directly.
+                </small>
               </label>
             </>
           )}

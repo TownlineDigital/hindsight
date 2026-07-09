@@ -76,6 +76,16 @@ def per_match(evs):
         "player_lead": tuple(sorted(split(tp.get("player_lead")))),
         "player_brought": p_brought,
         "opponent_brought": split(tp.get("opponent_brought")) or split(tp.get("opponent_team")),
+        # Full 6-mon team preview for both sides (added 2026-07-09, direct
+        # user request for the Opponent Intel tab: "we need to know all of
+        # the pokemon available to the opponent, and all pokemon we had
+        # available"). Both showdown_import.py and analyze_matches.py
+        # already write these onto every team_preview event - this was
+        # previously read for opponent_brought's own fallback above but
+        # never actually surfaced as its own field, so the dashboard only
+        # ever saw the brought 4, never the other 2 that were LEFT HOME.
+        "player_team": split(tp.get("player_team")),
+        "opponent_team": split(tp.get("opponent_team")),
         "p_faints": p_faints,
         "o_faints": o_faints,
         "margin": max(0, len(p_brought or [0, 0, 0, 0]) - p_faints) if winner == "player" else 0,

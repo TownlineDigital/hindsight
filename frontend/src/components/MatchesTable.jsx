@@ -59,6 +59,7 @@ export default function MatchesTable({ matches, events, jobId, isCombined, onCor
           </div>
         )}
       </div>
+      <div className="table-scroll">
       <table>
         <thead>
           <tr>
@@ -81,7 +82,7 @@ export default function MatchesTable({ matches, events, jobId, isCombined, onCor
             else if (!m.complete_data || m.winner === "unknown") badge = <span className="badge warn">⚠</span>;
 
             const isOpen = expanded === m.match;
-            const rows = [
+            return (
               <tr
                 key={m.match}
                 className="match-row-clickable"
@@ -95,35 +96,43 @@ export default function MatchesTable({ matches, events, jobId, isCombined, onCor
                 <td>{(m.opponent_brought || []).join(", ") || "–"}</td>
                 <td>{m.o_faints ?? 0} / {m.p_faints ?? 0}</td>
                 <td>{formatDuration(m.duration_seconds)}</td>
-              </tr>,
-            ];
-            if (isOpen) {
-              // In combined mode, route frame-serving to THIS match's real
-              // originating job (see sourceJobIdFor above) - the "__all__"
-              // sentinel jobId isn't a real job and can't serve frames.
-              const matchJobId = isCombined ? sourceJobIdFor(events, m.match) : jobId;
-              rows.push(
-                <tr key={`${m.match}-expanded`} className="match-row-expanded">
-                  <td colSpan={8}>
-                    <div className="tabs-inline small" style={{ marginBottom: 12 }}>
-                      <button type="button" className={`tab-inline ${view === "summary" ? "active" : ""}`} onClick={() => setView("summary")}>
-                        Summary
-                      </button>
-                      <button type="button" className={`tab-inline ${view === "replay" ? "active" : ""}`} onClick={() => setView("replay")}>
-                        Battle replay
-                      </button>
-                    </div>
-                    {view === "replay"
-                      ? <BattleReplay jobId={matchJobId} events={events} matchNumber={m.match} />
-                      : <MatchSummary jobId={matchJobId} events={events} matchNumber={m.match} isCombined={isCombined} onCorrected={onCorrected} />}
-                  </td>
-                </tr>,
-              );
-            }
-            return rows;
+              </tr>
+            );
           })}
         </tbody>
       </table>
+      </div>
+      {(() => {
+        // Expanded match detail deliberately renders OUTSIDE .table-scroll
+        // (added 2026-07-09) rather than as a colSpan table row, which is
+        // how it worked before this pass. Reasoning: MatchSummary/
+        // BattleReplay have their own responsive layouts (e.g. two-col
+        // team panels that stack under 800px) - nesting them inside a
+        // <td> that lives in a table forced to min-width:640px for the
+        // SUMMARY row's sake would have squeezed that detail panel into
+        // the same horizontally-scrolling 640px box, defeating its own
+        // mobile stacking. Same expand/collapse behavior and state as
+        // before (`expanded`/`setExpanded`), just rendered in a normal
+        // full-width block instead of a table row.
+        const m = matches.find((row) => row.match === expanded);
+        if (!m) return null;
+        const matchJobId = isCombined ? sourceJobIdFor(events, m.match) : jobId;
+        return (
+          <div className="card match-detail-panel">
+            <div className="tabs-inline small" style={{ marginBottom: 12 }}>
+              <button type="button" className={`tab-inline ${view === "summary" ? "active" : ""}`} onClick={() => setView("summary")}>
+                Summary
+              </button>
+              <button type="button" className={`tab-inline ${view === "replay" ? "active" : ""}`} onClick={() => setView("replay")}>
+                Battle replay
+              </button>
+            </div>
+            {view === "replay"
+              ? <BattleReplay jobId={matchJobId} events={events} matchNumber={m.match} />
+              : <MatchSummary jobId={matchJobId} events={events} matchNumber={m.match} isCombined={isCombined} onCorrected={onCorrected} />}
+          </div>
+        );
+      })()}
     </div>
   );
 }

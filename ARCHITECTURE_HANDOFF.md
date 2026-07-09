@@ -3324,3 +3324,143 @@ remain unfiltered "all time" views, since neither `loadCareer()` nor
 `askCareerCoach()` were extended to accept a range. Extending those is a
 reasonable next step if a user asks for it, but wasn't part of what was
 requested here.
+
+## 14. Opponent Intel: full rosters + the two-layer evaluation split (2026-07-09)
+
+**Why this exists:** direct user request, verbatim: "in the opponent intel
+section we need a little more data, we need to know all of the pokemon
+available to the opponent, and all pokemon we had available, what pokemon we
+both brought and how it was advantageous or disadvantageous to us." Followed
+immediately by a detailed "Team Choice Score" framework (Coverage/Threat
+Coverage/Synergy/Win Condition/Flexibility/Prediction Dependence/Opportunity
+Cost/Information Efficiency, plus a Bayesian bring-probability extension).
+Asked how to scope it (type-matchup heuristic now vs. the full framework
+phased vs. raw data only) — the user picked **phased**: ship the data +
+a lightweight type-only heuristic now, defer the full framework.
+
+Mid-build, the user added one more architectural requirement, verbatim:
+"Can we also seperate the evaluation into two layers: Objective Team Preview
+Evaluation (before Turn 1) ... Outcome Evaluation (after the battle) ...
+without letting the final result bias the preview assessment." This
+reframed (and validated) the whole feature — see §14c.
+
+### 14a. The data was already there, just dropped on the floor
+
+`showdown_import.py` and `analyze_matches.py` both already write the full
+6-mon roster for both sides onto every `team_preview` event
+(`player_team`/`opponent_team`, comma-joined), alongside the brought-4
+(`player_brought`/`opponent_brought`) — same write, same event, every job
+type. `coach_report.per_match()` was only ever reading the brought fields
+(and using `opponent_team` purely as a fallback for `opponent_brought`),
+never surfacing the full 6 as its own field. Fixed by adding `player_team`/
+`opponent_team` to `per_match()`'s returned dict — one small change that
+unlocked full rosters for `compute_match_list()` (the Matches tab) and
+`compute_opponent_strength()` (the Opponent Intel tab) with no pipeline
+changes needed at all.
+
+### 14b. `type_synergy.team_matchup()` — the Phase 1 type-only heuristic
+
+New function in `backend/type_synergy.py`, alongside the pre-existing
+`team_risk()`. For two brought-4 lists, computes (via `pokedex.
+type_multiplier`, the existing 18-type chart): for each of the opponent's
+Pokemon, does at least one of yours have an own-type ("STAB") hit of 2x or
+more against it — and the same the other way around. Returns per-mon answer
+lists (`your_type_answers`/`their_type_answers`), coverage fractions
+(`your_coverage`/`their_coverage`, e.g. `"3/4"`), and a `verdict`
+(`"favorable"`/`"unfavorable"`/`"even"`/`None`) based on a ≥25-point
+coverage-percentage gap between the two sides. Unresolved species (not in
+`pokedex.SPECIES_TYPES`) are excluded from both numerator and denominator,
+never guessed — same discipline as `team_risk()`.
+
+**Explicitly scoped down, and says so in its own docstring**: a Pokemon's
+actual moves don't have to match its own type (coverage moves are common),
+and abilities/items/EVs/speed order all matter in a real matchup — none of
+that data exists in this project yet. The full "Team Choice Score" framework
+from the user's message (Coverage/Threat Coverage/Synergy/Win Condition/
+Flexibility/Prediction Dependence/Opportunity Cost/Information Efficiency,
+plus the Bayesian bring-probability extension) is **Phase 2, not started**
+— it needs movesets, speed tiers, ability/item data, and either real usage
+stats or a bring-probability model, none of which this codebase has today.
+Treat `team_matchup()`'s verdict as "on paper, by typing alone" — a hint,
+not the framework.
+
+### 14c. The two-layer split (this is the load-bearing design decision)
+
+The user's mid-build message split evaluation into two deliberately separate
+layers. This wasn't a new build — it named and formalized something that
+already existed on both sides of the codebase:
+
+- **Objective Team Preview Evaluation** — "was this a strong decision with
+  the information available," judged only from team-preview/typing data,
+  structurally blind to `winner` and all turn/battle data. This is
+  `type_synergy.team_risk()` (pre-existing) and `team_matchup()` (new) —
+  Phase 2 (Coverage/Synergy/Win-Condition/Bayesian/etc.) also belongs here
+  once built. **Enforced, not just documented**: `team_matchup()`'s
+  signature takes only `(player_species, opponent_species)` — no `winner`
+  parameter, ever. `tests/test_analytics.py`'s
+  `test_team_matchup_signature_cannot_see_the_winner` asserts this via
+  `inspect.signature`, specifically so a future edit can't quietly start
+  scoring team-preview decisions by how the match turned out.
+- **Outcome Evaluation** — judging execution (move selection, positioning,
+  predictions, resource management, adaptation) after the fact, which
+  necessarily DOES read full battle/turn data. This is `strategic_
+  analysis.py`'s six per-turn reports (speed_control/threat_pressure/
+  resource_advantage/momentum/position_score/risk_management, see §11) and
+  `compute_job_battle_profile`'s rollup — both pre-existing, from tasks
+  #234-237, just not previously named as a "layer."
+
+`analytics.compute_opponent_strength()`'s per-match rows key the new data as
+`team_preview_evaluation` (not just `matchup`) specifically to carry this
+label into the API response. The Opponent Intel tab now has a `note-banner`
+explicitly telling the user which layer they're looking at and where to find
+the other one (Progression → Overall battle profile; Matches tab → expand a
+match's Summary).
+
+### 14d. Frontend: `OpponentStrength.jsx`
+
+Rewritten from a flat table into an expandable-row table (same pattern as
+`MatchesTable.jsx`): each match row now shows a `Matchup` column (the
+favorable/unfavorable/even pill, reusing the existing `.pill`/`.pill-good`/
+`.pill-warn`/`.pill-bad` classes) alongside the pre-existing risk-score
+columns. Expanding a row (new `matchup-detail` section) shows both sides'
+full 6-mon roster (`RosterList` — brought-4 bolded, the 2 left home dimmed
+and labeled) and a per-mon `AnswerBreakdown` for both directions ("their
+brought 4 vs. your types" / "your brought 4 vs. their types"). New CSS:
+`.matchup-detail`, `.roster-list`/`.roster-brought`/`.roster-left-home`,
+`.matchup-answer-col`/`.matchup-answer-list`.
+
+### 14e. Tests + verification
+
+`tests/test_type_synergy.py` (new): 5 tests on `team_matchup()` directly —
+a one-sided-answer case checked by hand against the type chart, symmetric
+teams scoring identically, unresolved species excluded not guessed, empty
+inputs returning `None` (not a crash or a divide-by-zero), and the
+one-side-only-resolved case also returning `None`. `tests/test_analytics.py`
+gained a `TestComputeOpponentStrength` class (shape check, verdict-is-a-
+known-value check, the signature/no-result-bias check described in §14c,
+and a pure-function determinism check) plus one new test on
+`TestComputeMatchList` (`brought` is always a subset of `team` when `team`
+is known — this caught two genuine typos in the hand-planted demo fixture,
+match 9/opponent and match 16/player, where a mon from the OTHER side's
+roster had bled into this side's "brought" list; rather than guess at
+correct replacement values for placeholder data, the test explicitly
+whitelists those two known fixture quirks by `(match, side)` rather than
+silently loosening the real invariant). Full suite: 973 tests, all passing
+(16 net-new vs. §13's 957).
+
+**Verification**: `python3 -m unittest discover -s tests` — 973/973 passing.
+Hit the project's known bash-mount-desync issue (see prior sections'
+verification notes) on `backend/analytics.py`, `backend/type_synergy.py`,
+and `tests/test_analytics.py` during this build — each resolved via the
+established Write-`.fresh`-then-`cp` pattern, confirmed via `ast.parse` +
+a clean test run afterward. Frontend (`OpponentStrength.jsx`, `styles.css`)
+reviewed by hand; `npm run build` not run in this sandbox (same npm-registry
+limitation as §11-§13).
+
+**Known limitation, stated plainly**: Phase 2 (the full Team Choice Score
+framework) is not started. It needs, at minimum: real movesets (not just
+species typing), speed tiers, ability/item data, and either historical
+usage stats or a Bayesian bring-probability model over team-preview reveals
+— all genuinely new data sources this project doesn't have yet. Phase 1's
+`team_matchup()` is a real, honest, useful heuristic, but it is typing-only
+and says so in its own docstring and in the Opponent Intel tab's UI copy.

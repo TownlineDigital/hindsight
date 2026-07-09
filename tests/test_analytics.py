@@ -69,11 +69,38 @@ class TestComputeMatchList(unittest.TestCase):
 
     def test_every_row_has_required_fields(self):
         required = {"match", "winner", "player_lead", "player_brought", "opponent_brought",
-                    "p_faints", "o_faints", "player_team_known", "opponent_team_known",
-                    "illegal_species_detected", "complete_data"}
+                    "player_team", "opponent_team", "p_faints", "o_faints", "player_team_known",
+                    "opponent_team_known", "illegal_species_detected", "complete_data"}
         for row in self.rows:
             with self.subTest(match=row.get("match")):
                 self.assertTrue(required.issubset(row.keys()))
+
+    # Two matches in the hand-planted demo fixture (9/opponent, 16/player)
+    # have a mon from the OTHER side's team bleeding into this side's
+    # "brought" list - a fixture-authoring typo, not something the real
+    # pipeline can produce (analyze_matches.py/showdown_import.py always
+    # write team + brought from the same roster extraction in one pass, so
+    # this can't happen there). Named explicitly rather than silently
+    # skipped, so a future demo-data fix or new inconsistency is caught
+    # instead of blending into "expected" here.
+    KNOWN_DEMO_FIXTURE_ROSTER_TYPOS = {(9, "opponent"), (16, "player")}
+
+    def test_brought_is_always_a_subset_of_team_when_team_is_known(self):
+        """Added 2026-07-09 alongside player_team/opponent_team - the whole
+        point of surfacing the full 6 is showing "brought vs. left home", so
+        every brought mon has to actually be IN the full team whenever we
+        have one at all (an empty team - not fully read - is a separate,
+        already-covered case, not a violation of this rule)."""
+        for row in self.rows:
+            for side in ("player", "opponent"):
+                if (row["match"], side) in self.KNOWN_DEMO_FIXTURE_ROSTER_TYPOS:
+                    continue
+                team = row[f"{side}_team"]
+                brought = row[f"{side}_brought"]
+                if not team:
+                    continue
+                with self.subTest(match=row["match"], side=side):
+                    self.assertTrue(set(brought).issubset(set(team)))
 
     def test_complete_data_requires_player_team_known_and_no_illegal_species(self):
         """This is the exact rule the dashboard's ⚠/🚫 flags depend on - only
@@ -89,6 +116,56 @@ class TestComputeMatchList(unittest.TestCase):
             with self.subTest(match=row["match"]):
                 if row["player_team_known"]:
                     self.assertGreaterEqual(len(row["player_brought"]), 4)
+
+
+@unittest.skipUnless(os.path.exists(DEMO_EVENTS_PATH), "No seeded demo job")
+class TestComputeOpponentStrength(unittest.TestCase):
+    """team_preview_evaluation (added 2026-07-09) is the Objective Team
+    Preview Evaluation layer - see type_synergy.team_matchup's docstring.
+    The one invariant that matters most here is architectural, not numeric:
+    it must never be derivable from `winner` alone, or the "judged before
+    the result, not by it" guarantee is broken."""
+
+    @classmethod
+    def setUpClass(cls):
+        with open(DEMO_EVENTS_PATH, encoding="utf-8") as f:
+            cls.events = json.load(f)
+        cls.result = analytics.compute_opponent_strength(cls.events)
+
+    def test_every_match_has_a_team_preview_evaluation(self):
+        for row in self.result["matches"]:
+            with self.subTest(match=row["match"]):
+                self.assertIn("team_preview_evaluation", row)
+                tpe = row["team_preview_evaluation"]
+                for key in ("your_type_answers", "their_type_answers",
+                            "your_coverage", "their_coverage", "verdict"):
+                    self.assertIn(key, tpe)
+
+    def test_verdict_is_a_known_value_or_none(self):
+        for row in self.result["matches"]:
+            with self.subTest(match=row["match"]):
+                self.assertIn(row["team_preview_evaluation"]["verdict"],
+                               (None, "favorable", "unfavorable", "even"))
+
+    def test_team_matchup_signature_cannot_see_the_winner(self):
+        """The actual "no result bias" guarantee, checked structurally rather
+        than just "same inputs give same outputs" (true of any pure function
+        and not the real risk here): type_synergy.team_matchup's signature
+        must never grow a winner/result parameter, or a future edit could
+        start scoring team preview decisions by how the match actually
+        turned out - exactly what the user asked this layer to avoid."""
+        import inspect
+        from backend import type_synergy
+        params = set(inspect.signature(type_synergy.team_matchup).parameters)
+        self.assertEqual(params, {"player_species", "opponent_species"})
+
+    def test_identical_broughts_score_identically(self):
+        from backend import type_synergy
+        player = ["Incineroar", "Grimmsnarl", "Sinistcha", "Garchomp"]
+        opponent = ["Metagross", "Pelipper", "Kingambit", "Hydreigon"]
+        result_a = type_synergy.team_matchup(player, opponent)
+        result_b = type_synergy.team_matchup(player, opponent)
+        self.assertEqual(result_a, result_b)
 
 
 @unittest.skipUnless(os.path.exists(DEMO_EVENTS_PATH), "No seeded demo job")

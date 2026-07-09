@@ -89,6 +89,10 @@ def compute_match_list(events: list) -> list:
             "player_lead": list(s["player_lead"]),
             "player_brought": s["player_brought"],
             "opponent_brought": s["opponent_brought"],
+            # Full 6-mon team preview for both sides (added 2026-07-09) - see
+            # coach_report.per_match's own comment for where these come from.
+            "player_team": s["player_team"],
+            "opponent_team": s["opponent_team"],
             "p_faints": s["p_faints"],
             "o_faints": s["o_faints"],
             "player_team_known": player_team_known,
@@ -112,9 +116,25 @@ def compute_opponent_strength(events: list, min_resolved: int = 2) -> dict:
         if s["winner"] not in ("player", "opponent") or not s["opponent_brought"]:
             continue
         risk = type_synergy.team_risk(s["opponent_brought"])
+        # Full rosters + brought-vs-brought type matchup (added 2026-07-09,
+        # direct user request: "we need to know all of the pokemon available
+        # to the opponent, and all pokemon we had available, what pokemon we
+        # both brought and how it was advantageous or disadvantageous to
+        # us"). Keyed as "team_preview_evaluation" (not just "matchup") on
+        # purpose - this is the OBJECTIVE TEAM PREVIEW EVALUATION layer the
+        # user explicitly split out from OUTCOME EVALUATION (see
+        # type_synergy.team_matchup's docstring): compares what actually got
+        # brought using only typing, with zero knowledge of `winner` - never
+        # let this branch read s["winner"] before computing it, or it stops
+        # being a "before the result" evaluation.
+        team_preview_evaluation = type_synergy.team_matchup(s["player_brought"], s["opponent_brought"])
         per_match.append({
             "match": m,
+            "player_brought": s["player_brought"],
             "opponent_brought": s["opponent_brought"],
+            "player_team": s["player_team"],
+            "opponent_team": s["opponent_team"],
+            "team_preview_evaluation": team_preview_evaluation,
             "winner": s["winner"],
             "player_won": s["winner"] == "player",
             **risk,
