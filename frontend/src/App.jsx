@@ -17,6 +17,7 @@ import CoachSharing from "./components/CoachSharing.jsx";
 import StudentRoster from "./components/StudentRoster.jsx";
 import GameplayDateFilter from "./components/GameplayDateFilter.jsx";
 import PeriodComparison from "./components/PeriodComparison.jsx";
+import JobProgress from "./components/JobProgress.jsx";
 import { formatRangeLabel } from "./lib/dateRange.js";
 
 function toRows(table) {
@@ -368,13 +369,10 @@ export default function App() {
       )}
       <main>
         {error && <div className="banner">{error}</div>}
-        {!error && loading && (
-          <div className="banner info">
-            {jobProgress
-              ? `Job running: ${jobProgress.step} (step ${jobProgress.step_index + 1}/${jobProgress.total_steps})…`
-              : "Loading…"}
-          </div>
+        {!error && loading && jobProgress && (
+          <JobProgress jobId={jobId} jobProgress={jobProgress} />
         )}
+        {!error && loading && !jobProgress && <div className="banner info">Loading…</div>}
         {!error && !loading && !data && <div className="banner">No Gameplay yet. Click "+ New Gameplay" above, or run seed_demo_job.py.</div>}
 
         {!error && data && isCombined &&
