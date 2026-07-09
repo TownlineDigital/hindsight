@@ -17,6 +17,14 @@ opencv-python
 pytesseract
 Pillow
 
+# Video URL ingestion (fetch_vod.py - downloads a Twitch/YouTube VOD before
+# analyze_matches.py samples frames from it). Was missing from both this file
+# and requirements.txt entirely (found 2026-07-09 via a live "yt-dlp not
+# installed" job failure) - the source_type="url" upload path could not have
+# worked on the deployed server before this, only on a machine where someone
+# had separately `pip install`ed it outside of what these files track.
+yt-dlp
+
 # Backend API
 fastapi
 uvicorn[standard]

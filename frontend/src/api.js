@@ -16,7 +16,17 @@ async function getJSON(url, opts = {}) {
   const res = await fetch(API + url, { ...opts, headers });
   const body = await res.json().catch(() => ({}));
   if (!res.ok) {
-    const detail = body && body.detail ? body.detail : res.statusText;
+    // res.statusText is frequently an EMPTY STRING in production (Render's
+    // proxy strips it on many responses - confirmed live 2026-07-09 chasing
+    // a "clicked Start job, nothing happened" report: a bare 500 with a
+    // plain-text "Internal Server Error" body, not JSON, left both
+    // body.detail and res.statusText falsy). `new Error("")` has an empty
+    // `.message`, and callers gate their error banner on `{error && ...}` -
+    // an empty string is falsy in JS, so the banner silently never rendered
+    // at all. Falling back to `HTTP {status}` guarantees `detail` is never
+    // blank, so a failed request always surfaces SOMETHING to the user
+    // instead of looking like the button did nothing.
+    const detail = (body && body.detail) || res.statusText || `HTTP ${res.status}`;
     throw new Error(detail);
   }
   return body;

@@ -6,6 +6,10 @@ google-genai
 imageio-ffmpeg
 opencv-python
 
+# Video URL ingestion (fetch_vod.py) - downloads a Twitch/YouTube VOD before
+# analyze_matches.py samples frames from it.
+yt-dlp
+
 # Local, free OCR-based battle-text reading (ocr_battle_reader.py /
 # battle_text_parser.py - see ARCHITECTURE_HANDOFF.md). pytesseract is just
 # a Python wrapper - it also needs the real Tesseract OCR program installed
