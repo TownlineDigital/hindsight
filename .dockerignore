@@ -1,0 +1,48 @@
+# Keeps the Docker build context small and fast - mirrors .gitignore's
+# exclusions plus a few more that are dev-only, not needed to run the server.
+
+.git/
+.gitignore
+
+# Secrets - never bake into an image; these get set as real env vars on the host
+.env
+.env.example
+frontend/.env
+frontend/.env.local
+frontend/.env.example
+
+# Large media / generated pipeline outputs - never part of the image itself;
+# real job data lives on the persistent disk at runtime, not baked in
+*.mp4
+*.mov
+match_frames/
+structure_frames/
+jobs/
+audit_log.jsonl
+
+# Python
+__pycache__/
+*.pyc
+*.egg-info/
+
+# Node - built separately in the frontend-builder stage; the runtime image
+# never needs node_modules itself, only frontend/dist's build output
+node_modules/
+frontend/dist/
+
+# One-off backup files from past editing sessions
+*.bak
+*.bak_pre_task*
+*.bak2
+*.bak3
+
+# Dev-only / not needed to run the server - tests still run in CI/locally
+# from the git repo, not from inside the deployed image
+tests/
+benchmark/
+ui_concepts/
+*.md
+!README.md
+
+# Editor/OS
+.DS_Store

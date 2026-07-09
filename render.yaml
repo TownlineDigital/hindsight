@@ -1,0 +1,52 @@
+# Render "Blueprint" - lets Render read this file and set up the service
+# automatically instead of clicking through every setting by hand. See
+# https://render.com/docs/blueprint-spec.
+#
+# To use: push this repo to GitHub, then in Render choose
+# "New +" -> "Blueprint" and point it at the repo. Render will read this
+# file and prompt you for the `sync: false` values below (real secrets -
+# never stored in this file or in git).
+
+services:
+  - type: web
+    name: vgc-coach-dashboard
+    runtime: docker
+    dockerfilePath: ./Dockerfile
+    dockerContext: .
+    plan: standard
+    region: oregon
+    healthCheckPath: /dashboard/
+    autoDeploy: true
+
+    # Persistent disk for backend/jobs.JOBS_DIR - per-job data (events.json,
+    # sampled frames, uploaded videos) needs to survive restarts/redeploys,
+    # since jobs run as an in-process background thread (backend/jobs.py),
+    # not a separate queue - see the deploy notes for why a mid-job redeploy
+    # still kills that one in-flight job regardless of this disk.
+    disk:
+      name: job-data
+      mountPath: /app/jobs
+      sizeGB: 20 # starting point - raw uploaded videos add up fast; resize
+                 # as needed (Render allows increasing, not decreasing, later)
+
+    envVars:
+      # --- Backend runtime secrets (read via os.environ / python-dotenv -
+      # see .env.example) - set real values in Render's dashboard, never here ---
+      - key: GEMINI_API_KEY
+        sync: false
+      - key: SUPABASE_URL
+        sync: false
+      - key: SUPABASE_SERVICE_ROLE_KEY
+        sync: false
+
+      # --- Frontend BUILD-time values (frontend/.env.example) - Render
+      # automatically also passes every envVar here as a Docker build ARG,
+      # which is what lets the Dockerfile's `ARG VITE_SUPABASE_URL` /
+      # `ARG VITE_SUPABASE_ANON_KEY` pick them up during `npm run build`.
+      # VITE_SUPABASE_ANON_KEY is safe to expose in the browser bundle by
+      # design (see frontend/.env.example's own comment) but still marked
+      # sync: false here since the actual value is project-specific. ---
+      - key: VITE_SUPABASE_URL
+        sync: false
+      - key: VITE_SUPABASE_ANON_KEY
+        sync: false

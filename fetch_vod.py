@@ -1,0 +1,69 @@
+"""
+Download a Twitch (or YouTube) VOD into this folder with a safe, fixed filename.
+
+Saves to vod.<ext> (no title-with-spaces problems), and prints the path. Used by
+run_full.py via --url, or standalone:
+
+  py fetch_vod.py --url https://www.twitch.tv/videos/2808818431
+
+Install once:  py -m pip install -U yt-dlp
+"""
+
+import argparse
+import glob
+import os
+import sys
+
+
+def download(url, out_basename="vod"):
+    try:
+        from yt_dlp import YoutubeDL
+    except ImportError:
+        sys.exit("yt-dlp not installed. Run:  py -m pip install -U yt-dlp")
+
+    # clear any previous download so re-runs don't pile up / collide
+    for f in glob.glob(out_basename + ".*"):
+        try:
+            os.remove(f)
+        except OSError:
+            pass
+
+    opts = {
+        "outtmpl": out_basename + ".%(ext)s",
+        "noplaylist": True,
+        # prefer a single mp4 when available; fall back to best
+        "format": "bestvideo+bestaudio/best",
+        "merge_output_format": "mp4",
+    }
+    # let yt-dlp use the pip-bundled FFmpeg (so you don't need FFmpeg on PATH)
+    try:
+        import imageio_ffmpeg
+        opts["ffmpeg_location"] = os.path.dirname(imageio_ffmpeg.get_ffmpeg_exe())
+    except Exception:
+        pass
+
+    with YoutubeDL(opts) as ydl:
+        info = ydl.extract_info(url, download=True)
+        path = ydl.prepare_filename(info)
+
+    if not os.path.exists(path):
+        # merge/remux may change the extension; find the finished file
+        cands = [f for f in glob.glob(out_basename + ".*") if not f.endswith((".part", ".ytdl"))]
+        if cands:
+            path = max(cands, key=os.path.getsize)
+    if not os.path.exists(path):
+        sys.exit("Download reported success but the output file wasn't found.")
+    return path
+
+
+def main():
+    ap = argparse.ArgumentParser(description="Download a Twitch/YouTube VOD to vod.<ext>")
+    ap.add_argument("--url", required=True)
+    ap.add_argument("--out", default="vod", help="output basename (default: vod)")
+    args = ap.parse_args()
+    path = download(args.url, args.out)
+    print(f"\nDownloaded -> {path}")
+
+
+if __name__ == "__main__":
+    main()

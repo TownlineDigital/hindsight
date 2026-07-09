@@ -1,0 +1,150 @@
+{
+  "game": "Pokemon Champions - Doubles (VGC-style)",
+  "_composed_from": [
+    "_core",
+    "pokemon/game",
+    "pokemon/doubles"
+  ],
+  "description": "Doubles: TWO Pokemon active per side (four on the field). A team preview precedes each match; each player brings 4 of 6. A match ends when all of one side's brought 4 have fainted.",
+  "event_types": [
+    "pokemon_sent_out",
+    "move_used",
+    "critical_hit",
+    "super_effective_hit",
+    "not_very_effective_hit",
+    "pokemon_fainted",
+    "status_inflicted",
+    "stat_change",
+    "hp_change",
+    "item_or_ability_activated",
+    "weather_or_terrain_set",
+    "turn_start",
+    "field_state",
+    "battle_start",
+    "battle_end",
+    "team_preview"
+  ],
+  "fields_to_capture": {
+    "timestamp": "the second of the clip the event happened (a number)",
+    "event": "the event type",
+    "actor": "'player', 'opponent', or 'both'",
+    "pokemon": "the Pokemon involved for single-Pokemon events, if visible",
+    "hp_percent": "for single-Pokemon events, that Pokemon's HP percent if visible, else null",
+    "winner": "battle_end ONLY: 'player' or 'opponent'. null otherwise",
+    "turn": "field_state: the current turn number if shown, else null",
+    "weather": "field_state: active weather - sun/rain/sand/snow/none",
+    "terrain": "field_state: active terrain - electric/grassy/psychic/misty/none",
+    "trick_room": "field_state: true if Trick Room is active, else false",
+    "tailwind": "field_state: which side has Tailwind - player/opponent/both/none",
+    "screens": "field_state: active screens + side, e.g. 'player Reflect', else none",
+    "field_status": "field_state: statuses + stat stages on active Pokemon, e.g. 'opp Incineroar -1 Atk; my Flutter Mane burned'",
+    "player_active": "field_state: the player's TWO active Pokemon, comma-separated, if visible",
+    "opponent_active": "field_state: the opponent's TWO active Pokemon, comma-separated, if visible",
+    "detail": "short free-text specifics for the event",
+    "confidence": "0.0 to 1.0 - include low-confidence guesses, do not drop them"
+  },
+  "notes_for_the_ai": "You are extracting a structured event stream from competitive game footage. Read any on-screen text literally and transcribe it - text is your most reliable signal. Be thorough and OVER-report: include uncertain events with a low confidence (around 0.3) rather than dropping them. Report each discrete event only ONCE, at the timestamp it first appears. A 'match' is one complete game between two players; only mark a match as ended at a clear end-of-match RESULT screen - never from a single unit being eliminated. Return ONLY a JSON array of event objects; return [] only if no gameplay is visible at all. POKEMON specifics: read the battle text box - 'X used [Move]!' = move_used; 'A critical hit!' = critical_hit; 'It's super effective!' = super_effective_hit; 'X fainted!' = pokemon_fainted. A type-changing ABILITY (Protean/Libero, shown as 'X's Protean!') is item_or_ability_activated, NOT terastallized; only use terastallized when the crystalline Tera crown or 'Terastallized into the [type] type' is shown. A single Pokemon fainting is ALWAYS 'pokemon_fainted', NEVER 'battle_end'. PER-TURN STATE (important for coaching): emit one 'field_state' per turn capturing a full snapshot - turn number, the four active Pokemon with HP, weather, terrain, trick_room (true/false), tailwind (which side), screens, and field_status (statuses + stat stages on the active Pokemon). Read the field banners and status icons literally. This is DOUBLES: TWO Pokemon active per side, FOUR on the field. A 'field_state' must list both of the player's active Pokemon (player_active) and both of the opponent's (opponent_active), with their HP in detail. TEAM PREVIEW: before each match a screen shows BOTH players' 6 Pokemon and each picks 4 - emit ONE 'team_preview' listing the 6 per side (and the 4 brought if shown); team preview marks a NEW MATCH starting. A match ends only when ALL of one side's brought (up to 4) Pokemon have fainted, shown by a 'You won!'/defeat/results screen - emit ONE 'battle_end' per match with winner 'player' or 'opponent' (expect up to ~4 faints per side per match). This format (Pokemon Champions, Regulation M-B) has Mega Evolution but NO Terastallization or Dynamax - never emit a 'terastallized' event. This game has a small CLOSED roster (not the full Pokedex) - Paradox Pokemon, Legendaries, Mythicals, and many ordinary Pokemon simply aren't included yet; if a frame seems to show one, look again for a legal Pokemon it could be instead of reporting the impossible one. Species Clause: Mega Evolution is the SAME team member transforming, never a second Pokemon.",
+  "core_mapping": {
+    "battle_start": "match_start",
+    "battle_end": "match_end",
+    "turn_start": "round_start",
+    "pokemon_fainted": "unit_eliminated",
+    "move_used": "action",
+    "hp_change": "resource_change",
+    "status_inflicted": "status_change",
+    "field_state": "state_snapshot"
+  },
+  "example_output": [
+    {
+      "timestamp": 10,
+      "event": "team_preview",
+      "actor": "both",
+      "pokemon": null,
+      "player_active": null,
+      "opponent_active": null,
+      "detail": "P1 team: Incineroar, Sylveon, Blaziken, Torterra, Corviknight, Garchomp | P2 team: Metagross, Whimsicott, Farigiraf, Talonflame, Kingambit, Grimmsnarl",
+      "hp_percent": null,
+      "winner": null,
+      "confidence": 0.85
+    },
+    {
+      "timestamp": 45,
+      "event": "field_state",
+      "actor": "both",
+      "pokemon": null,
+      "player_active": "Incineroar, Sylveon",
+      "opponent_active": "Metagross, Whimsicott",
+      "detail": "Incineroar 100% / Sylveon 100% vs Metagross 100% / Whimsicott 100%",
+      "hp_percent": null,
+      "winner": null,
+      "confidence": 0.85
+    },
+    {
+      "timestamp": 60,
+      "event": "move_used",
+      "actor": "player",
+      "pokemon": "Sylveon",
+      "player_active": null,
+      "opponent_active": null,
+      "detail": "Hyper Voice",
+      "hp_percent": null,
+      "winner": null,
+      "confidence": 0.9
+    },
+    {
+      "timestamp": 240,
+      "event": "pokemon_fainted",
+      "actor": "opponent",
+      "pokemon": "Metagross",
+      "player_active": null,
+      "opponent_active": null,
+      "detail": "fainted (opponent's last brought Pokemon)",
+      "hp_percent": 0,
+      "winner": null,
+      "confidence": 0.9
+    },
+    {
+      "timestamp": 243,
+      "event": "battle_end",
+      "actor": "player",
+      "pokemon": null,
+      "player_active": null,
+      "opponent_active": null,
+      "detail": "You won the battle!",
+      "hp_percent": null,
+      "winner": "player",
+      "confidence": 0.95
+    }
+  ],
+  "rules": {
+    "format_name": "Pokemon Champions - Doubles (Regulation M-B)",
+    "regulation": "M-B",
+    "regulation_active_until": "2026-09-02",
+    "active_per_side": 2,
+    "team_size": 6,
+    "bring_count": 4,
+    "legal_mechanics": [
+      "mega_evolution_yes",
+      "dynamax_no",
+      "terastallization_no"
+    ],
+    "terastallization": false,
+    "dynamax": false,
+    "mega_evolution": true,
+    "banned_species_categories": [
+      "paradox",
+      "treasures_of_ruin",
+      "restricted_legendary",
+      "mythical",
+      "not_yet_added"
+    ],
+    "speed_control": [
+      "Tailwind",
+      "Trick Room",
+      "Icy Wind",
+      "Thunder Wave",
+      "paralysis"
+    ],
+    "format_notes": "Pokemon Champions Regulation M-B: Mega Evolution IS legal (one Mega per battle) and is the format's core offensive mechanic - recommend it freely. Terastallization and Dynamax are NOT active. The game has a SMALL, CLOSED roster (~190-200 species, not the full Pokedex) - Paradox Pokemon, Legendaries, Mythicals, and many otherwise-ordinary Pokemon simply aren't in the game at all yet. If a read reports a species outside that roster, it's almost certainly a misidentification of a similar-looking legal Pokemon, not a real occurrence. Species Clause is also in effect - Mega Evolution is a transformation of an existing team member, not a second Pokemon; never count 'X' and 'X (Mega)' as two different picks. Coaching must respect: 2 active per side, bring 4 of 6, win by KOing all of the opponent's brought Pokemon. VERIFY/UPDATE this file when the regulation changes (see regulation_active_until) - the enforced allowlist lives in analyze_matches.py's ALLOWED_SPECIES."
+  }
+}

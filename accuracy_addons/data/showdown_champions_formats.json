@@ -1,0 +1,53 @@
+{
+  "_source": "https://github.com/smogon/pokemon-showdown/blob/master/config/formats.ts and data/rulesets.ts (real fetch during development - see accuracy_addons/README.md for exactly what was/wasn't captured)",
+  "_note": "Only the Champions-relevant entries were kept, not the full formats.ts (hundreds of unrelated formats). Reg M-A is the entry Showdown actually had a distinct format for at fetch time; Reg M-B (this project's ADAPTER-configured current regulation, per adapters/pokemon/doubles.json's regulation_active_until: 2026-09-02) was NOT found as its own distinct formats.ts entry in this fetch - either it hadn't been added to Showdown's config yet, or it was further into the file than the fetch reached. Treat the Reg M-A data below as 'closely related predecessor format, same mod/structure', not a direct Reg M-B confirmation.",
+  "formats": [
+    {
+      "name": "[Gen 9 Champions] OU",
+      "mod": "champions",
+      "ruleset": ["Standard"],
+      "banlist": ["AG", "Uber", "Moody", "Quick Claw", "Baton Pass", "Last Respects", "Shed Tail"]
+    },
+    {
+      "name": "[Gen 9 Champions] UU",
+      "mod": "champions",
+      "ruleset": ["[Gen 9 Champions] OU"],
+      "banlist": ["OU", "UUBL"]
+    },
+    {
+      "name": "[Gen 9 Champions] BSS Reg M-A",
+      "mod": "champions",
+      "bestOfDefault": true,
+      "ruleset": ["Flat Rules", "VGC Timer"]
+    },
+    {
+      "name": "[Gen 9 Champions] VGC 2026 Reg M-A",
+      "mod": "champions",
+      "gameType": "doubles",
+      "bestOfDefault": true,
+      "ruleset": ["Flat Rules", "VGC Timer", "Open Team Sheets"]
+    },
+    {
+      "name": "[Gen 9 Champions] VGC 2026 Reg M-A (Bo3)",
+      "mod": "champions",
+      "gameType": "doubles",
+      "ruleset": ["Flat Rules", "VGC Timer", "Force Open Team Sheets", "Best of = 3"]
+    },
+    {
+      "name": "[Gen 9 Champions] Custom Game",
+      "mod": "champions",
+      "ruleset": ["Team Preview", "Cancel Mod", "Max Team Size = 24", "Max Move Count = 24", "Max Level = 9999", "Default Level = 50"]
+    }
+  ],
+  "rulesets": {
+    "Flat Rules": {
+      "desc": "The in-game Flat Rules: Adjust Level Down 50, Species Clause, Item Clause = 1, -Mythical, -Restricted Legendary, Bring 6 Pick 3-6 depending on game type.",
+      "ruleset": ["Obtainable", "Team Preview", "Species Clause", "Nickname Clause", "Item Clause = 1", "Adjust Level Down = 50", "Picked Team Size = Auto", "Cancel Mod"],
+      "banlist": ["Mythical", "Restricted Legendary", "Greninja-Bond"]
+    },
+    "Standard": {
+      "desc": "The standard ruleset for all official Smogon singles tiers (Ubers, OU, etc.)",
+      "ruleset": ["Standard AG", "Sleep Clause Mod", "Species Clause", "Nickname Clause", "OHKO Clause", "Evasion Items Clause", "Evasion Moves Clause"]
+    }
+  }
+}

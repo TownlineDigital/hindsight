@@ -1,0 +1,34 @@
+{
+  "layer": "game",
+  "game": "Pokemon",
+  "description": "Pokemon competitive battle - game-level vocabulary, shared across all formats (singles, doubles, etc.).",
+  "event_types": [
+    "pokemon_sent_out", "move_used", "critical_hit", "super_effective_hit",
+    "not_very_effective_hit", "pokemon_fainted", "status_inflicted", "stat_change",
+    "hp_change", "item_or_ability_activated", "terastallized", "weather_or_terrain_set",
+    "turn_start", "field_state", "battle_start", "battle_end"
+  ],
+  "core_mapping": {
+    "battle_start": "match_start",
+    "battle_end": "match_end",
+    "turn_start": "round_start",
+    "pokemon_fainted": "unit_eliminated",
+    "move_used": "action",
+    "hp_change": "resource_change",
+    "status_inflicted": "status_change",
+    "field_state": "state_snapshot"
+  },
+  "fields": {
+    "pokemon": "the Pokemon involved for single-Pokemon events, if visible",
+    "hp_percent": "for single-Pokemon events, that Pokemon's HP percent if visible, else null",
+    "winner": "battle_end ONLY: 'player' or 'opponent'. null otherwise",
+    "turn": "field_state: the current turn number if shown, else null",
+    "weather": "field_state: active weather - sun/rain/sand/snow/none",
+    "terrain": "field_state: active terrain - electric/grassy/psychic/misty/none",
+    "trick_room": "field_state: true if Trick Room is active, else false",
+    "tailwind": "field_state: which side has Tailwind - player/opponent/both/none",
+    "screens": "field_state: active screens + side, e.g. 'player Reflect', else none",
+    "field_status": "field_state: statuses + stat stages on active Pokemon, e.g. 'opp Incineroar -1 Atk; my Flutter Mane burned'"
+  },
+  "notes": "POKEMON specifics: read the battle text box - 'X used [Move]!' = move_used; 'A critical hit!' = critical_hit; 'It's super effective!' = super_effective_hit; 'X fainted!' = pokemon_fainted. A type-changing ABILITY (Protean/Libero, shown as 'X's Protean!') is item_or_ability_activated, NOT terastallized; only use terastallized when the crystalline Tera crown or 'Terastallized into the [type] type' is shown. A single Pokemon fainting is ALWAYS 'pokemon_fainted', NEVER 'battle_end'. PER-TURN STATE (important for coaching): emit one 'field_state' per turn capturing a full snapshot - turn number, the four active Pokemon with HP, weather, terrain, trick_room (true/false), tailwind (which side), screens, and field_status (statuses + stat stages on the active Pokemon). Read the field banners and status icons literally."
+}

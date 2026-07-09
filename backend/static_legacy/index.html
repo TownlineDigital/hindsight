@@ -1,0 +1,399 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>VGC Coach Dashboard</title>
+<style>
+  :root {
+    --bg: #0f1220; --card: #1a1e30; --card2: #22273d; --text: #eef0f7;
+    --muted: #9aa1b8; --accent: #7c9cff; --good: #4fd18b; --bad: #ff6b81; --warn: #ffce5c;
+    --border: #2c3150;
+  }
+  * { box-sizing: border-box; }
+  body { margin:0; background:var(--bg); color:var(--text); font-family: -apple-system, Segoe UI, Roboto, Arial, sans-serif; }
+  header { padding: 20px 28px; border-bottom: 1px solid var(--border); display:flex; align-items:center; gap:16px; flex-wrap:wrap; }
+  header h1 { font-size: 20px; margin: 0; font-weight: 600; }
+  header .sub { color: var(--muted); font-size: 13px; }
+  select, button, input, textarea {
+    background: var(--card2); color: var(--text); border: 1px solid var(--border);
+    border-radius: 8px; padding: 8px 12px; font-size: 14px;
+  }
+  button { cursor:pointer; }
+  button:hover { border-color: var(--accent); }
+  main { padding: 24px 28px; max-width: 1200px; margin: 0 auto; }
+  .grid { display:grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap:16px; margin-bottom: 24px; }
+  .card { background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 18px; }
+  .card h3 { margin:0 0 4px; font-size: 12px; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); }
+  .card .big { font-size: 28px; font-weight: 700; margin: 4px 0; }
+  .card .note { font-size: 13px; color: var(--muted); }
+  .good { color: var(--good); } .bad { color: var(--bad); } .warn { color: var(--warn); }
+  section { margin-bottom: 28px; }
+  section h2 { font-size: 15px; margin: 0 0 12px; color: var(--muted); font-weight: 600; text-transform: uppercase; letter-spacing: .05em; }
+  table { width:100%; border-collapse: collapse; background: var(--card); border-radius: 12px; overflow:hidden; border: 1px solid var(--border); }
+  th, td { text-align:left; padding: 10px 14px; font-size: 14px; border-bottom: 1px solid var(--border); }
+  th { color: var(--muted); font-weight: 600; font-size: 12px; text-transform: uppercase; }
+  tr:last-child td { border-bottom: none; }
+  .flags { list-style:none; padding:0; margin:0; display:flex; flex-direction:column; gap:8px; }
+  .flags li { background: var(--card); border: 1px solid var(--border); border-left: 3px solid var(--warn); border-radius: 8px; padding: 12px 14px; font-size: 14px; }
+  .empty { color: var(--muted); padding: 12px; font-style: italic; }
+  .two-col { display:grid; grid-template-columns: 1fr 1fr; gap:16px; }
+  @media (max-width: 800px) { .two-col { grid-template-columns: 1fr; } }
+  #chat-log { max-height: 260px; overflow-y:auto; display:flex; flex-direction:column; gap:10px; margin-bottom:12px; }
+  .msg { padding:10px 14px; border-radius:10px; font-size:14px; max-width: 85%; }
+  .msg.you { background: var(--accent); color:#0f1220; align-self:flex-end; }
+  .msg.coach { background: var(--card2); align-self:flex-start; white-space:pre-wrap; }
+  .msg.error { background: var(--bad); color:#0f1220; align-self:flex-start; }
+  #chat-row { display:flex; gap:8px; }
+  #chat-row input { flex:1; }
+  #banner { padding:10px 28px; background:#332a10; color:var(--warn); font-size:13px; display:none; }
+</style>
+</head>
+<body>
+
+<div id="banner"></div>
+
+<header>
+  <h1>VGC Coach Dashboard</h1>
+  <span class="sub">poc-starter backend, section 8</span>
+  <span style="flex:1"></span>
+  <label class="sub" for="job-select">Job:</label>
+  <select id="job-select"></select>
+  <button id="refresh-btn">Refresh</button>
+</header>
+
+<main>
+
+  <section>
+    <h2>Record</h2>
+    <div class="grid" id="record-cards">
+      <div class="card empty">Loading...</div>
+    </div>
+  </section>
+
+  <section>
+    <h2>Coaching flags</h2>
+    <ul class="flags" id="flags-list"><li class="empty">Loading...</li></ul>
+  </section>
+
+  <section>
+    <div class="two-col">
+      <div>
+        <h2>Win rate by lead</h2>
+        <table id="lead-table"><thead><tr><th>Lead</th><th>Record</th><th>Win %</th></tr></thead><tbody></tbody></table>
+      </div>
+      <div>
+        <h2>Win rate by bring</h2>
+        <table id="bring-table"><thead><tr><th>Pokémon</th><th>Record</th><th>Win %</th></tr></thead><tbody></tbody></table>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <div class="two-col">
+      <div>
+        <h2>Toughest matchups</h2>
+        <table id="matchup-table"><thead><tr><th>Opponent Pokémon</th><th>Record</th><th>Win %</th></tr></thead><tbody></tbody></table>
+      </div>
+      <div>
+        <h2>Most used (moves made)</h2>
+        <table id="usage-table"><thead><tr><th>Pokémon</th><th>Uses</th></tr></thead><tbody></tbody></table>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <h2>Matches</h2>
+    <p class="note" id="matches-note" style="margin: -4px 0 12px;"></p>
+    <table id="matches-table"><thead><tr>
+      <th>#</th><th>Result</th><th>Your lead</th><th>Your brought</th><th>Opponent brought</th><th>KOs landed / lost</th><th>Duration</th>
+    </tr></thead><tbody></tbody></table>
+  </section>
+
+  <section>
+    <h2>Opponent team-preview strength</h2>
+    <p class="note" style="margin: -4px 0 12px;">How much their brought 4 overlap on shared type weaknesses -
+      a real doubles liability (one spread move or attacker threatens multiple of their Pokémon at once).
+      Lower risk score = tighter-built team. Correlated against your actual results below.</p>
+    <div class="grid" id="opponent-strength-cards"></div>
+    <table id="opponent-strength-table" style="margin-top:16px;"><thead><tr>
+      <th>#</th><th>Opponent brought</th><th>Risk score</th><th>Shared weaknesses</th><th>Result</th>
+    </tr></thead><tbody></tbody></table>
+  </section>
+
+  <section>
+    <h2>Ask the coach</h2>
+    <div class="card">
+      <div id="chat-log"></div>
+      <div id="chat-row">
+        <input id="chat-input" placeholder="e.g. what's my best lead and why?">
+        <button id="chat-send">Ask</button>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<script>
+const API = "";  // same-origin: this page is served by the FastAPI app itself
+
+function banner(msg) {
+  const b = document.getElementById("banner");
+  if (!msg) { b.style.display = "none"; return; }
+  b.textContent = msg;
+  b.style.display = "block";
+}
+
+function pctClass(p) {
+  if (p >= 60) return "good";
+  if (p <= 40) return "bad";
+  return "warn";
+}
+
+function formatDuration(seconds) {
+  const s = Math.round(seconds);
+  const m = Math.floor(s / 60);
+  const r = s % 60;
+  return `${m}:${String(r).padStart(2, "0")}`;
+}
+
+async function getJSON(url, opts) {
+  const res = await fetch(API + url, opts);
+  const body = await res.json().catch(() => ({}));
+  if (!res.ok) {
+    const detail = body && body.detail ? body.detail : res.statusText;
+    throw new Error(detail);
+  }
+  return body;
+}
+
+async function loadJobs() {
+  const jobs = await getJSON("/jobs");
+  const sel = document.getElementById("job-select");
+  sel.innerHTML = "";
+  if (!jobs.length) {
+    sel.innerHTML = "<option>(no jobs yet)</option>";
+    return null;
+  }
+  jobs.sort((a, b) => (a.job_id > b.job_id ? 1 : -1));
+  for (const j of jobs) {
+    const opt = document.createElement("option");
+    opt.value = j.job_id;
+    opt.textContent = `${j.job_id}  (${j.status})`;
+    sel.appendChild(opt);
+  }
+  // prefer a job called "demo" or the first "done" job if present
+  const preferred = jobs.find(j => j.job_id === "demo") || jobs.find(j => j.status === "done") || jobs[0];
+  sel.value = preferred.job_id;
+  return preferred.job_id;
+}
+
+function renderCards(record, report) {
+  const el = document.getElementById("record-cards");
+  el.innerHTML = "";
+  const cards = [
+    { label: "Record", big: `${record.wins}-${record.losses}`,
+      note: record.undetermined
+        ? `${record.matches} decided (${record.undetermined} of ${record.total_games} games had no result captured)`
+        : `${record.matches} matches` },
+    { label: "Win rate", big: `${record.win_rate}%`, cls: pctClass(record.win_rate) },
+    { label: "KO differential / match", big: `${report.combat.ko_differential_avg >= 0 ? "+" : ""}${report.combat.ko_differential_avg}`, note: `${report.combat.kos_landed} landed / ${report.combat.pokemon_lost} lost` },
+    { label: "Avg winning margin", big: report.combat.avg_winning_margin, note: "Pokémon left when you win" },
+    { label: "Most common lead", big: report.leads.most_common, note: `${report.leads.predictability_pct}% of games` },
+  ];
+  // report.tera is null when this format's rules don't have Terastallization at all
+  // (e.g. Pokemon Champions) - showing a 0%/fake win rate for a mechanic that
+  // doesn't exist would be more misleading than just leaving the card out.
+  if (report.tera) {
+    cards.splice(4, 0, {
+      label: "Win rate with Tera", big: `${report.tera.win_rate_with}%`,
+      note: `vs ${report.tera.win_rate_without}% without (${report.tera.matches_with} matches)`,
+    });
+  }
+  for (const c of cards) {
+    const div = document.createElement("div");
+    div.className = "card";
+    div.innerHTML = `<h3>${c.label}</h3><div class="big ${c.cls || ""}">${c.big}</div>${c.note ? `<div class="note">${c.note}</div>` : ""}`;
+    el.appendChild(div);
+  }
+}
+
+function renderOpponentStrength(data) {
+  const cardsEl = document.getElementById("opponent-strength-cards");
+  cardsEl.innerHTML = "";
+  const c = data.correlation;
+  if (c) {
+    const cards = [
+      { label: "Median risk score", big: c.median_risk_score, note: `${c.sample_size} matches scored` },
+      { label: "Your win rate vs weaker-built teams", big: `${c.win_rate_vs_weaker_built_teams}%`,
+        cls: pctClass(c.win_rate_vs_weaker_built_teams), note: `${c.vs_weaker_built_n} matches (above-median overlap)` },
+      { label: "Your win rate vs tighter-built teams", big: `${c.win_rate_vs_tighter_built_teams}%`,
+        cls: pctClass(c.win_rate_vs_tighter_built_teams), note: `${c.vs_tighter_built_n} matches (at/below-median overlap)` },
+    ];
+    for (const card of cards) {
+      const div = document.createElement("div");
+      div.className = "card";
+      div.innerHTML = `<h3>${card.label}</h3><div class="big ${card.cls || ""}">${card.big}</div><div class="note">${card.note}</div>`;
+      cardsEl.appendChild(div);
+    }
+    const note = document.createElement("div");
+    note.className = "card empty";
+    note.style.gridColumn = "1 / -1";
+    note.textContent = c.note;
+    cardsEl.appendChild(note);
+  } else {
+    cardsEl.innerHTML = `<div class="card empty">Not enough scored matches yet for a meaningful split.</div>`;
+  }
+
+  fillTable("opponent-strength-table", data.matches.map(m => {
+    const won = m.player_won;
+    const resultCls = won ? "good" : "bad";
+    const resultText = won ? "You won" : "You lost";
+    const shared = Object.entries(m.shared_weaknesses || {}).map(([t, n]) => `${t} (${n})`).join(", ") || "none";
+    const cov = m.coverage && m.coverage !== `${(m.opponent_brought||[]).length}/${(m.opponent_brought||[]).length}`
+      ? ` <span class="note">(${m.coverage} typed)</span>` : "";
+    return `<td>${m.match}</td>` +
+           `<td>${(m.opponent_brought || []).join(", ")}${cov}</td>` +
+           `<td>${m.risk_score}</td>` +
+           `<td>${shared}</td>` +
+           `<td class="${resultCls}">${resultText}</td>`;
+  }));
+}
+
+function renderFlags(flags) {
+  const el = document.getElementById("flags-list");
+  el.innerHTML = "";
+  for (const f of flags) {
+    const li = document.createElement("li");
+    li.textContent = f;
+    el.appendChild(li);
+  }
+}
+
+function fillTable(id, rows) {
+  const tbody = document.querySelector(`#${id} tbody`);
+  tbody.innerHTML = "";
+  if (!rows.length) {
+    const cols = document.querySelectorAll(`#${id} thead th`).length || 3;
+    tbody.innerHTML = `<tr><td colspan="${cols}" class="empty">No data</td></tr>`;
+    return;
+  }
+  for (const r of rows) {
+    const tr = document.createElement("tr");
+    tr.innerHTML = r;
+    tbody.appendChild(tr);
+  }
+}
+
+async function loadDashboard(jobId) {
+  if (!jobId) return;
+  banner(null);
+  try {
+    const [record, report, matches, oppStrength] = await Promise.all([
+      getJSON(`/jobs/${jobId}/record`),
+      getJSON(`/jobs/${jobId}/report`),
+      getJSON(`/jobs/${jobId}/matches/summary`),
+      getJSON(`/jobs/${jobId}/opponent-strength`),
+    ]);
+
+    renderCards(record, report);
+    renderFlags(report.flags);
+
+    fillTable("lead-table", Object.entries(record.by_lead)
+      .sort((a, b) => b[1].total - a[1].total)
+      .map(([lead, v]) => `<td>${lead}</td><td>${v.wins}-${v.total - v.wins}</td><td class="${pctClass(v.win_pct)}">${v.win_pct}%</td>`));
+
+    fillTable("bring-table", Object.entries(record.by_bring)
+      .sort((a, b) => b[1].total - a[1].total)
+      .map(([mon, v]) => `<td>${mon}</td><td>${v.wins}-${v.total - v.wins}</td><td class="${pctClass(v.win_pct)}">${v.win_pct}%</td>`));
+
+    fillTable("matchup-table", report.toughest_matchups
+      .map(m => `<td>${m.pokemon}</td><td>${m.wins}-${m.total - m.wins}</td><td class="${pctClass(m.win_pct)}">${m.win_pct}%</td>`));
+
+    fillTable("usage-table", report.most_used_pokemon
+      .map(([mon, c]) => `<td>${mon}</td><td>${c}</td>`));
+
+    const incompleteCount = matches.filter(m => !m.complete_data || m.winner === "unknown").length;
+    const illegalCount = matches.filter(m => (m.illegal_species_detected || []).length).length;
+    let note = "";
+    if (incompleteCount) {
+      note += `${incompleteCount} of ${matches.length} matches marked ⚠ - either OUR team wasn't fully read (should never happen) or no result screen was captured. Incomplete opponent data alone isn't flagged - their team-preview read can normally miss 1-2 of their 4.`;
+    }
+    if (illegalCount) {
+      note += (note ? " " : "") + `${illegalCount} match(es) marked 🚫 - a Pokémon that can't legally exist in this format was read (almost certainly a misidentification of a real, legal Pokémon).`;
+    }
+    document.getElementById("matches-note").textContent = note;
+
+    fillTable("matches-table", matches.map(m => {
+      const won = m.winner === "player";
+      const lost = m.winner === "opponent";
+      const resultCls = won ? "good" : lost ? "bad" : "warn";
+      const resultText = won ? "Win" : lost ? "Loss" : "Unknown";
+      const dur = m.duration_seconds != null ? formatDuration(m.duration_seconds) : "-";
+      const illegal = m.illegal_species_detected || [];
+      let flag = "";
+      if (illegal.length) flag += ` 🚫`;
+      else if (!m.complete_data || m.winner === "unknown") flag += " ⚠";
+      const illegalNote = illegal.length ? ` <span class="bad">(illegal: ${illegal.join(", ")})</span>` : "";
+      return `<td>${m.match}${flag}</td>` +
+             `<td class="${resultCls}">${resultText}</td>` +
+             `<td>${(m.player_lead || []).join(" + ") || "-"}</td>` +
+             `<td>${(m.player_brought || []).join(", ") || "-"}${illegalNote}</td>` +
+             `<td>${(m.opponent_brought || []).join(", ") || "-"}</td>` +
+             `<td>${m.o_faints ?? 0} / ${m.p_faints ?? 0}</td>` +
+             `<td>${dur}</td>`;
+    }));
+
+    renderOpponentStrength(oppStrength);
+
+  } catch (e) {
+    banner(`Couldn't load job "${jobId}": ${e.message}`);
+  }
+}
+
+function addMsg(cls, text) {
+  const log = document.getElementById("chat-log");
+  const div = document.createElement("div");
+  div.className = `msg ${cls}`;
+  div.textContent = text;
+  log.appendChild(div);
+  log.scrollTop = log.scrollHeight;
+}
+
+async function askCoach() {
+  const jobId = document.getElementById("job-select").value;
+  const input = document.getElementById("chat-input");
+  const question = input.value.trim();
+  if (!question || !jobId) return;
+  addMsg("you", question);
+  input.value = "";
+  try {
+    const res = await getJSON(`/jobs/${jobId}/coach`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ question }),
+    });
+    addMsg("coach", res.answer);
+  } catch (e) {
+    addMsg("error", `Coach unavailable: ${e.message}`);
+  }
+}
+
+document.getElementById("chat-send").addEventListener("click", askCoach);
+document.getElementById("chat-input").addEventListener("keydown", (e) => { if (e.key === "Enter") askCoach(); });
+document.getElementById("refresh-btn").addEventListener("click", () => loadDashboard(document.getElementById("job-select").value));
+document.getElementById("job-select").addEventListener("change", (e) => loadDashboard(e.target.value));
+
+(async function init() {
+  try {
+    const jobId = await loadJobs();
+    if (!jobId) { banner('No jobs yet. Run seed_demo_job.py, or POST /jobs to start a real one.'); return; }
+    await loadDashboard(jobId);
+  } catch (e) {
+    banner(`Couldn't reach the API: ${e.message}. Is uvicorn running?`);
+  }
+})();
+</script>
+
+</body>
+</html>

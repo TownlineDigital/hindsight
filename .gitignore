@@ -1,0 +1,35 @@
+# Secrets - never commit
+.env
+frontend/.env
+frontend/.env.local
+
+# Large media / generated pipeline outputs
+*.mp4
+*.mov
+match_frames/
+structure_frames/
+jobs/
+
+# Internal audit log (backend/audit.py) - local-mode fallback, not source
+audit_log.jsonl
+
+# Python
+__pycache__/
+*.pyc
+
+# Node - any node_modules anywhere in the tree (not just frontend/'s - see
+# accuracy_addons/tools/, which also has its own via package.json for
+# fetch_champions_learnset_overrides.py-adjacent tooling)
+node_modules/
+frontend/dist/
+
+# Editor/OS
+.DS_Store
+
+# One-off backup files left by past editing sessions (see
+# ARCHITECTURE_HANDOFF.md's bash-mount-desync recovery notes) - never source,
+# never worth committing.
+*.bak
+*.bak_pre_task*
+*.bak2
+*.bak3

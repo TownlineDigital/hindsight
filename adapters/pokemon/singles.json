@@ -1,0 +1,19 @@
+{
+  "layer": "mode",
+  "mode": "singles",
+  "display_name": "Pokemon - Singles",
+  "description": "Singles: ONE Pokemon active per side (two on the field). A match ends when all of one trainer's Pokemon have fainted.",
+  "event_types": [],
+  "rules": {
+    "active_per_side": 1,
+    "team_size_min": 3,
+    "team_size_max": 6,
+    "bring_count": null,
+    "format_notes": "This is SINGLES: 1 Pokemon active per side. Per Serebii's Regulation M-A page (the rules haven't changed under M-B), a Singles team is 3 to 6 Pokemon - there is NO separate team-preview 'pick 4 of 6' selection step the way Doubles has; whatever team size the player registered (3-6) is what they play with directly. Don't ask about or expect a 'brought' subset distinct from the full team the way build_event_prompt's Doubles wording does."
+  },
+  "fields": {
+    "player_active": "field_state: the player's active Pokemon, if visible",
+    "opponent_active": "field_state: the opponent's active Pokemon, if visible"
+  },
+  "notes": "This is SINGLES: ONE Pokemon active per side (two on the field). A 'field_state' lists the player's active Pokemon (player_active) and the opponent's (opponent_active), with HP in detail. A match ends only when ALL of one trainer's Pokemon have fainted, shown by a 'You won!'/defeat/results screen - emit ONE 'battle_end' per match with winner 'player' or 'opponent'. A single Pokemon fainting is 'pokemon_fainted', never 'battle_end'."
+}

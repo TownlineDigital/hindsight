@@ -1,0 +1,106 @@
+"""
+Tests for backend/job_files.py - the pure (no fastapi/supabase dependency)
+file-handling logic behind two new endpoints:
+
+  GET   /jobs/{id}/frame/{path}   - serves a stored reference image
+  PATCH /jobs/{id}/events/{index} - lets a user correct one event by hand
+
+safe_frame_path() is the actual security check (path-traversal guard)
+behind the frame endpoint - real enough to be worth testing directly rather
+than only ever exercising it through a live HTTP request.
+
+Run: py -m unittest tests.test_job_files -v   (from poc-starter/)
+"""
+
+import json
+import os
+import shutil
+import sys
+import tempfile
+import unittest
+from pathlib import Path
+
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+if BASE_DIR not in sys.path:
+    sys.path.insert(0, BASE_DIR)
+
+from backend import job_files  # noqa: E402
+
+
+class TestSafeFramePath(unittest.TestCase):
+    def setUp(self):
+        self.job_root = Path(tempfile.mkdtemp())
+        (self.job_root / "match_frames" / "match_1").mkdir(parents=True)
+        (self.job_root / "match_frames" / "match_1" / "b_00001.jpg").write_bytes(b"fake jpeg bytes")
+
+    def tearDown(self):
+        shutil.rmtree(self.job_root, ignore_errors=True)
+
+    def test_resolves_a_normal_relative_path_inside_the_job_root(self):
+        full = job_files.safe_frame_path(self.job_root, "match_frames/match_1/b_00001.jpg")
+        self.assertTrue(full.is_file())
+        self.assertEqual(full, (self.job_root / "match_frames" / "match_1" / "b_00001.jpg").resolve())
+
+    def test_rejects_dot_dot_traversal_outside_the_job_root(self):
+        with self.assertRaises(ValueError):
+            job_files.safe_frame_path(self.job_root, "../../../../etc/passwd")
+
+    def test_rejects_an_absolute_path_that_overrides_the_join(self):
+        """Path joining an absolute path onto a base just returns the
+        absolute path outright (standard pathlib behavior) - must still be
+        caught, not silently served."""
+        with self.assertRaises(ValueError):
+            job_files.safe_frame_path(self.job_root, "/etc/passwd")
+
+    def test_sibling_directory_with_a_similar_prefix_is_not_treated_as_inside(self):
+        """A naive str.startswith(job_root) check would wrongly let
+        "/jobs/abcdef" pass for job_root "/jobs/abc" - relative_to() doesn't
+        have that bug, but it's worth pinning down explicitly."""
+        sibling = self.job_root.parent / (self.job_root.name + "-evil-twin")
+        sibling.mkdir()
+        try:
+            with self.assertRaises(ValueError):
+                job_files.safe_frame_path(self.job_root, f"../{sibling.name}/secret.txt")
+        finally:
+            shutil.rmtree(sibling, ignore_errors=True)
+
+
+class TestSaveEvents(unittest.TestCase):
+    def setUp(self):
+        self.tmp = Path(tempfile.mkdtemp())
+        self.events_path = self.tmp / "events.json"
+
+    def tearDown(self):
+        shutil.rmtree(self.tmp, ignore_errors=True)
+
+    def test_writes_events_json(self):
+        events = [{"timestamp": 1.0, "event": "move_used", "pokemon": "Mawile"}]
+        job_files.save_events(self.events_path, events)
+        with open(self.events_path, encoding="utf-8") as f:
+            self.assertEqual(json.load(f), events)
+
+    def test_writes_a_matching_events_csv_with_union_of_keys(self):
+        events = [
+            {"timestamp": 1.0, "event": "move_used", "pokemon": "Mawile"},
+            {"timestamp": 2.0, "event": "battle_end", "winner": "player"},
+        ]
+        job_files.save_events(self.events_path, events)
+        csv_path = self.events_path.with_suffix(".csv")
+        self.assertTrue(csv_path.exists())
+        content = csv_path.read_text(encoding="utf-8")
+        self.assertIn("timestamp", content)
+        self.assertIn("pokemon", content)
+        self.assertIn("winner", content)
+
+    def test_empty_events_writes_json_but_no_csv(self):
+        job_files.save_events(self.events_path, [])
+        self.assertTrue(self.events_path.exists())
+        self.assertFalse(self.events_path.with_suffix(".csv").exists())
+
+    def test_accepts_a_string_path_not_just_a_pathlib_path(self):
+        job_files.save_events(str(self.events_path), [{"timestamp": 1.0, "event": "x"}])
+        self.assertTrue(self.events_path.exists())
+
+
+if __name__ == "__main__":
+    unittest.main()

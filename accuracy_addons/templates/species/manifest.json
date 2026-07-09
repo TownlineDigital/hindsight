@@ -1,0 +1,5028 @@
+[
+  {
+    "filename": "Menu_CP_0003.png",
+    "national_dex_number": 3,
+    "species": "venusaur",
+    "form": null,
+    "shiny": false
+  },
+  {
+    "filename": "Menu_CP_0003_shiny.png",
+    "national_dex_number": 3,
+    "species": "venusaur",
+    "form": null,
+    "shiny": true
+  },
+  {
+    "filename": "Menu_CP_0003-Mega.png",
+    "national_dex_number": 3,
+    "species": "venusaur",
+    "form": "Mega",
+    "shiny": false
+  },
+  {
+    "filename": "Menu_CP_0003-Mega_shiny.png",
+    "national_dex_number": 3,
+    "species": "venusaur",
+    "form": "Mega",
+    "shiny": true
+  },
+  {
+    "filename": "Menu_CP_0006.png",
+    "national_dex_number": 6,
+    "species": "charizard",
+    "form": null,
+    "shiny": false
+  },
+  {
+    "filename": "Menu_CP_0006_shiny.png",
+    "national_dex_number": 6,
+    "species": "charizard",
+    "form": null,
+    "shiny": true
+  },
+  {
+    "filename": "Menu_CP_0006-Mega_X.png",
+    "national_dex_number": 6,
+    "species": "charizard",
+    "form": "Mega_X",
+    "shiny": false
+  },
+  {
+    "filename": "Menu_CP_0006-Mega_X_shiny.png",
+    "national_dex_number": 6,
+    "species": "charizard",
+    "form": "Mega_X",
+    "shiny": true
+  },
+  {
+    "filename": "Menu_CP_0006-Mega_Y.png",
+    "national_dex_number": 6,
+    "species": "charizard",
+    "form": "Mega_Y",
+    "shiny": false
+  },
+  {
+    "filename": "Menu_CP_0006-Mega_Y_shiny.png",
+    "national_dex_number": 6,
+    "species": "charizard",
+    "form": "Mega_Y",
+    "shiny": true
+  },
+  {
+    "filename": "Menu_CP_0009.png",
+    "national_dex_number": 9,
+    "species": "blastoise",
+    "form": null,
+    "shiny": false
+  },
+  {
+    "filename": "Menu_CP_0009_shiny.png",
+    "national_dex_number": 9,
+    "species": "blastoise",
+    "form": null,
+    "shiny": true
+  },
+  {
+    "filename": "Menu_CP_0009-Mega.png",
+    "national_dex_number": 9,
+    "species": "blastoise",
+    "form": "Mega",
+    "shiny": false
+  },
+  {
+    "filename": "Menu_CP_0009-Mega_shiny.png",
+    "national_dex_number": 9,
+    "species": "blastoise",
+    "form": "Mega",
+    "shiny": true
+  },
+  {
+    "filename": "Menu_CP_0015.png",
+    "national_dex_number": 15,
+    "species": "beedrill",
+    "form": null,
+    "shiny": false
+  },
+  {
+    "filename": "Menu_CP_0015_shiny.png",
+    "national_dex_number": 15,
+    "species": "beedrill",
+    "form": null,
+    "shiny": true
+  },
+  {
+    "filename": "Menu_CP_0015-Mega.png",
+    "national_dex_number": 15,
+    "species": "beedrill",
+    "form": "Mega",
+    "shiny": false
+  },
+  {
+    "filename": "Menu_CP_0015-Mega_shiny.png",
+    "national_dex_number": 15,
+    "species": "beedrill",
+    "form": "Mega",
+    "shiny": true
+  },
+  {
+    "filename": "Menu_CP_0018.png",
+    "national_dex_number": 18,
+    "species": "pidgeot",
+    "form": null,
+    "shiny": false
+  },
+  {
+    "filename": "Menu_CP_0018_shiny.png",
+    "national_dex_number": 18,
+    "species": "pidgeot",
+    "form": null,
+    "shiny": true
+  },
+  {
+    "filename": "Menu_CP_0018-Mega.png",
+    "national_dex_number": 18,
+    "species": "pidgeot",
+    "form": "Mega",
+    "shiny": false
+  },
+  {
+    "filename": "Menu_CP_0018-Mega_shiny.png",
+    "national_dex_number": 18,
+    "species": "pidgeot",
+    "form": "Mega",
+    "shiny": true
+  },
+  {
+    "filename": "Menu_CP_0024.png",
+    "national_dex_number": 24,
+    "species": "arbok",
+    "form": null,
+    "shiny": false
+  },
+  {
+    "filename": "Menu_CP_0024_shiny.png",
+    "national_dex_number": 24,
+    "species": "arbok",
+    "form": null,
+    "shiny": true
+  },
+  {
+    "filename": "Menu_CP_0025.png",
+    "national_dex_number": 25,
+    "species": "pikachu",
+    "form": null,
+    "shiny": false
+  },
+  {
+    "filename": "Menu_CP_0025_shiny.png",
+    "national_dex_number": 25,
+    "species": "pikachu",
+    "form": null,
+    "shiny": true
+  },
+  {
+    "filename": "Menu_CP_0026.png",
+    "national_dex_number": 26,
+    "species": "raichu",
+    "form": null,
+    "shiny": false
+  },
+  {
+    "filename": "Menu_CP_0026_shiny.png",
+    "national_dex_number": 26,
+    "species": "raichu",
+    "form": null,
+    "shiny": true
+  },
+  {
+    "filename": "Menu_CP_0026-Alola.png",
+    "national_dex_number": 26,
+    "species": "raichu",
+    "form": "Alola",
+    "shiny": false
+  },
+  {
+    "filename": "Menu_CP_0026-Alola_shiny.png",
+    "national_dex_number": 26,
+    "species": "raichu",
+    "form": "Alola",
+    "shiny": true
+  },
+  {
+    "filename": "Menu_CP_0026-Mega_X.png",
+    "national_dex_number": 26,
+    "species": "raichu",
+    "form": "Mega_X",
+    "shiny": false
+  },
+  {
+    "filename": "Menu_CP_0026-Mega_X_shiny.png",
+    "national_dex_number": 26,
+    "species": "raichu",
+    "form": "Mega_X",
+    "shiny": true
+  },
+  {
+    "filename": "Menu_CP_0026-Mega_Y.png",
+    "national_dex_number": 26,
+    "species": "raichu",
+    "form": "Mega_Y",
+    "shiny": false
+  },
+  {
+    "filename": "Menu_CP_0026-Mega_Y_shiny.png",
+    "national_dex_number": 26,
+    "species": "raichu",
+    "form": "Mega_Y",
+    "shiny": true
+  },
+  {
+    "filename": "Menu_CP_0036.png",
+    "national_dex_number": 36,
+    "species": "clefable",
+    "form": null,
+    "shiny": false
+  },
+  {
+    "filename": "Menu_CP_0036_shiny.png",
+    "national_dex_number": 36,
+    "species": "clefable",
+    "form": null,
+    "shiny": true
+  },
+  {
+    "filename": "Menu_CP_0036-Mega.png",
+    "national_dex_number": 36,
+    "species": "clefable",
+    "form": "Mega",
+    "shiny": false
+  },
+  {
+    "filename": "Menu_CP_0036-Mega_shiny.png",
+    "national_dex_number": 36,
+    "species": "clefable",
+    "form": "Mega",
+    "shiny": true
+  },
+  {
+    "filename": "Menu_CP_0038.png",
+    "national_dex_number": 38,
+    "species": "ninetales",
+    "form": null,
+    "shiny": false
+  },
+  {
+    "filename": "Menu_CP_0038_shiny.png",
+    "national_dex_number": 38,
+    "species": "ninetales",
+    "form": null,
+    "shiny": true
+  },
+  {
+    "filename": "Menu_CP_0038-Alola.png",
+    "national_dex_number": 38,
+    "species": "ninetales",
+    "form": "Alola",
+    "shiny": false
+  },
+  {
+    "filename": "Menu_CP_0038-Alola_shiny.png",
+    "national_dex_number": 38,
+    "species": "ninetales",
+    "form": "Alola",
+    "shiny": true
+  },
+  {
+    "filename": "Menu_CP_0045.png",
+    "national_dex_number": 45,
+    "species": "vileplume",
+    "form": null,
+    "shiny": false
+  },
+  {
+    "filename": "Menu_CP_0045_shiny.png",
+    "national_dex_number": 45,
+    "species": "vileplume",
+    "form": null,
+    "shiny": true
+  },
+  {
+    "filename": "Menu_CP_0059.png",
+    "national_dex_number": 59,
+    "species": "arcanine",
+    "form": null,
+    "shiny": false
+  },
+  {
+    "filename": "Menu_CP_0059_shiny.png",
+    "national_dex_number": 59,
+    "species": "arcanine",
+    "form": null,
+    "shiny": true
+  },
+  {
+    "filename": "Menu_CP_0059-Hisui.png",
+    "national_dex_number": 59,
+    "species": "arcanine",
+    "form": "Hisui",
+    "shiny": false
+  },
+  {
+    "filename": "Menu_CP_0059-Hisui_shiny.png",
+    "national_dex_number": 59,
+    "species": "arcanine",
+    "form": "Hisui",
+    "shiny": true
+  },
+  {
+    "filename": "Menu_CP_0065.png",
+    "national_dex_number": 65,
+    "species": "alakazam",
+    "form": null,
+    "shiny": false
+  },
+  {
+    "filename": "Menu_CP_0065_shiny.png",
+    "national_dex_number": 65,
+    "species": "alakazam",
+    "form": null,
+    "shiny": true
+  },
+  {
+    "filename": "Menu_CP_0065-Mega.png",
+    "national_dex_number": 65,
+    "species": "alakazam",
+    "form": "Mega",
+    "shiny": false
+  },
+  {
+    "filename": "Menu_CP_0065-Mega_shiny.png",
+    "national_dex_number": 65,
+    "species": "alakazam",
+    "form": "Mega",
+    "shiny": true
+  },
+  {
+    "filename": "Menu_CP_0068.png",
+    "national_dex_number": 68,
+    "species": "machamp",
+    "form": null,
+    "shiny": false
+  },
+  {
+    "filename": "Menu_CP_0068_shiny.png",
+    "national_dex_number": 68,
+    "species": "machamp",
+    "form": null,
+    "shiny": true
+  },
+  {
+    "filename": "Menu_CP_0071.png",
+    "national_dex_number": 71,
+    "species": "victreebel",
+    "form": null,
+    "shiny": false
+  },
+  {
+    "filename": "Menu_CP_0071_shiny.png",
+    "national_dex_number": 71,
+    "species": "victreebel",
+    "form": null,
+    "shiny": true
+  },
+  {
+    "filename": "Menu_CP_0071-Mega.png",
+    "national_dex_number": 71,
+    "species": "victreebel",
+    "form": "Mega",
+    "shiny": false
+  },
+  {
+    "filename": "Menu_CP_0071-Mega_shiny.png",
+    "national_dex_number": 71,
+    "species": "victreebel",
+    "form": "Mega",
+    "shiny": true
+  },
+  {
+    "filename": "Menu_CP_0080.png",
+    "national_dex_number": 80,
+    "species": "slowbro",
+    "form": null,
+    "shiny": false
+  },
+  {
+    "filename": "Menu_CP_0080_shiny.png",
+    "national_dex_number": 80,
+    "species": "slowbro",
+    "form": null,
+    "shiny": true
+  },
+  {
+    "filename": "Menu_CP_0080-Galar.png",
+    "national_dex_number": 80,
+    "species": "slowbro",
+    "form": "Galar",
+    "shiny": false
+  },
+  {
+    "filename": "Menu_CP_0080-Galar_shiny.png",
+    "national_dex_number": 80,
+    "species": "slowbro",
+    "form": "Galar",
+    "shiny": true
+  },
+  {
+    "filename": "Menu_CP_0080-Mega.png",
+    "national_dex_number": 80,
+    "species": "slowbro",
+    "form": "Mega",
+    "shiny": false
+  },
+  {
+    "filename": "Menu_CP_0080-Mega_shiny.png",
+    "national_dex_number": 80,
+    "species": "slowbro",
+    "form": "Mega",
+    "shiny": true
+  },
+  {
+    "filename": "Menu_CP_0094.png",
+    "national_dex_number": 94,
+    "species": "gengar",
+    "form": null,
+    "shiny": false
+  },
+  {
+    "filename": "Menu_CP_0094_shiny.png",
+    "national_dex_number": 94,
+    "species": "gengar",
+    "form": null,
+    "shiny": true
+  },
+  {
+    "filename": "Menu_CP_0094-Mega.png",
+    "national_dex_number": 94,
+    "species": "gengar",
+    "form": "Mega",
+    "shiny": false
+  },
+  {
+    "filename": "Menu_CP_0094-Mega_shiny.png",
+    "national_dex_number": 94,
+    "species": "gengar",
+    "form": "Mega",
+    "shiny": true
+  },
+  {
+    "filename": "Menu_CP_0115.png",
+    "national_dex_number": 115,
+    "species": "kangaskhan",
+    "form": null,
+    "shiny": false
+  },
+  {
+    "filename": "Menu_CP_0115_shiny.png",
+    "national_dex_number": 115,
+    "species": "kangaskhan",
+    "form": null,
+    "shiny": true
+  },
+  {
+    "filename": "Menu_CP_0115-Mega.png",
+    "national_dex_number": 115,
+    "species": "kangaskhan",
+    "form": "Mega",
+    "shiny": false
+  },
+  {
+    "filename": "Menu_CP_0115-Mega_shiny.png",
+    "national_dex_number": 115,
+    "species": "kangaskhan",
+    "form": "Mega",
+    "shiny": true
+  },
+  {
+    "filename": "Menu_CP_0121.png",
+    "national_dex_number": 121,
+    "species": "starmie",
+    "form": null,
+    "shiny": false
+  },
+  {
+    "filename": "Menu_CP_0121_shiny.png",
+    "national_dex_number": 121,
+    "species": "starmie",
+    "form": null,
+    "shiny": true
+  },
+  {
+    "filename": "Menu_CP_0121-Mega.png",
+    "national_dex_number": 121,
+    "species": "starmie",
+    "form": "Mega",
+    "shiny": false
+  },
+  {
+    "filename": "Menu_CP_0121-Mega_shiny.png",
+    "national_dex_number": 121,
+    "species": "starmie",
+    "form": "Mega",
+    "shiny": true
+  },
+  {
+    "filename": "Menu_CP_0127.png",
+    "national_dex_number": 127,
+    "species": "pinsir",
+    "form": null,
+    "shiny": false
+  },
+  {
+    "filename": "Menu_CP_0127_shiny.png",
+    "national_dex_number": 127,
+    "species": "pinsir",
+    "form": null,
+    "shiny": true
+  },
+  {
+    "filename": "Menu_CP_0127-Mega.png",
+    "national_dex_number": 127,
+    "species": "pinsir",
+    "form": "Mega",
+    "shiny": false
+  },
+  {
+    "filename": "Menu_CP_0127-Mega_shiny.png",
+    "national_dex_number": 127,
+    "species": "pinsir",
+    "form": "Mega",
+    "shiny": true
+  },
+  {
+    "filename": "Menu_CP_0128.png",
+    "national_dex_number": 128,
+    "species": "tauros",
+    "form": null,
+    "shiny": false
+  },
+  {
+    "filename": "Menu_CP_0128_shiny.png",
+    "national_dex_number": 128,
+    "species": "tauros",
+    "form": null,
+    "shiny": true
+  },
+  {
+    "filename": "Menu_CP_0128-Paldea_Aqua.png",
+    "national_dex_number": 128,
+    "species": "tauros",
+    "form": "Paldea_Aqua",
+    "shiny": false
+  },
+  {
+    "filename": "Menu_CP_0128-Paldea_Aqua_shiny.png",
+    "national_dex_number": 128,
+    "species": "tauros",
+    "form": "Paldea_Aqua",
+    "shiny": true
+  },
+  {
+    "filename": "Menu_CP_0128-Paldea_Blaze.png",
+    "national_dex_number": 128,
+    "species": "tauros",
+    "form": "Paldea_Blaze",
+    "shiny": false
+  },
+  {
+    "filename": "Menu_CP_0128-Paldea_Blaze_shiny.png",
+    "national_dex_number": 128,
+    "species": "tauros",
+    "form": "Paldea_Blaze",
+    "shiny": true
+  },
+  {
+    "filename": "Menu_CP_0128-Paldea_Combat.png",
+    "national_dex_number": 128,
+    "species": "tauros",
+    "form": "Paldea_Combat",
+    "shiny": false
+  },
+  {
+    "filename": "Menu_CP_0128-Paldea_Combat_shiny.png",
+    "national_dex_number": 128,
+    "species": "tauros",
+    "form": "Paldea_Combat",
+    "shiny": true
+  },
+  {
+    "filename": "Menu_CP_0130.png",
+    "national_dex_number": 130,
+    "species": "gyarados",
+    "form": null,
+    "shiny": false
+  },
+  {
+    "filename": "Menu_CP_0130_shiny.png",
+    "national_dex_number": 130,
+    "species": "gyarados",
+    "form": null,
+    "shiny": true
+  },
+  {
+    "filename": "Menu_CP_0130-Mega.png",
+    "national_dex_number": 130,
+    "species": "gyarados",
+    "form": "Mega",
+    "shiny": false
+  },
+  {
+    "filename": "Menu_CP_0130-Mega_shiny.png",
+    "national_dex_number": 130,
+    "species": "gyarados",
+    "form": "Mega",
+    "shiny": true
+  },
+  {
+    "filename": "Menu_CP_0132.png",
+    "national_dex_number": 132,
+    "species": "ditto",
+    "form": null,
+    "shiny": false
+  },
+  {
+    "filename": "Menu_CP_0132_shiny.png",
+    "national_dex_number": 132,
+    "species": "ditto",
+    "form": null,
+    "shiny": true
+  },
+  {
+    "filename": "Menu_CP_0134.png",
+    "national_dex_number": 134,
+    "species": "vaporeon",
+    "form": null,
+    "shiny": false
+  },
+  {
+    "filename": "Menu_CP_0134_shiny.png",
+    "national_dex_number": 134,
+    "species": "vaporeon",
+    "form": null,
+    "shiny": true
+  },
+  {
+    "filename": "Menu_CP_0135.png",
+    "national_dex_number": 135,
+    "species": "jolteon",
+    "form": null,
+    "shiny": false
+  },
+  {
+    "filename": "Menu_CP_0135_shiny.png",
+    "national_dex_number": 135,
+    "species": "jolteon",
+    "form": null,
+    "shiny": true
+  },
+  {
+    "filename": "Menu_CP_0136.png",
+    "national_dex_number": 136,
+    "species": "flareon",
+    "form": null,
+    "shiny": false
+  },
+  {
+    "filename": "Menu_CP_0136_shiny.png",
+    "national_dex_number": 136,
+    "species": "flareon",
+    "form": null,
+    "shiny": true
+  },
+  {
+    "filename": "Menu_CP_0142.png",
+    "national_dex_number": 142,
+    "species": "aerodactyl",
+    "form": null,
+    "shiny": false
+  },
+  {
+    "filename": "Menu_CP_0142_shiny.png",
+    "national_dex_number": 142,
+    "species": "aerodactyl",
+    "form": null,
+    "shiny": true
+  },
+  {
+    "filename": "Menu_CP_0142-Mega.png",
+    "national_dex_number": 142,
+    "species": "aerodactyl",
+    "form": "Mega",
+    "shiny": false
+  },
+  {
+    "filename": "Menu_CP_0142-Mega_shiny.png",
+    "national_dex_number": 142,
+    "species": "aerodactyl",
+    "form": "Mega",
+    "shiny": true
+  },
+  {
+    "filename": "Menu_CP_0143.png",
+    "national_dex_number": 143,
+    "species": "snorlax",
+    "form": null,
+    "shiny": false
+  },
+  {
+    "filename": "Menu_CP_0143_shiny.png",
+    "national_dex_number": 143,
+    "species": "snorlax",
+    "form": null,
+    "shiny": true
+  },
+  {
+    "filename": "Menu_CP_0149.png",
+    "national_dex_number": 149,
+    "species": "dragonite",
+    "form": null,
+    "shiny": false
+  },
+  {
+    "filename": "Menu_CP_0149_shiny.png",
+    "national_dex_number": 149,
+    "species": "dragonite",
+    "form": null,
+    "shiny": true
+  },
+  {
+    "filename": "Menu_CP_0149-Mega.png",
+    "national_dex_number": 149,
+    "species": "dragonite",
+    "form": "Mega",
+    "shiny": false
+  },
+  {
+    "filename": "Menu_CP_0149-Mega_shiny.png",
+    "national_dex_number": 149,
+    "species": "dragonite",
+    "form": "Mega",
+    "shiny": true
+  },
+  {
+    "filename": "Menu_CP_0154.png",
+    "national_dex_number": 154,
+    "species": "meganium",
+    "form": null,
+    "shiny": false
+  },
+  {
+    "filename": "Menu_CP_0154_shiny.png",
+    "national_dex_number": 154,
+    "species": "meganium",
+    "form": null,
+    "shiny": true
+  },
+  {
+    "filename": "Menu_CP_0154-Mega.png",
+    "national_dex_number": 154,
+    "species": "meganium",
+    "form": "Mega",
+    "shiny": false
+  },
+  {
+    "filename": "Menu_CP_0154-Mega_shiny.png",
+    "national_dex_number": 154,
+    "species": "meganium",
+    "form": "Mega",
+    "shiny": true
+  },
+  {
+    "filename": "Menu_CP_0157.png",
+    "national_dex_number": 157,
+    "species": "typhlosion",
+    "form": null,
+    "shiny": false
+  },
+  {
+    "filename": "Menu_CP_0157_shiny.png",
+    "national_dex_number": 157,
+    "species": "typhlosion",
+    "form": null,
+    "shiny": true
+  },
+  {
+    "filename": "Menu_CP_0157-Hisui.png",
+    "national_dex_number": 157,
+    "species": "typhlosion",
+    "form": "Hisui",
+    "shiny": false
+  },
+  {
+    "filename": "Menu_CP_0157-Hisui_shiny.png",
+    "national_dex_number": 157,
+    "species": "typhlosion",
+    "form": "Hisui",
+    "shiny": true
+  },
+  {
+    "filename": "Menu_CP_0160.png",
+    "national_dex_number": 160,
+    "species": "feraligatr",
+    "form": null,
+    "shiny": false
+  },
+  {
+    "filename": "Menu_CP_0160_shiny.png",
+    "national_dex_number": 160,
+    "species": "feraligatr",
+    "form": null,
+    "shiny": true
+  },
+  {
+    "filename": "Menu_CP_0160-Mega.png",
+    "national_dex_number": 160,
+    "species": "feraligatr",
+    "form": "Mega",
+    "shiny": false
+  },
+  {
+    "filename": "Menu_CP_0160-Mega_shiny.png",
+    "national_dex_number": 160,
+    "species": "feraligatr",
+    "form": "Mega",
+    "shiny": true
+  },
+  {
+    "filename": "Menu_CP_0168.png",
+    "national_dex_number": 168,
+    "species": "ariados",
+    "form": null,
+    "shiny": false
+  },
+  {
+    "filename": "Menu_CP_0168_shiny.png",
+    "national_dex_number": 168,
+    "species": "ariados",
+    "form": null,
+    "shiny": true
+  },
+  {
+    "filename": "Menu_CP_0181.png",
+    "national_dex_number": 181,
+    "species": "ampharos",
+    "form": null,
+    "shiny": false
+  },
+  {
+    "filename": "Menu_CP_0181_shiny.png",
+    "national_dex_number": 181,
+    "species": "ampharos",
+    "form": null,
+    "shiny": true
+  },
+  {
+    "filename": "Menu_CP_0181-Mega.png",
+    "national_dex_number": 181,
+    "species": "ampharos",
+    "form": "Mega",
+    "shiny": false
+  },
+  {
+    "filename": "Menu_CP_0181-Mega_shiny.png",
+    "national_dex_number": 181,
+    "species": "ampharos",
+    "form": "Mega",
+    "shiny": true
+  },
+  {
+    "filename": "Menu_CP_0184.png",
+    "national_dex_number": 184,
+    "species": "azumarill",
+    "form": null,
+    "shiny": false
+  },
+  {
+    "filename": "Menu_CP_0184_shiny.png",
+    "national_dex_number": 184,
+    "species": "azumarill",
+    "form": null,
+    "shiny": true
+  },
+  {
+    "filename": "Menu_CP_0186.png",
+    "national_dex_number": 186,
+    "species": "politoed",
+    "form": null,
+    "shiny": false
+  },
+  {
+    "filename": "Menu_CP_0186_shiny.png",
+    "national_dex_number": 186,
+    "species": "politoed",
+    "form": null,
+    "shiny": true
+  },
+  {
+    "filename": "Menu_CP_0196.png",
+    "national_dex_number": 196,
+    "species": "espeon",
+    "form": null,
+    "shiny": false
+  },
+  {
+    "filename": "Menu_CP_0196_shiny.png",
+    "national_dex_number": 196,
+    "species": "espeon",
+    "form": null,
+    "shiny": true
+  },
+  {
+    "filename": "Menu_CP_0197.png",
+    "national_dex_number": 197,
+    "species": "umbreon",
+    "form": null,
+    "shiny": false
+  },
+  {
+    "filename": "Menu_CP_0197_shiny.png",
+    "national_dex_number": 197,
+    "species": "umbreon",
+    "form": null,
+    "shiny": true
+  },
+  {
+    "filename": "Menu_CP_0199.png",
+    "national_dex_number": 199,
+    "species": "slowking",
+    "form": null,
+    "shiny": false
+  },
+  {
+    "filename": "Menu_CP_0199_shiny.png",
+    "national_dex_number": 199,
+    "species": "slowking",
+    "form": null,
+    "shiny": true
+  },
+  {
+    "filename": "Menu_CP_0199-Galar.png",
+    "national_dex_number": 199,
+    "species": "slowking",
+    "form": "Galar",
+    "shiny": false
+  },
+  {
+    "filename": "Menu_CP_0199-Galar_shiny.png",
+    "national_dex_number": 199,
+    "species": "slowking",
+    "form": "Galar",
+    "shiny": true
+  },
+  {
+    "filename": "Menu_CP_0205.png",
+    "national_dex_number": 205,
+    "species": "forretress",
+    "form": null,
+    "shiny": false
+  },
+  {
+    "filename": "Menu_CP_0205_shiny.png",
+    "national_dex_number": 205,
+    "species": "forretress",
+    "form": null,
+    "shiny": true
+  },
+  {
+    "filename": "Menu_CP_0208.png",
+    "national_dex_number": 208,
+    "species": "steelix",
+    "form": null,
+    "shiny": false
+  },
+  {
+    "filename": "Menu_CP_0208_shiny.png",
+    "national_dex_number": 208,
+    "species": "steelix",
+    "form": null,
+    "shiny": true
+  },
+  {
+    "filename": "Menu_CP_0208-Mega.png",
+    "national_dex_number": 208,
+    "species": "steelix",
+    "form": "Mega",
+    "shiny": false
+  },
+  {
+    "filename": "Menu_CP_0208-Mega_shiny.png",
+    "national_dex_number": 208,
+    "species": "steelix",
+    "form": "Mega",
+    "shiny": true
+  },
+  {
+    "filename": "Menu_CP_0211.png",
+    "national_dex_number": 211,
+    "species": "qwilfish",
+    "form": null,
+    "shiny": false
+  },
+  {
+    "filename": "Menu_CP_0211_shiny.png",
+    "national_dex_number": 211,
+    "species": "qwilfish",
+    "form": null,
+    "shiny": true
+  },
+  {
+    "filename": "Menu_CP_0212.png",
+    "national_dex_number": 212,
+    "species": "scizor",
+    "form": null,
+    "shiny": false
+  },
+  {
+    "filename": "Menu_CP_0212_shiny.png",
+    "national_dex_number": 212,
+    "species": "scizor",
+    "form": null,
+    "shiny": true
+  },
+  {
+    "filename": "Menu_CP_0212-Mega.png",
+    "national_dex_number": 212,
+    "species": "scizor",
+    "form": "Mega",
+    "shiny": false
+  },
+  {
+    "filename": "Menu_CP_0212-Mega_shiny.png",
+    "national_dex_number": 212,
+    "species": "scizor",
+    "form": "Mega",
+    "shiny": true
+  },
+  {
+    "filename": "Menu_CP_0214.png",
+    "national_dex_number": 214,
+    "species": "heracross",
+    "form": null,
+    "shiny": false
+  },
+  {
+    "filename": "Menu_CP_0214_shiny.png",
+    "national_dex_number": 214,
+    "species": "heracross",
+    "form": null,
+    "shiny": true
+  },
+  {
+    "filename": "Menu_CP_0214-Mega.png",
+    "national_dex_number": 214,
+    "species": "heracross",
+    "form": "Mega",
+    "shiny": false
+  },
+  {
+    "filename": "Menu_CP_0214-Mega_shiny.png",
+    "national_dex_number": 214,
+    "species": "heracross",
+    "form": "Mega",
+    "shiny": true
+  },
+  {
+    "filename": "Menu_CP_0227.png",
+    "national_dex_number": 227,
+    "species": "skarmory",
+    "form": null,
+    "shiny": false
+  },
+  {
+    "filename": "Menu_CP_0227_shiny.png",
+    "national_dex_number": 227,
+    "species": "skarmory",
+    "form": null,
+    "shiny": true
+  },
+  {
+    "filename": "Menu_CP_0227-Mega.png",
+    "national_dex_number": 227,
+    "species": "skarmory",
+    "form": "Mega",
+    "shiny": false
+  },
+  {
+    "filename": "Menu_CP_0227-Mega_shiny.png",
+    "national_dex_number": 227,
+    "species": "skarmory",
+    "form": "Mega",
+    "shiny": true
+  },
+  {
+    "filename": "Menu_CP_0229.png",
+    "national_dex_number": 229,
+    "species": "houndoom",
+    "form": null,
+    "shiny": false
+  },
+  {
+    "filename": "Menu_CP_0229_shiny.png",
+    "national_dex_number": 229,
+    "species": "houndoom",
+    "form": null,
+    "shiny": true
+  },
+  {
+    "filename": "Menu_CP_0229-Mega.png",
+    "national_dex_number": 229,
+    "species": "houndoom",
+    "form": "Mega",
+    "shiny": false
+  },
+  {
+    "filename": "Menu_CP_0229-Mega_shiny.png",
+    "national_dex_number": 229,
+    "species": "houndoom",
+    "form": "Mega",
+    "shiny": true
+  },
+  {
+    "filename": "Menu_CP_0248.png",
+    "national_dex_number": 248,
+    "species": "tyranitar",
+    "form": null,
+    "shiny": false
+  },
+  {
+    "filename": "Menu_CP_0248_shiny.png",
+    "national_dex_number": 248,
+    "species": "tyranitar",
+    "form": null,
+    "shiny": true
+  },
+  {
+    "filename": "Menu_CP_0248-Mega.png",
+    "national_dex_number": 248,
+    "species": "tyranitar",
+    "form": "Mega",
+    "shiny": false
+  },
+  {
+    "filename": "Menu_CP_0248-Mega_shiny.png",
+    "national_dex_number": 248,
+    "species": "tyranitar",
+    "form": "Mega",
+    "shiny": true
+  },
+  {
+    "filename": "Menu_CP_0254.png",
+    "national_dex_number": 254,
+    "species": "sceptile",
+    "form": null,
+    "shiny": false
+  },
+  {
+    "filename": "Menu_CP_0254_shiny.png",
+    "national_dex_number": 254,
+    "species": "sceptile",
+    "form": null,
+    "shiny": true
+  },
+  {
+    "filename": "Menu_CP_0254-Mega.png",
+    "national_dex_number": 254,
+    "species": "sceptile",
+    "form": "Mega",
+    "shiny": false
+  },
+  {
+    "filename": "Menu_CP_0254-Mega_shiny.png",
+    "national_dex_number": 254,
+    "species": "sceptile",
+    "form": "Mega",
+    "shiny": true
+  },
+  {
+    "filename": "Menu_CP_0257.png",
+    "national_dex_number": 257,
+    "species": "blaziken",
+    "form": null,
+    "shiny": false
+  },
+  {
+    "filename": "Menu_CP_0257_shiny.png",
+    "national_dex_number": 257,
+    "species": "blaziken",
+    "form": null,
+    "shiny": true
+  },
+  {
+    "filename": "Menu_CP_0257-Mega.png",
+    "national_dex_number": 257,
+    "species": "blaziken",
+    "form": "Mega",
+    "shiny": false
+  },
+  {
+    "filename": "Menu_CP_0257-Mega_shiny.png",
+    "national_dex_number": 257,
+    "species": "blaziken",
+    "form": "Mega",
+    "shiny": true
+  },
+  {
+    "filename": "Menu_CP_0260.png",
+    "national_dex_number": 260,
+    "species": "swampert",
+    "form": null,
+    "shiny": false
+  },
+  {
+    "filename": "Menu_CP_0260_shiny.png",
+    "national_dex_number": 260,
+    "species": "swampert",
+    "form": null,
+    "shiny": true
+  },
+  {
+    "filename": "Menu_CP_0260-Mega.png",
+    "national_dex_number": 260,
+    "species": "swampert",
+    "form": "Mega",
+    "shiny": false
+  },
+  {
+    "filename": "Menu_CP_0260-Mega_shiny.png",
+    "national_dex_number": 260,
+    "species": "swampert",
+    "form": "Mega",
+    "shiny": true
+  },
+  {
+    "filename": "Menu_CP_0279.png",
+    "national_dex_number": 279,
+    "species": "pelipper",
+    "form": null,
+    "shiny": false
+  },
+  {
+    "filename": "Menu_CP_0279_shiny.png",
+    "national_dex_number": 279,
+    "species": "pelipper",
+    "form": null,
+    "shiny": true
+  },
+  {
+    "filename": "Menu_CP_0282.png",
+    "national_dex_number": 282,
+    "species": "gardevoir",
+    "form": null,
+    "shiny": false
+  },
+  {
+    "filename": "Menu_CP_0282_shiny.png",
+    "national_dex_number": 282,
+    "species": "gardevoir",
+    "form": null,
+    "shiny": true
+  },
+  {
+    "filename": "Menu_CP_0282-Mega.png",
+    "national_dex_number": 282,
+    "species": "gardevoir",
+    "form": "Mega",
+    "shiny": false
+  },
+  {
+    "filename": "Menu_CP_0282-Mega_shiny.png",
+    "national_dex_number": 282,
+    "species": "gardevoir",
+    "form": "Mega",
+    "shiny": true
+  },
+  {
+    "filename": "Menu_CP_0302.png",
+    "national_dex_number": 302,
+    "species": "sableye",
+    "form": null,
+    "shiny": false
+  },
+  {
+    "filename": "Menu_CP_0302_shiny.png",
+    "national_dex_number": 302,
+    "species": "sableye",
+    "form": null,
+    "shiny": true
+  },
+  {
+    "filename": "Menu_CP_0302-Mega.png",
+    "national_dex_number": 302,
+    "species": "sableye",
+    "form": "Mega",
+    "shiny": false
+  },
+  {
+    "filename": "Menu_CP_0302-Mega_shiny.png",
+    "national_dex_number": 302,
+    "species": "sableye",
+    "form": "Mega",
+    "shiny": true
+  },
+  {
+    "filename": "Menu_CP_0303.png",
+    "national_dex_number": 303,
+    "species": "mawile",
+    "form": null,
+    "shiny": false
+  },
+  {
+    "filename": "Menu_CP_0303_shiny.png",
+    "national_dex_number": 303,
+    "species": "mawile",
+    "form": null,
+    "shiny": true
+  },
+  {
+    "filename": "Menu_CP_0303-Mega.png",
+    "national_dex_number": 303,
+    "species": "mawile",
+    "form": "Mega",
+    "shiny": false
+  },
+  {
+    "filename": "Menu_CP_0303-Mega_shiny.png",
+    "national_dex_number": 303,
+    "species": "mawile",
+    "form": "Mega",
+    "shiny": true
+  },
+  {
+    "filename": "Menu_CP_0306.png",
+    "national_dex_number": 306,
+    "species": "aggron",
+    "form": null,
+    "shiny": false
+  },
+  {
+    "filename": "Menu_CP_0306_shiny.png",
+    "national_dex_number": 306,
+    "species": "aggron",
+    "form": null,
+    "shiny": true
+  },
+  {
+    "filename": "Menu_CP_0306-Mega.png",
+    "national_dex_number": 306,
+    "species": "aggron",
+    "form": "Mega",
+    "shiny": false
+  },
+  {
+    "filename": "Menu_CP_0306-Mega_shiny.png",
+    "national_dex_number": 306,
+    "species": "aggron",
+    "form": "Mega",
+    "shiny": true
+  },
+  {
+    "filename": "Menu_CP_0308.png",
+    "national_dex_number": 308,
+    "species": "medicham",
+    "form": null,
+    "shiny": false
+  },
+  {
+    "filename": "Menu_CP_0308_shiny.png",
+    "national_dex_number": 308,
+    "species": "medicham",
+    "form": null,
+    "shiny": true
+  },
+  {
+    "filename": "Menu_CP_0308-Mega.png",
+    "national_dex_number": 308,
+    "species": "medicham",
+    "form": "Mega",
+    "shiny": false
+  },
+  {
+    "filename": "Menu_CP_0308-Mega_shiny.png",
+    "national_dex_number": 308,
+    "species": "medicham",
+    "form": "Mega",
+    "shiny": true
+  },
+  {
+    "filename": "Menu_CP_0310.png",
+    "national_dex_number": 310,
+    "species": "manectric",
+    "form": null,
+    "shiny": false
+  },
+  {
+    "filename": "Menu_CP_0310_shiny.png",
+    "national_dex_number": 310,
+    "species": "manectric",
+    "form": null,
+    "shiny": true
+  },
+  {
+    "filename": "Menu_CP_0310-Mega.png",
+    "national_dex_number": 310,
+    "species": "manectric",
+    "form": "Mega",
+    "shiny": false
+  },
+  {
+    "filename": "Menu_CP_0310-Mega_shiny.png",
+    "national_dex_number": 310,
+    "species": "manectric",
+    "form": "Mega",
+    "shiny": true
+  },
+  {
+    "filename": "Menu_CP_0319.png",
+    "national_dex_number": 319,
+    "species": "sharpedo",
+    "form": null,
+    "shiny": false
+  },
+  {
+    "filename": "Menu_CP_0319_shiny.png",
+    "national_dex_number": 319,
+    "species": "sharpedo",
+    "form": null,
+    "shiny": true
+  },
+  {
+    "filename": "Menu_CP_0319-Mega.png",
+    "national_dex_number": 319,
+    "species": "sharpedo",
+    "form": "Mega",
+    "shiny": false
+  },
+  {
+    "filename": "Menu_CP_0319-Mega_shiny.png",
+    "national_dex_number": 319,
+    "species": "sharpedo",
+    "form": "Mega",
+    "shiny": true
+  },
+  {
+    "filename": "Menu_CP_0323.png",
+    "national_dex_number": 323,
+    "species": "camerupt",
+    "form": null,
+    "shiny": false
+  },
+  {
+    "filename": "Menu_CP_0323_shiny.png",
+    "national_dex_number": 323,
+    "species": "camerupt",
+    "form": null,
+    "shiny": true
+  },
+  {
+    "filename": "Menu_CP_0323-Mega.png",
+    "national_dex_number": 323,
+    "species": "camerupt",
+    "form": "Mega",
+    "shiny": false
+  },
+  {
+    "filename": "Menu_CP_0323-Mega_shiny.png",
+    "national_dex_number": 323,
+    "species": "camerupt",
+    "form": "Mega",
+    "shiny": true
+  },
+  {
+    "filename": "Menu_CP_0324.png",
+    "national_dex_number": 324,
+    "species": "torkoal",
+    "form": null,
+    "shiny": false
+  },
+  {
+    "filename": "Menu_CP_0324_shiny.png",
+    "national_dex_number": 324,
+    "species": "torkoal",
+    "form": null,
+    "shiny": true
+  },
+  {
+    "filename": "Menu_CP_0334.png",
+    "national_dex_number": 334,
+    "species": "altaria",
+    "form": null,
+    "shiny": false
+  },
+  {
+    "filename": "Menu_CP_0334_shiny.png",
+    "national_dex_number": 334,
+    "species": "altaria",
+    "form": null,
+    "shiny": true
+  },
+  {
+    "filename": "Menu_CP_0334-Mega.png",
+    "national_dex_number": 334,
+    "species": "altaria",
+    "form": "Mega",
+    "shiny": false
+  },
+  {
+    "filename": "Menu_CP_0334-Mega_shiny.png",
+    "national_dex_number": 334,
+    "species": "altaria",
+    "form": "Mega",
+    "shiny": true
+  },
+  {
+    "filename": "Menu_CP_0350.png",
+    "national_dex_number": 350,
+    "species": "milotic",
+    "form": null,
+    "shiny": false
+  },
+  {
+    "filename": "Menu_CP_0350_shiny.png",
+    "national_dex_number": 350,
+    "species": "milotic",
+    "form": null,
+    "shiny": true
+  },
+  {
+    "filename": "Menu_CP_0351.png",
+    "national_dex_number": 351,
+    "species": "castform",
+    "form": null,
+    "shiny": false
+  },
+  {
+    "filename": "Menu_CP_0351_shiny.png",
+    "national_dex_number": 351,
+    "species": "castform",
+    "form": null,
+    "shiny": true
+  },
+  {
+    "filename": "Menu_CP_0351-Rainy.png",
+    "national_dex_number": 351,
+    "species": "castform",
+    "form": "Rainy",
+    "shiny": false
+  },
+  {
+    "filename": "Menu_CP_0351-Rainy_shiny.png",
+    "national_dex_number": 351,
+    "species": "castform",
+    "form": "Rainy",
+    "shiny": true
+  },
+  {
+    "filename": "Menu_CP_0351-Snowy.png",
+    "national_dex_number": 351,
+    "species": "castform",
+    "form": "Snowy",
+    "shiny": false
+  },
+  {
+    "filename": "Menu_CP_0351-Snowy_shiny.png",
+    "national_dex_number": 351,
+    "species": "castform",
+    "form": "Snowy",
+    "shiny": true
+  },
+  {
+    "filename": "Menu_CP_0351-Sunny.png",
+    "national_dex_number": 351,
+    "species": "castform",
+    "form": "Sunny",
+    "shiny": false
+  },
+  {
+    "filename": "Menu_CP_0351-Sunny_shiny.png",
+    "national_dex_number": 351,
+    "species": "castform",
+    "form": "Sunny",
+    "shiny": true
+  },
+  {
+    "filename": "Menu_CP_0354.png",
+    "national_dex_number": 354,
+    "species": "banette",
+    "form": null,
+    "shiny": false
+  },
+  {
+    "filename": "Menu_CP_0354_shiny.png",
+    "national_dex_number": 354,
+    "species": "banette",
+    "form": null,
+    "shiny": true
+  },
+  {
+    "filename": "Menu_CP_0354-Mega.png",
+    "national_dex_number": 354,
+    "species": "banette",
+    "form": "Mega",
+    "shiny": false
+  },
+  {
+    "filename": "Menu_CP_0354-Mega_shiny.png",
+    "national_dex_number": 354,
+    "species": "banette",
+    "form": "Mega",
+    "shiny": true
+  },
+  {
+    "filename": "Menu_CP_0358.png",
+    "national_dex_number": 358,
+    "species": "chimecho",
+    "form": null,
+    "shiny": false
+  },
+  {
+    "filename": "Menu_CP_0358_shiny.png",
+    "national_dex_number": 358,
+    "species": "chimecho",
+    "form": null,
+    "shiny": true
+  },
+  {
+    "filename": "Menu_CP_0358-Mega.png",
+    "national_dex_number": 358,
+    "species": "chimecho",
+    "form": "Mega",
+    "shiny": false
+  },
+  {
+    "filename": "Menu_CP_0358-Mega_shiny.png",
+    "national_dex_number": 358,
+    "species": "chimecho",
+    "form": "Mega",
+    "shiny": true
+  },
+  {
+    "filename": "Menu_CP_0359.png",
+    "national_dex_number": 359,
+    "species": "absol",
+    "form": null,
+    "shiny": false
+  },
+  {
+    "filename": "Menu_CP_0359_shiny.png",
+    "national_dex_number": 359,
+    "species": "absol",
+    "form": null,
+    "shiny": true
+  },
+  {
+    "filename": "Menu_CP_0359-Mega.png",
+    "national_dex_number": 359,
+    "species": "absol",
+    "form": "Mega",
+    "shiny": false
+  },
+  {
+    "filename": "Menu_CP_0359-Mega_shiny.png",
+    "national_dex_number": 359,
+    "species": "absol",
+    "form": "Mega",
+    "shiny": true
+  },
+  {
+    "filename": "Menu_CP_0362.png",
+    "national_dex_number": 362,
+    "species": "glalie",
+    "form": null,
+    "shiny": false
+  },
+  {
+    "filename": "Menu_CP_0362_shiny.png",
+    "national_dex_number": 362,
+    "species": "glalie",
+    "form": null,
+    "shiny": true
+  },
+  {
+    "filename": "Menu_CP_0362-Mega.png",
+    "national_dex_number": 362,
+    "species": "glalie",
+    "form": "Mega",
+    "shiny": false
+  },
+  {
+    "filename": "Menu_CP_0362-Mega_shiny.png",
+    "national_dex_number": 362,
+    "species": "glalie",
+    "form": "Mega",
+    "shiny": true
+  },
+  {
+    "filename": "Menu_CP_0376.png",
+    "national_dex_number": 376,
+    "species": "metagross",
+    "form": null,
+    "shiny": false
+  },
+  {
+    "filename": "Menu_CP_0376_shiny.png",
+    "national_dex_number": 376,
+    "species": "metagross",
+    "form": null,
+    "shiny": true
+  },
+  {
+    "filename": "Menu_CP_0376-Mega.png",
+    "national_dex_number": 376,
+    "species": "metagross",
+    "form": "Mega",
+    "shiny": false
+  },
+  {
+    "filename": "Menu_CP_0376-Mega_shiny.png",
+    "national_dex_number": 376,
+    "species": "metagross",
+    "form": "Mega",
+    "shiny": true
+  },
+  {
+    "filename": "Menu_CP_0389.png",
+    "national_dex_number": 389,
+    "species": "torterra",
+    "form": null,
+    "shiny": false
+  },
+  {
+    "filename": "Menu_CP_0389_shiny.png",
+    "national_dex_number": 389,
+    "species": "torterra",
+    "form": null,
+    "shiny": true
+  },
+  {
+    "filename": "Menu_CP_0392.png",
+    "national_dex_number": 392,
+    "species": "infernape",
+    "form": null,
+    "shiny": false
+  },
+  {
+    "filename": "Menu_CP_0392_shiny.png",
+    "national_dex_number": 392,
+    "species": "infernape",
+    "form": null,
+    "shiny": true
+  },
+  {
+    "filename": "Menu_CP_0395.png",
+    "national_dex_number": 395,
+    "species": "empoleon",
+    "form": null,
+    "shiny": false
+  },
+  {
+    "filename": "Menu_CP_0395_shiny.png",
+    "national_dex_number": 395,
+    "species": "empoleon",
+    "form": null,
+    "shiny": true
+  },
+  {
+    "filename": "Menu_CP_0398.png",
+    "national_dex_number": 398,
+    "species": "staraptor",
+    "form": null,
+    "shiny": false
+  },
+  {
+    "filename": "Menu_CP_0398_shiny.png",
+    "national_dex_number": 398,
+    "species": "staraptor",
+    "form": null,
+    "shiny": true
+  },
+  {
+    "filename": "Menu_CP_0398-Mega.png",
+    "national_dex_number": 398,
+    "species": "staraptor",
+    "form": "Mega",
+    "shiny": false
+  },
+  {
+    "filename": "Menu_CP_0398-Mega_shiny.png",
+    "national_dex_number": 398,
+    "species": "staraptor",
+    "form": "Mega",
+    "shiny": true
+  },
+  {
+    "filename": "Menu_CP_0405.png",
+    "national_dex_number": 405,
+    "species": "luxray",
+    "form": null,
+    "shiny": false
+  },
+  {
+    "filename": "Menu_CP_0405_shiny.png",
+    "national_dex_number": 405,
+    "species": "luxray",
+    "form": null,
+    "shiny": true
+  },
+  {
+    "filename": "Menu_CP_0407.png",
+    "national_dex_number": 407,
+    "species": "roserade",
+    "form": null,
+    "shiny": false
+  },
+  {
+    "filename": "Menu_CP_0407_shiny.png",
+    "national_dex_number": 407,
+    "species": "roserade",
+    "form": null,
+    "shiny": true
+  },
+  {
+    "filename": "Menu_CP_0409.png",
+    "national_dex_number": 409,
+    "species": "rampardos",
+    "form": null,
+    "shiny": false
+  },
+  {
+    "filename": "Menu_CP_0409_shiny.png",
+    "national_dex_number": 409,
+    "species": "rampardos",
+    "form": null,
+    "shiny": true
+  },
+  {
+    "filename": "Menu_CP_0411.png",
+    "national_dex_number": 411,
+    "species": "bastiodon",
+    "form": null,
+    "shiny": false
+  },
+  {
+    "filename": "Menu_CP_0411_shiny.png",
+    "national_dex_number": 411,
+    "species": "bastiodon",
+    "form": null,
+    "shiny": true
+  },
+  {
+    "filename": "Menu_CP_0428.png",
+    "national_dex_number": 428,
+    "species": "lopunny",
+    "form": null,
+    "shiny": false
+  },
+  {
+    "filename": "Menu_CP_0428_shiny.png",
+    "national_dex_number": 428,
+    "species": "lopunny",
+    "form": null,
+    "shiny": true
+  },
+  {
+    "filename": "Menu_CP_0428-Mega.png",
+    "national_dex_number": 428,
+    "species": "lopunny",
+    "form": "Mega",
+    "shiny": false
+  },
+  {
+    "filename": "Menu_CP_0428-Mega_shiny.png",
+    "national_dex_number": 428,
+    "species": "lopunny",
+    "form": "Mega",
+    "shiny": true
+  },
+  {
+    "filename": "Menu_CP_0442.png",
+    "national_dex_number": 442,
+    "species": "spiritomb",
+    "form": null,
+    "shiny": false
+  },
+  {
+    "filename": "Menu_CP_0442_shiny.png",
+    "national_dex_number": 442,
+    "species": "spiritomb",
+    "form": null,
+    "shiny": true
+  },
+  {
+    "filename": "Menu_CP_0445.png",
+    "national_dex_number": 445,
+    "species": "garchomp",
+    "form": null,
+    "shiny": false
+  },
+  {
+    "filename": "Menu_CP_0445_shiny.png",
+    "national_dex_number": 445,
+    "species": "garchomp",
+    "form": null,
+    "shiny": true
+  },
+  {
+    "filename": "Menu_CP_0445-Mega.png",
+    "national_dex_number": 445,
+    "species": "garchomp",
+    "form": "Mega",
+    "shiny": false
+  },
+  {
+    "filename": "Menu_CP_0445-Mega_shiny.png",
+    "national_dex_number": 445,
+    "species": "garchomp",
+    "form": "Mega",
+    "shiny": true
+  },
+  {
+    "filename": "Menu_CP_0448.png",
+    "national_dex_number": 448,
+    "species": "lucario",
+    "form": null,
+    "shiny": false
+  },
+  {
+    "filename": "Menu_CP_0448_shiny.png",
+    "national_dex_number": 448,
+    "species": "lucario",
+    "form": null,
+    "shiny": true
+  },
+  {
+    "filename": "Menu_CP_0448-Mega.png",
+    "national_dex_number": 448,
+    "species": "lucario",
+    "form": "Mega",
+    "shiny": false
+  },
+  {
+    "filename": "Menu_CP_0448-Mega_shiny.png",
+    "national_dex_number": 448,
+    "species": "lucario",
+    "form": "Mega",
+    "shiny": true
+  },
+  {
+    "filename": "Menu_CP_0450.png",
+    "national_dex_number": 450,
+    "species": "hippowdon",
+    "form": null,
+    "shiny": false
+  },
+  {
+    "filename": "Menu_CP_0450_shiny.png",
+    "national_dex_number": 450,
+    "species": "hippowdon",
+    "form": null,
+    "shiny": true
+  },
+  {
+    "filename": "Menu_CP_0454.png",
+    "national_dex_number": 454,
+    "species": "toxicroak",
+    "form": null,
+    "shiny": false
+  },
+  {
+    "filename": "Menu_CP_0454_shiny.png",
+    "national_dex_number": 454,
+    "species": "toxicroak",
+    "form": null,
+    "shiny": true
+  },
+  {
+    "filename": "Menu_CP_0460.png",
+    "national_dex_number": 460,
+    "species": "abomasnow",
+    "form": null,
+    "shiny": false
+  },
+  {
+    "filename": "Menu_CP_0460_shiny.png",
+    "national_dex_number": 460,
+    "species": "abomasnow",
+    "form": null,
+    "shiny": true
+  },
+  {
+    "filename": "Menu_CP_0460-Mega.png",
+    "national_dex_number": 460,
+    "species": "abomasnow",
+    "form": "Mega",
+    "shiny": false
+  },
+  {
+    "filename": "Menu_CP_0460-Mega_shiny.png",
+    "national_dex_number": 460,
+    "species": "abomasnow",
+    "form": "Mega",
+    "shiny": true
+  },
+  {
+    "filename": "Menu_CP_0461.png",
+    "national_dex_number": 461,
+    "species": "weavile",
+    "form": null,
+    "shiny": false
+  },
+  {
+    "filename": "Menu_CP_0461_shiny.png",
+    "national_dex_number": 461,
+    "species": "weavile",
+    "form": null,
+    "shiny": true
+  },
+  {
+    "filename": "Menu_CP_0464.png",
+    "national_dex_number": 464,
+    "species": "rhyperior",
+    "form": null,
+    "shiny": false
+  },
+  {
+    "filename": "Menu_CP_0464_shiny.png",
+    "national_dex_number": 464,
+    "species": "rhyperior",
+    "form": null,
+    "shiny": true
+  },
+  {
+    "filename": "Menu_CP_0470.png",
+    "national_dex_number": 470,
+    "species": "leafeon",
+    "form": null,
+    "shiny": false
+  },
+  {
+    "filename": "Menu_CP_0470_shiny.png",
+    "national_dex_number": 470,
+    "species": "leafeon",
+    "form": null,
+    "shiny": true
+  },
+  {
+    "filename": "Menu_CP_0471.png",
+    "national_dex_number": 471,
+    "species": "glaceon",
+    "form": null,
+    "shiny": false
+  },
+  {
+    "filename": "Menu_CP_0471_shiny.png",
+    "national_dex_number": 471,
+    "species": "glaceon",
+    "form": null,
+    "shiny": true
+  },
+  {
+    "filename": "Menu_CP_0472.png",
+    "national_dex_number": 472,
+    "species": "gliscor",
+    "form": null,
+    "shiny": false
+  },
+  {
+    "filename": "Menu_CP_0472_shiny.png",
+    "national_dex_number": 472,
+    "species": "gliscor",
+    "form": null,
+    "shiny": true
+  },
+  {
+    "filename": "Menu_CP_0473.png",
+    "national_dex_number": 473,
+    "species": "mamoswine",
+    "form": null,
+    "shiny": false
+  },
+  {
+    "filename": "Menu_CP_0473_shiny.png",
+    "national_dex_number": 473,
+    "species": "mamoswine",
+    "form": null,
+    "shiny": true
+  },
+  {
+    "filename": "Menu_CP_0475.png",
+    "national_dex_number": 475,
+    "species": "gallade",
+    "form": null,
+    "shiny": false
+  },
+  {
+    "filename": "Menu_CP_0475_shiny.png",
+    "national_dex_number": 475,
+    "species": "gallade",
+    "form": null,
+    "shiny": true
+  },
+  {
+    "filename": "Menu_CP_0475-Mega.png",
+    "national_dex_number": 475,
+    "species": "gallade",
+    "form": "Mega",
+    "shiny": false
+  },
+  {
+    "filename": "Menu_CP_0475-Mega_shiny.png",
+    "national_dex_number": 475,
+    "species": "gallade",
+    "form": "Mega",
+    "shiny": true
+  },
+  {
+    "filename": "Menu_CP_0478.png",
+    "national_dex_number": 478,
+    "species": "froslass",
+    "form": null,
+    "shiny": false
+  },
+  {
+    "filename": "Menu_CP_0478_shiny.png",
+    "national_dex_number": 478,
+    "species": "froslass",
+    "form": null,
+    "shiny": true
+  },
+  {
+    "filename": "Menu_CP_0478-Mega.png",
+    "national_dex_number": 478,
+    "species": "froslass",
+    "form": "Mega",
+    "shiny": false
+  },
+  {
+    "filename": "Menu_CP_0478-Mega_shiny.png",
+    "national_dex_number": 478,
+    "species": "froslass",
+    "form": "Mega",
+    "shiny": true
+  },
+  {
+    "filename": "Menu_CP_0479.png",
+    "national_dex_number": 479,
+    "species": "rotom",
+    "form": null,
+    "shiny": false
+  },
+  {
+    "filename": "Menu_CP_0479_shiny.png",
+    "national_dex_number": 479,
+    "species": "rotom",
+    "form": null,
+    "shiny": true
+  },
+  {
+    "filename": "Menu_CP_0479-Fan.png",
+    "national_dex_number": 479,
+    "species": "rotom",
+    "form": "Fan",
+    "shiny": false
+  },
+  {
+    "filename": "Menu_CP_0479-Fan_shiny.png",
+    "national_dex_number": 479,
+    "species": "rotom",
+    "form": "Fan",
+    "shiny": true
+  },
+  {
+    "filename": "Menu_CP_0479-Frost.png",
+    "national_dex_number": 479,
+    "species": "rotom",
+    "form": "Frost",
+    "shiny": false
+  },
+  {
+    "filename": "Menu_CP_0479-Frost_shiny.png",
+    "national_dex_number": 479,
+    "species": "rotom",
+    "form": "Frost",
+    "shiny": true
+  },
+  {
+    "filename": "Menu_CP_0479-Heat.png",
+    "national_dex_number": 479,
+    "species": "rotom",
+    "form": "Heat",
+    "shiny": false
+  },
+  {
+    "filename": "Menu_CP_0479-Heat_shiny.png",
+    "national_dex_number": 479,
+    "species": "rotom",
+    "form": "Heat",
+    "shiny": true
+  },
+  {
+    "filename": "Menu_CP_0479-Mow.png",
+    "national_dex_number": 479,
+    "species": "rotom",
+    "form": "Mow",
+    "shiny": false
+  },
+  {
+    "filename": "Menu_CP_0479-Mow_shiny.png",
+    "national_dex_number": 479,
+    "species": "rotom",
+    "form": "Mow",
+    "shiny": true
+  },
+  {
+    "filename": "Menu_CP_0479-Wash.png",
+    "national_dex_number": 479,
+    "species": "rotom",
+    "form": "Wash",
+    "shiny": false
+  },
+  {
+    "filename": "Menu_CP_0479-Wash_shiny.png",
+    "national_dex_number": 479,
+    "species": "rotom",
+    "form": "Wash",
+    "shiny": true
+  },
+  {
+    "filename": "Menu_CP_0497.png",
+    "national_dex_number": 497,
+    "species": "serperior",
+    "form": null,
+    "shiny": false
+  },
+  {
+    "filename": "Menu_CP_0497_shiny.png",
+    "national_dex_number": 497,
+    "species": "serperior",
+    "form": null,
+    "shiny": true
+  },
+  {
+    "filename": "Menu_CP_0500.png",
+    "national_dex_number": 500,
+    "species": "emboar",
+    "form": null,
+    "shiny": false
+  },
+  {
+    "filename": "Menu_CP_0500_shiny.png",
+    "national_dex_number": 500,
+    "species": "emboar",
+    "form": null,
+    "shiny": true
+  },
+  {
+    "filename": "Menu_CP_0500-Mega.png",
+    "national_dex_number": 500,
+    "species": "emboar",
+    "form": "Mega",
+    "shiny": false
+  },
+  {
+    "filename": "Menu_CP_0500-Mega_shiny.png",
+    "national_dex_number": 500,
+    "species": "emboar",
+    "form": "Mega",
+    "shiny": true
+  },
+  {
+    "filename": "Menu_CP_0503.png",
+    "national_dex_number": 503,
+    "species": "samurott",
+    "form": null,
+    "shiny": false
+  },
+  {
+    "filename": "Menu_CP_0503_shiny.png",
+    "national_dex_number": 503,
+    "species": "samurott",
+    "form": null,
+    "shiny": true
+  },
+  {
+    "filename": "Menu_CP_0503-Hisui.png",
+    "national_dex_number": 503,
+    "species": "samurott",
+    "form": "Hisui",
+    "shiny": false
+  },
+  {
+    "filename": "Menu_CP_0503-Hisui_shiny.png",
+    "national_dex_number": 503,
+    "species": "samurott",
+    "form": "Hisui",
+    "shiny": true
+  },
+  {
+    "filename": "Menu_CP_0505.png",
+    "national_dex_number": 505,
+    "species": "watchog",
+    "form": null,
+    "shiny": false
+  },
+  {
+    "filename": "Menu_CP_0505_shiny.png",
+    "national_dex_number": 505,
+    "species": "watchog",
+    "form": null,
+    "shiny": true
+  },
+  {
+    "filename": "Menu_CP_0510.png",
+    "national_dex_number": 510,
+    "species": "liepard",
+    "form": null,
+    "shiny": false
+  },
+  {
+    "filename": "Menu_CP_0510_shiny.png",
+    "national_dex_number": 510,
+    "species": "liepard",
+    "form": null,
+    "shiny": true
+  },
+  {
+    "filename": "Menu_CP_0512.png",
+    "national_dex_number": 512,
+    "species": "simisage",
+    "form": null,
+    "shiny": false
+  },
+  {
+    "filename": "Menu_CP_0512_shiny.png",
+    "national_dex_number": 512,
+    "species": "simisage",
+    "form": null,
+    "shiny": true
+  },
+  {
+    "filename": "Menu_CP_0514.png",
+    "national_dex_number": 514,
+    "species": "simisear",
+    "form": null,
+    "shiny": false
+  },
+  {
+    "filename": "Menu_CP_0514_shiny.png",
+    "national_dex_number": 514,
+    "species": "simisear",
+    "form": null,
+    "shiny": true
+  },
+  {
+    "filename": "Menu_CP_0516.png",
+    "national_dex_number": 516,
+    "species": "simipour",
+    "form": null,
+    "shiny": false
+  },
+  {
+    "filename": "Menu_CP_0516_shiny.png",
+    "national_dex_number": 516,
+    "species": "simipour",
+    "form": null,
+    "shiny": true
+  },
+  {
+    "filename": "Menu_CP_0518.png",
+    "national_dex_number": 518,
+    "species": "musharna",
+    "form": null,
+    "shiny": false
+  },
+  {
+    "filename": "Menu_CP_0518_shiny.png",
+    "national_dex_number": 518,
+    "species": "musharna",
+    "form": null,
+    "shiny": true
+  },
+  {
+    "filename": "Menu_CP_0530.png",
+    "national_dex_number": 530,
+    "species": "excadrill",
+    "form": null,
+    "shiny": false
+  },
+  {
+    "filename": "Menu_CP_0530_shiny.png",
+    "national_dex_number": 530,
+    "species": "excadrill",
+    "form": null,
+    "shiny": true
+  },
+  {
+    "filename": "Menu_CP_0530-Mega.png",
+    "national_dex_number": 530,
+    "species": "excadrill",
+    "form": "Mega",
+    "shiny": false
+  },
+  {
+    "filename": "Menu_CP_0530-Mega_shiny.png",
+    "national_dex_number": 530,
+    "species": "excadrill",
+    "form": "Mega",
+    "shiny": true
+  },
+  {
+    "filename": "Menu_CP_0531.png",
+    "national_dex_number": 531,
+    "species": "audino",
+    "form": null,
+    "shiny": false
+  },
+  {
+    "filename": "Menu_CP_0531_shiny.png",
+    "national_dex_number": 531,
+    "species": "audino",
+    "form": null,
+    "shiny": true
+  },
+  {
+    "filename": "Menu_CP_0531-Mega.png",
+    "national_dex_number": 531,
+    "species": "audino",
+    "form": "Mega",
+    "shiny": false
+  },
+  {
+    "filename": "Menu_CP_0531-Mega_shiny.png",
+    "national_dex_number": 531,
+    "species": "audino",
+    "form": "Mega",
+    "shiny": true
+  },
+  {
+    "filename": "Menu_CP_0534.png",
+    "national_dex_number": 534,
+    "species": "conkeldurr",
+    "form": null,
+    "shiny": false
+  },
+  {
+    "filename": "Menu_CP_0534_shiny.png",
+    "national_dex_number": 534,
+    "species": "conkeldurr",
+    "form": null,
+    "shiny": true
+  },
+  {
+    "filename": "Menu_CP_0545.png",
+    "national_dex_number": 545,
+    "species": "scolipede",
+    "form": null,
+    "shiny": false
+  },
+  {
+    "filename": "Menu_CP_0545_shiny.png",
+    "national_dex_number": 545,
+    "species": "scolipede",
+    "form": null,
+    "shiny": true
+  },
+  {
+    "filename": "Menu_CP_0545-Mega.png",
+    "national_dex_number": 545,
+    "species": "scolipede",
+    "form": "Mega",
+    "shiny": false
+  },
+  {
+    "filename": "Menu_CP_0545-Mega_shiny.png",
+    "national_dex_number": 545,
+    "species": "scolipede",
+    "form": "Mega",
+    "shiny": true
+  },
+  {
+    "filename": "Menu_CP_0547.png",
+    "national_dex_number": 547,
+    "species": "whimsicott",
+    "form": null,
+    "shiny": false
+  },
+  {
+    "filename": "Menu_CP_0547_shiny.png",
+    "national_dex_number": 547,
+    "species": "whimsicott",
+    "form": null,
+    "shiny": true
+  },
+  {
+    "filename": "Menu_CP_0553.png",
+    "national_dex_number": 553,
+    "species": "krookodile",
+    "form": null,
+    "shiny": false
+  },
+  {
+    "filename": "Menu_CP_0553_shiny.png",
+    "national_dex_number": 553,
+    "species": "krookodile",
+    "form": null,
+    "shiny": true
+  },
+  {
+    "filename": "Menu_CP_0560.png",
+    "national_dex_number": 560,
+    "species": "scrafty",
+    "form": null,
+    "shiny": false
+  },
+  {
+    "filename": "Menu_CP_0560_shiny.png",
+    "national_dex_number": 560,
+    "species": "scrafty",
+    "form": null,
+    "shiny": true
+  },
+  {
+    "filename": "Menu_CP_0560-Mega.png",
+    "national_dex_number": 560,
+    "species": "scrafty",
+    "form": "Mega",
+    "shiny": false
+  },
+  {
+    "filename": "Menu_CP_0560-Mega_shiny.png",
+    "national_dex_number": 560,
+    "species": "scrafty",
+    "form": "Mega",
+    "shiny": true
+  },
+  {
+    "filename": "Menu_CP_0563.png",
+    "national_dex_number": 563,
+    "species": "cofagrigus",
+    "form": null,
+    "shiny": false
+  },
+  {
+    "filename": "Menu_CP_0563_shiny.png",
+    "national_dex_number": 563,
+    "species": "cofagrigus",
+    "form": null,
+    "shiny": true
+  },
+  {
+    "filename": "Menu_CP_0569.png",
+    "national_dex_number": 569,
+    "species": "garbodor",
+    "form": null,
+    "shiny": false
+  },
+  {
+    "filename": "Menu_CP_0569_shiny.png",
+    "national_dex_number": 569,
+    "species": "garbodor",
+    "form": null,
+    "shiny": true
+  },
+  {
+    "filename": "Menu_CP_0571.png",
+    "national_dex_number": 571,
+    "species": "zoroark",
+    "form": null,
+    "shiny": false
+  },
+  {
+    "filename": "Menu_CP_0571_shiny.png",
+    "national_dex_number": 571,
+    "species": "zoroark",
+    "form": null,
+    "shiny": true
+  },
+  {
+    "filename": "Menu_CP_0571-Hisui.png",
+    "national_dex_number": 571,
+    "species": "zoroark",
+    "form": "Hisui",
+    "shiny": false
+  },
+  {
+    "filename": "Menu_CP_0571-Hisui_shiny.png",
+    "national_dex_number": 571,
+    "species": "zoroark",
+    "form": "Hisui",
+    "shiny": true
+  },
+  {
+    "filename": "Menu_CP_0579.png",
+    "national_dex_number": 579,
+    "species": "reuniclus",
+    "form": null,
+    "shiny": false
+  },
+  {
+    "filename": "Menu_CP_0579_shiny.png",
+    "national_dex_number": 579,
+    "species": "reuniclus",
+    "form": null,
+    "shiny": true
+  },
+  {
+    "filename": "Menu_CP_0584.png",
+    "national_dex_number": 584,
+    "species": "vanilluxe",
+    "form": null,
+    "shiny": false
+  },
+  {
+    "filename": "Menu_CP_0584_shiny.png",
+    "national_dex_number": 584,
+    "species": "vanilluxe",
+    "form": null,
+    "shiny": true
+  },
+  {
+    "filename": "Menu_CP_0587.png",
+    "national_dex_number": 587,
+    "species": "emolga",
+    "form": null,
+    "shiny": false
+  },
+  {
+    "filename": "Menu_CP_0587_shiny.png",
+    "national_dex_number": 587,
+    "species": "emolga",
+    "form": null,
+    "shiny": true
+  },
+  {
+    "filename": "Menu_CP_0604.png",
+    "national_dex_number": 604,
+    "species": "eelektross",
+    "form": null,
+    "shiny": false
+  },
+  {
+    "filename": "Menu_CP_0604_shiny.png",
+    "national_dex_number": 604,
+    "species": "eelektross",
+    "form": null,
+    "shiny": true
+  },
+  {
+    "filename": "Menu_CP_0604-Mega.png",
+    "national_dex_number": 604,
+    "species": "eelektross",
+    "form": "Mega",
+    "shiny": false
+  },
+  {
+    "filename": "Menu_CP_0604-Mega_shiny.png",
+    "national_dex_number": 604,
+    "species": "eelektross",
+    "form": "Mega",
+    "shiny": true
+  },
+  {
+    "filename": "Menu_CP_0609.png",
+    "national_dex_number": 609,
+    "species": "chandelure",
+    "form": null,
+    "shiny": false
+  },
+  {
+    "filename": "Menu_CP_0609_shiny.png",
+    "national_dex_number": 609,
+    "species": "chandelure",
+    "form": null,
+    "shiny": true
+  },
+  {
+    "filename": "Menu_CP_0609-Mega.png",
+    "national_dex_number": 609,
+    "species": "chandelure",
+    "form": "Mega",
+    "shiny": false
+  },
+  {
+    "filename": "Menu_CP_0609-Mega_shiny.png",
+    "national_dex_number": 609,
+    "species": "chandelure",
+    "form": "Mega",
+    "shiny": true
+  },
+  {
+    "filename": "Menu_CP_0614.png",
+    "national_dex_number": 614,
+    "species": "beartic",
+    "form": null,
+    "shiny": false
+  },
+  {
+    "filename": "Menu_CP_0614_shiny.png",
+    "national_dex_number": 614,
+    "species": "beartic",
+    "form": null,
+    "shiny": true
+  },
+  {
+    "filename": "Menu_CP_0618.png",
+    "national_dex_number": 618,
+    "species": "stunfisk",
+    "form": null,
+    "shiny": false
+  },
+  {
+    "filename": "Menu_CP_0618_shiny.png",
+    "national_dex_number": 618,
+    "species": "stunfisk",
+    "form": null,
+    "shiny": true
+  },
+  {
+    "filename": "Menu_CP_0618-Galar.png",
+    "national_dex_number": 618,
+    "species": "stunfisk",
+    "form": "Galar",
+    "shiny": false
+  },
+  {
+    "filename": "Menu_CP_0618-Galar_shiny.png",
+    "national_dex_number": 618,
+    "species": "stunfisk",
+    "form": "Galar",
+    "shiny": true
+  },
+  {
+    "filename": "Menu_CP_0623.png",
+    "national_dex_number": 623,
+    "species": "golurk",
+    "form": null,
+    "shiny": false
+  },
+  {
+    "filename": "Menu_CP_0623_shiny.png",
+    "national_dex_number": 623,
+    "species": "golurk",
+    "form": null,
+    "shiny": true
+  },
+  {
+    "filename": "Menu_CP_0623-Mega.png",
+    "national_dex_number": 623,
+    "species": "golurk",
+    "form": "Mega",
+    "shiny": false
+  },
+  {
+    "filename": "Menu_CP_0623-Mega_shiny.png",
+    "national_dex_number": 623,
+    "species": "golurk",
+    "form": "Mega",
+    "shiny": true
+  },
+  {
+    "filename": "Menu_CP_0635.png",
+    "national_dex_number": 635,
+    "species": "hydreigon",
+    "form": null,
+    "shiny": false
+  },
+  {
+    "filename": "Menu_CP_0635_shiny.png",
+    "national_dex_number": 635,
+    "species": "hydreigon",
+    "form": null,
+    "shiny": true
+  },
+  {
+    "filename": "Menu_CP_0637.png",
+    "national_dex_number": 637,
+    "species": "volcarona",
+    "form": null,
+    "shiny": false
+  },
+  {
+    "filename": "Menu_CP_0637_shiny.png",
+    "national_dex_number": 637,
+    "species": "volcarona",
+    "form": null,
+    "shiny": true
+  },
+  {
+    "filename": "Menu_CP_0652.png",
+    "national_dex_number": 652,
+    "species": "chesnaught",
+    "form": null,
+    "shiny": false
+  },
+  {
+    "filename": "Menu_CP_0652_shiny.png",
+    "national_dex_number": 652,
+    "species": "chesnaught",
+    "form": null,
+    "shiny": true
+  },
+  {
+    "filename": "Menu_CP_0652-Mega.png",
+    "national_dex_number": 652,
+    "species": "chesnaught",
+    "form": "Mega",
+    "shiny": false
+  },
+  {
+    "filename": "Menu_CP_0652-Mega_shiny.png",
+    "national_dex_number": 652,
+    "species": "chesnaught",
+    "form": "Mega",
+    "shiny": true
+  },
+  {
+    "filename": "Menu_CP_0655.png",
+    "national_dex_number": 655,
+    "species": "delphox",
+    "form": null,
+    "shiny": false
+  },
+  {
+    "filename": "Menu_CP_0655_shiny.png",
+    "national_dex_number": 655,
+    "species": "delphox",
+    "form": null,
+    "shiny": true
+  },
+  {
+    "filename": "Menu_CP_0655-Mega.png",
+    "national_dex_number": 655,
+    "species": "delphox",
+    "form": "Mega",
+    "shiny": false
+  },
+  {
+    "filename": "Menu_CP_0655-Mega_shiny.png",
+    "national_dex_number": 655,
+    "species": "delphox",
+    "form": "Mega",
+    "shiny": true
+  },
+  {
+    "filename": "Menu_CP_0658.png",
+    "national_dex_number": 658,
+    "species": "greninja",
+    "form": null,
+    "shiny": false
+  },
+  {
+    "filename": "Menu_CP_0658_shiny.png",
+    "national_dex_number": 658,
+    "species": "greninja",
+    "form": null,
+    "shiny": true
+  },
+  {
+    "filename": "Menu_CP_0658-Mega.png",
+    "national_dex_number": 658,
+    "species": "greninja",
+    "form": "Mega",
+    "shiny": false
+  },
+  {
+    "filename": "Menu_CP_0658-Mega_shiny.png",
+    "national_dex_number": 658,
+    "species": "greninja",
+    "form": "Mega",
+    "shiny": true
+  },
+  {
+    "filename": "Menu_CP_0660.png",
+    "national_dex_number": 660,
+    "species": "diggersby",
+    "form": null,
+    "shiny": false
+  },
+  {
+    "filename": "Menu_CP_0660_shiny.png",
+    "national_dex_number": 660,
+    "species": "diggersby",
+    "form": null,
+    "shiny": true
+  },
+  {
+    "filename": "Menu_CP_0663.png",
+    "national_dex_number": 663,
+    "species": "talonflame",
+    "form": null,
+    "shiny": false
+  },
+  {
+    "filename": "Menu_CP_0663_shiny.png",
+    "national_dex_number": 663,
+    "species": "talonflame",
+    "form": null,
+    "shiny": true
+  },
+  {
+    "filename": "Menu_CP_0666.png",
+    "national_dex_number": 666,
+    "species": "vivillon",
+    "form": null,
+    "shiny": false
+  },
+  {
+    "filename": "Menu_CP_0666_shiny.png",
+    "national_dex_number": 666,
+    "species": "vivillon",
+    "form": null,
+    "shiny": true
+  },
+  {
+    "filename": "Menu_CP_0666-Archipelago.png",
+    "national_dex_number": 666,
+    "species": "vivillon",
+    "form": "Archipelago",
+    "shiny": false
+  },
+  {
+    "filename": "Menu_CP_0666-Archipelago_shiny.png",
+    "national_dex_number": 666,
+    "species": "vivillon",
+    "form": "Archipelago",
+    "shiny": true
+  },
+  {
+    "filename": "Menu_CP_0666-Continental.png",
+    "national_dex_number": 666,
+    "species": "vivillon",
+    "form": "Continental",
+    "shiny": false
+  },
+  {
+    "filename": "Menu_CP_0666-Continental_shiny.png",
+    "national_dex_number": 666,
+    "species": "vivillon",
+    "form": "Continental",
+    "shiny": true
+  },
+  {
+    "filename": "Menu_CP_0666-Elegant.png",
+    "national_dex_number": 666,
+    "species": "vivillon",
+    "form": "Elegant",
+    "shiny": false
+  },
+  {
+    "filename": "Menu_CP_0666-Elegant_shiny.png",
+    "national_dex_number": 666,
+    "species": "vivillon",
+    "form": "Elegant",
+    "shiny": true
+  },
+  {
+    "filename": "Menu_CP_0666-Fancy.png",
+    "national_dex_number": 666,
+    "species": "vivillon",
+    "form": "Fancy",
+    "shiny": false
+  },
+  {
+    "filename": "Menu_CP_0666-Fancy_shiny.png",
+    "national_dex_number": 666,
+    "species": "vivillon",
+    "form": "Fancy",
+    "shiny": true
+  },
+  {
+    "filename": "Menu_CP_0666-Garden.png",
+    "national_dex_number": 666,
+    "species": "vivillon",
+    "form": "Garden",
+    "shiny": false
+  },
+  {
+    "filename": "Menu_CP_0666-Garden_shiny.png",
+    "national_dex_number": 666,
+    "species": "vivillon",
+    "form": "Garden",
+    "shiny": true
+  },
+  {
+    "filename": "Menu_CP_0666-High_Plains.png",
+    "national_dex_number": 666,
+    "species": "vivillon",
+    "form": "High_Plains",
+    "shiny": false
+  },
+  {
+    "filename": "Menu_CP_0666-High_Plains_shiny.png",
+    "national_dex_number": 666,
+    "species": "vivillon",
+    "form": "High_Plains",
+    "shiny": true
+  },
+  {
+    "filename": "Menu_CP_0666-Icy_Snow.png",
+    "national_dex_number": 666,
+    "species": "vivillon",
+    "form": "Icy_Snow",
+    "shiny": false
+  },
+  {
+    "filename": "Menu_CP_0666-Icy_Snow_shiny.png",
+    "national_dex_number": 666,
+    "species": "vivillon",
+    "form": "Icy_Snow",
+    "shiny": true
+  },
+  {
+    "filename": "Menu_CP_0666-Jungle.png",
+    "national_dex_number": 666,
+    "species": "vivillon",
+    "form": "Jungle",
+    "shiny": false
+  },
+  {
+    "filename": "Menu_CP_0666-Jungle_shiny.png",
+    "national_dex_number": 666,
+    "species": "vivillon",
+    "form": "Jungle",
+    "shiny": true
+  },
+  {
+    "filename": "Menu_CP_0666-Marine.png",
+    "national_dex_number": 666,
+    "species": "vivillon",
+    "form": "Marine",
+    "shiny": false
+  },
+  {
+    "filename": "Menu_CP_0666-Marine_shiny.png",
+    "national_dex_number": 666,
+    "species": "vivillon",
+    "form": "Marine",
+    "shiny": true
+  },
+  {
+    "filename": "Menu_CP_0666-Modern.png",
+    "national_dex_number": 666,
+    "species": "vivillon",
+    "form": "Modern",
+    "shiny": false
+  },
+  {
+    "filename": "Menu_CP_0666-Modern_shiny.png",
+    "national_dex_number": 666,
+    "species": "vivillon",
+    "form": "Modern",
+    "shiny": true
+  },
+  {
+    "filename": "Menu_CP_0666-Monsoon.png",
+    "national_dex_number": 666,
+    "species": "vivillon",
+    "form": "Monsoon",
+    "shiny": false
+  },
+  {
+    "filename": "Menu_CP_0666-Monsoon_shiny.png",
+    "national_dex_number": 666,
+    "species": "vivillon",
+    "form": "Monsoon",
+    "shiny": true
+  },
+  {
+    "filename": "Menu_CP_0666-Ocean.png",
+    "national_dex_number": 666,
+    "species": "vivillon",
+    "form": "Ocean",
+    "shiny": false
+  },
+  {
+    "filename": "Menu_CP_0666-Ocean_shiny.png",
+    "national_dex_number": 666,
+    "species": "vivillon",
+    "form": "Ocean",
+    "shiny": true
+  },
+  {
+    "filename": "Menu_CP_0666-Pok\u00e9_Ball.png",
+    "national_dex_number": 666,
+    "species": "vivillon",
+    "form": "Pok\u00e9_Ball",
+    "shiny": false
+  },
+  {
+    "filename": "Menu_CP_0666-Pok\u00e9_Ball_shiny.png",
+    "national_dex_number": 666,
+    "species": "vivillon",
+    "form": "Pok\u00e9_Ball",
+    "shiny": true
+  },
+  {
+    "filename": "Menu_CP_0666-Polar.png",
+    "national_dex_number": 666,
+    "species": "vivillon",
+    "form": "Polar",
+    "shiny": false
+  },
+  {
+    "filename": "Menu_CP_0666-Polar_shiny.png",
+    "national_dex_number": 666,
+    "species": "vivillon",
+    "form": "Polar",
+    "shiny": true
+  },
+  {
+    "filename": "Menu_CP_0666-River.png",
+    "national_dex_number": 666,
+    "species": "vivillon",
+    "form": "River",
+    "shiny": false
+  },
+  {
+    "filename": "Menu_CP_0666-River_shiny.png",
+    "national_dex_number": 666,
+    "species": "vivillon",
+    "form": "River",
+    "shiny": true
+  },
+  {
+    "filename": "Menu_CP_0666-Sandstorm.png",
+    "national_dex_number": 666,
+    "species": "vivillon",
+    "form": "Sandstorm",
+    "shiny": false
+  },
+  {
+    "filename": "Menu_CP_0666-Sandstorm_shiny.png",
+    "national_dex_number": 666,
+    "species": "vivillon",
+    "form": "Sandstorm",
+    "shiny": true
+  },
+  {
+    "filename": "Menu_CP_0666-Savanna.png",
+    "national_dex_number": 666,
+    "species": "vivillon",
+    "form": "Savanna",
+    "shiny": false
+  },
+  {
+    "filename": "Menu_CP_0666-Savanna_shiny.png",
+    "national_dex_number": 666,
+    "species": "vivillon",
+    "form": "Savanna",
+    "shiny": true
+  },
+  {
+    "filename": "Menu_CP_0666-Sun.png",
+    "national_dex_number": 666,
+    "species": "vivillon",
+    "form": "Sun",
+    "shiny": false
+  },
+  {
+    "filename": "Menu_CP_0666-Sun_shiny.png",
+    "national_dex_number": 666,
+    "species": "vivillon",
+    "form": "Sun",
+    "shiny": true
+  },
+  {
+    "filename": "Menu_CP_0666-Tundra.png",
+    "national_dex_number": 666,
+    "species": "vivillon",
+    "form": "Tundra",
+    "shiny": false
+  },
+  {
+    "filename": "Menu_CP_0666-Tundra_shiny.png",
+    "national_dex_number": 666,
+    "species": "vivillon",
+    "form": "Tundra",
+    "shiny": true
+  },
+  {
+    "filename": "Menu_CP_0668.png",
+    "national_dex_number": 668,
+    "species": "pyroar",
+    "form": null,
+    "shiny": false
+  },
+  {
+    "filename": "Menu_CP_0668_shiny.png",
+    "national_dex_number": 668,
+    "species": "pyroar",
+    "form": null,
+    "shiny": true
+  },
+  {
+    "filename": "Menu_CP_0668-Female.png",
+    "national_dex_number": 668,
+    "species": "pyroar",
+    "form": "Female",
+    "shiny": false
+  },
+  {
+    "filename": "Menu_CP_0668-Female_shiny.png",
+    "national_dex_number": 668,
+    "species": "pyroar",
+    "form": "Female",
+    "shiny": true
+  },
+  {
+    "filename": "Menu_CP_0668-Mega.png",
+    "national_dex_number": 668,
+    "species": "pyroar",
+    "form": "Mega",
+    "shiny": false
+  },
+  {
+    "filename": "Menu_CP_0668-Mega_shiny.png",
+    "national_dex_number": 668,
+    "species": "pyroar",
+    "form": "Mega",
+    "shiny": true
+  },
+  {
+    "filename": "Menu_CP_0670-Eternal.png",
+    "national_dex_number": 670,
+    "species": "floette",
+    "form": "Eternal",
+    "shiny": false
+  },
+  {
+    "filename": "Menu_CP_0670-Eternal_shiny.png",
+    "national_dex_number": 670,
+    "species": "floette",
+    "form": "Eternal",
+    "shiny": true
+  },
+  {
+    "filename": "Menu_CP_0670-Mega.png",
+    "national_dex_number": 670,
+    "species": "floette",
+    "form": "Mega",
+    "shiny": false
+  },
+  {
+    "filename": "Menu_CP_0670-Mega_shiny.png",
+    "national_dex_number": 670,
+    "species": "floette",
+    "form": "Mega",
+    "shiny": true
+  },
+  {
+    "filename": "Menu_CP_0671.png",
+    "national_dex_number": 671,
+    "species": "florges",
+    "form": null,
+    "shiny": false
+  },
+  {
+    "filename": "Menu_CP_0671_shiny.png",
+    "national_dex_number": 671,
+    "species": "florges",
+    "form": null,
+    "shiny": true
+  },
+  {
+    "filename": "Menu_CP_0671-Blue.png",
+    "national_dex_number": 671,
+    "species": "florges",
+    "form": "Blue",
+    "shiny": false
+  },
+  {
+    "filename": "Menu_CP_0671-Blue_shiny.png",
+    "national_dex_number": 671,
+    "species": "florges",
+    "form": "Blue",
+    "shiny": true
+  },
+  {
+    "filename": "Menu_CP_0671-Orange.png",
+    "national_dex_number": 671,
+    "species": "florges",
+    "form": "Orange",
+    "shiny": false
+  },
+  {
+    "filename": "Menu_CP_0671-Orange_shiny.png",
+    "national_dex_number": 671,
+    "species": "florges",
+    "form": "Orange",
+    "shiny": true
+  },
+  {
+    "filename": "Menu_CP_0671-White.png",
+    "national_dex_number": 671,
+    "species": "florges",
+    "form": "White",
+    "shiny": false
+  },
+  {
+    "filename": "Menu_CP_0671-White_shiny.png",
+    "national_dex_number": 671,
+    "species": "florges",
+    "form": "White",
+    "shiny": true
+  },
+  {
+    "filename": "Menu_CP_0671-Yellow.png",
+    "national_dex_number": 671,
+    "species": "florges",
+    "form": "Yellow",
+    "shiny": false
+  },
+  {
+    "filename": "Menu_CP_0671-Yellow_shiny.png",
+    "national_dex_number": 671,
+    "species": "florges",
+    "form": "Yellow",
+    "shiny": true
+  },
+  {
+    "filename": "Menu_CP_0675.png",
+    "national_dex_number": 675,
+    "species": "pangoro",
+    "form": null,
+    "shiny": false
+  },
+  {
+    "filename": "Menu_CP_0675_shiny.png",
+    "national_dex_number": 675,
+    "species": "pangoro",
+    "form": null,
+    "shiny": true
+  },
+  {
+    "filename": "Menu_CP_0676.png",
+    "national_dex_number": 676,
+    "species": "furfrou",
+    "form": null,
+    "shiny": false
+  },
+  {
+    "filename": "Menu_CP_0676_shiny.png",
+    "national_dex_number": 676,
+    "species": "furfrou",
+    "form": null,
+    "shiny": true
+  },
+  {
+    "filename": "Menu_CP_0676-Dandy.png",
+    "national_dex_number": 676,
+    "species": "furfrou",
+    "form": "Dandy",
+    "shiny": false
+  },
+  {
+    "filename": "Menu_CP_0676-Dandy_shiny.png",
+    "national_dex_number": 676,
+    "species": "furfrou",
+    "form": "Dandy",
+    "shiny": true
+  },
+  {
+    "filename": "Menu_CP_0676-Debutante.png",
+    "national_dex_number": 676,
+    "species": "furfrou",
+    "form": "Debutante",
+    "shiny": false
+  },
+  {
+    "filename": "Menu_CP_0676-Debutante_shiny.png",
+    "national_dex_number": 676,
+    "species": "furfrou",
+    "form": "Debutante",
+    "shiny": true
+  },
+  {
+    "filename": "Menu_CP_0676-Diamond.png",
+    "national_dex_number": 676,
+    "species": "furfrou",
+    "form": "Diamond",
+    "shiny": false
+  },
+  {
+    "filename": "Menu_CP_0676-Diamond_shiny.png",
+    "national_dex_number": 676,
+    "species": "furfrou",
+    "form": "Diamond",
+    "shiny": true
+  },
+  {
+    "filename": "Menu_CP_0676-Heart.png",
+    "national_dex_number": 676,
+    "species": "furfrou",
+    "form": "Heart",
+    "shiny": false
+  },
+  {
+    "filename": "Menu_CP_0676-Heart_shiny.png",
+    "national_dex_number": 676,
+    "species": "furfrou",
+    "form": "Heart",
+    "shiny": true
+  },
+  {
+    "filename": "Menu_CP_0676-Kabuki.png",
+    "national_dex_number": 676,
+    "species": "furfrou",
+    "form": "Kabuki",
+    "shiny": false
+  },
+  {
+    "filename": "Menu_CP_0676-Kabuki_shiny.png",
+    "national_dex_number": 676,
+    "species": "furfrou",
+    "form": "Kabuki",
+    "shiny": true
+  },
+  {
+    "filename": "Menu_CP_0676-La_Reine.png",
+    "national_dex_number": 676,
+    "species": "furfrou",
+    "form": "La_Reine",
+    "shiny": false
+  },
+  {
+    "filename": "Menu_CP_0676-La_Reine_shiny.png",
+    "national_dex_number": 676,
+    "species": "furfrou",
+    "form": "La_Reine",
+    "shiny": true
+  },
+  {
+    "filename": "Menu_CP_0676-Matron.png",
+    "national_dex_number": 676,
+    "species": "furfrou",
+    "form": "Matron",
+    "shiny": false
+  },
+  {
+    "filename": "Menu_CP_0676-Matron_shiny.png",
+    "national_dex_number": 676,
+    "species": "furfrou",
+    "form": "Matron",
+    "shiny": true
+  },
+  {
+    "filename": "Menu_CP_0676-Pharaoh.png",
+    "national_dex_number": 676,
+    "species": "furfrou",
+    "form": "Pharaoh",
+    "shiny": false
+  },
+  {
+    "filename": "Menu_CP_0676-Pharaoh_shiny.png",
+    "national_dex_number": 676,
+    "species": "furfrou",
+    "form": "Pharaoh",
+    "shiny": true
+  },
+  {
+    "filename": "Menu_CP_0676-Star.png",
+    "national_dex_number": 676,
+    "species": "furfrou",
+    "form": "Star",
+    "shiny": false
+  },
+  {
+    "filename": "Menu_CP_0676-Star_shiny.png",
+    "national_dex_number": 676,
+    "species": "furfrou",
+    "form": "Star",
+    "shiny": true
+  },
+  {
+    "filename": "Menu_CP_0678.png",
+    "national_dex_number": 678,
+    "species": "meowstic",
+    "form": null,
+    "shiny": false
+  },
+  {
+    "filename": "Menu_CP_0678_shiny.png",
+    "national_dex_number": 678,
+    "species": "meowstic",
+    "form": null,
+    "shiny": true
+  },
+  {
+    "filename": "Menu_CP_0678-Female.png",
+    "national_dex_number": 678,
+    "species": "meowstic",
+    "form": "Female",
+    "shiny": false
+  },
+  {
+    "filename": "Menu_CP_0678-Female_shiny.png",
+    "national_dex_number": 678,
+    "species": "meowstic",
+    "form": "Female",
+    "shiny": true
+  },
+  {
+    "filename": "Menu_CP_0678-Mega.png",
+    "national_dex_number": 678,
+    "species": "meowstic",
+    "form": "Mega",
+    "shiny": false
+  },
+  {
+    "filename": "Menu_CP_0678-Mega_shiny.png",
+    "national_dex_number": 678,
+    "species": "meowstic",
+    "form": "Mega",
+    "shiny": true
+  },
+  {
+    "filename": "Menu_CP_0681.png",
+    "national_dex_number": 681,
+    "species": "aegislash",
+    "form": null,
+    "shiny": false
+  },
+  {
+    "filename": "Menu_CP_0681_shiny.png",
+    "national_dex_number": 681,
+    "species": "aegislash",
+    "form": null,
+    "shiny": true
+  },
+  {
+    "filename": "Menu_CP_0681-Blade.png",
+    "national_dex_number": 681,
+    "species": "aegislash",
+    "form": "Blade",
+    "shiny": false
+  },
+  {
+    "filename": "Menu_CP_0681-Blade_shiny.png",
+    "national_dex_number": 681,
+    "species": "aegislash",
+    "form": "Blade",
+    "shiny": true
+  },
+  {
+    "filename": "Menu_CP_0683.png",
+    "national_dex_number": 683,
+    "species": "aromatisse",
+    "form": null,
+    "shiny": false
+  },
+  {
+    "filename": "Menu_CP_0683_shiny.png",
+    "national_dex_number": 683,
+    "species": "aromatisse",
+    "form": null,
+    "shiny": true
+  },
+  {
+    "filename": "Menu_CP_0685.png",
+    "national_dex_number": 685,
+    "species": "slurpuff",
+    "form": null,
+    "shiny": false
+  },
+  {
+    "filename": "Menu_CP_0685_shiny.png",
+    "national_dex_number": 685,
+    "species": "slurpuff",
+    "form": null,
+    "shiny": true
+  },
+  {
+    "filename": "Menu_CP_0687.png",
+    "national_dex_number": 687,
+    "species": "malamar",
+    "form": null,
+    "shiny": false
+  },
+  {
+    "filename": "Menu_CP_0687_shiny.png",
+    "national_dex_number": 687,
+    "species": "malamar",
+    "form": null,
+    "shiny": true
+  },
+  {
+    "filename": "Menu_CP_0687-Mega.png",
+    "national_dex_number": 687,
+    "species": "malamar",
+    "form": "Mega",
+    "shiny": false
+  },
+  {
+    "filename": "Menu_CP_0687-Mega_shiny.png",
+    "national_dex_number": 687,
+    "species": "malamar",
+    "form": "Mega",
+    "shiny": true
+  },
+  {
+    "filename": "Menu_CP_0689.png",
+    "national_dex_number": 689,
+    "species": "barbaracle",
+    "form": null,
+    "shiny": false
+  },
+  {
+    "filename": "Menu_CP_0689_shiny.png",
+    "national_dex_number": 689,
+    "species": "barbaracle",
+    "form": null,
+    "shiny": true
+  },
+  {
+    "filename": "Menu_CP_0689-Mega.png",
+    "national_dex_number": 689,
+    "species": "barbaracle",
+    "form": "Mega",
+    "shiny": false
+  },
+  {
+    "filename": "Menu_CP_0689-Mega_shiny.png",
+    "national_dex_number": 689,
+    "species": "barbaracle",
+    "form": "Mega",
+    "shiny": true
+  },
+  {
+    "filename": "Menu_CP_0691.png",
+    "national_dex_number": 691,
+    "species": "dragalge",
+    "form": null,
+    "shiny": false
+  },
+  {
+    "filename": "Menu_CP_0691_shiny.png",
+    "national_dex_number": 691,
+    "species": "dragalge",
+    "form": null,
+    "shiny": true
+  },
+  {
+    "filename": "Menu_CP_0691-Mega.png",
+    "national_dex_number": 691,
+    "species": "dragalge",
+    "form": "Mega",
+    "shiny": false
+  },
+  {
+    "filename": "Menu_CP_0691-Mega_shiny.png",
+    "national_dex_number": 691,
+    "species": "dragalge",
+    "form": "Mega",
+    "shiny": true
+  },
+  {
+    "filename": "Menu_CP_0693.png",
+    "national_dex_number": 693,
+    "species": "clawitzer",
+    "form": null,
+    "shiny": false
+  },
+  {
+    "filename": "Menu_CP_0693_shiny.png",
+    "national_dex_number": 693,
+    "species": "clawitzer",
+    "form": null,
+    "shiny": true
+  },
+  {
+    "filename": "Menu_CP_0695.png",
+    "national_dex_number": 695,
+    "species": "heliolisk",
+    "form": null,
+    "shiny": false
+  },
+  {
+    "filename": "Menu_CP_0695_shiny.png",
+    "national_dex_number": 695,
+    "species": "heliolisk",
+    "form": null,
+    "shiny": true
+  },
+  {
+    "filename": "Menu_CP_0697.png",
+    "national_dex_number": 697,
+    "species": "tyrantrum",
+    "form": null,
+    "shiny": false
+  },
+  {
+    "filename": "Menu_CP_0697_shiny.png",
+    "national_dex_number": 697,
+    "species": "tyrantrum",
+    "form": null,
+    "shiny": true
+  },
+  {
+    "filename": "Menu_CP_0699.png",
+    "national_dex_number": 699,
+    "species": "aurorus",
+    "form": null,
+    "shiny": false
+  },
+  {
+    "filename": "Menu_CP_0699_shiny.png",
+    "national_dex_number": 699,
+    "species": "aurorus",
+    "form": null,
+    "shiny": true
+  },
+  {
+    "filename": "Menu_CP_0700.png",
+    "national_dex_number": 700,
+    "species": "sylveon",
+    "form": null,
+    "shiny": false
+  },
+  {
+    "filename": "Menu_CP_0700_shiny.png",
+    "national_dex_number": 700,
+    "species": "sylveon",
+    "form": null,
+    "shiny": true
+  },
+  {
+    "filename": "Menu_CP_0701.png",
+    "national_dex_number": 701,
+    "species": "hawlucha",
+    "form": null,
+    "shiny": false
+  },
+  {
+    "filename": "Menu_CP_0701_shiny.png",
+    "national_dex_number": 701,
+    "species": "hawlucha",
+    "form": null,
+    "shiny": true
+  },
+  {
+    "filename": "Menu_CP_0701-Mega.png",
+    "national_dex_number": 701,
+    "species": "hawlucha",
+    "form": "Mega",
+    "shiny": false
+  },
+  {
+    "filename": "Menu_CP_0701-Mega_shiny.png",
+    "national_dex_number": 701,
+    "species": "hawlucha",
+    "form": "Mega",
+    "shiny": true
+  },
+  {
+    "filename": "Menu_CP_0702.png",
+    "national_dex_number": 702,
+    "species": "dedenne",
+    "form": null,
+    "shiny": false
+  },
+  {
+    "filename": "Menu_CP_0702_shiny.png",
+    "national_dex_number": 702,
+    "species": "dedenne",
+    "form": null,
+    "shiny": true
+  },
+  {
+    "filename": "Menu_CP_0706.png",
+    "national_dex_number": 706,
+    "species": "goodra",
+    "form": null,
+    "shiny": false
+  },
+  {
+    "filename": "Menu_CP_0706_shiny.png",
+    "national_dex_number": 706,
+    "species": "goodra",
+    "form": null,
+    "shiny": true
+  },
+  {
+    "filename": "Menu_CP_0706-Hisui.png",
+    "national_dex_number": 706,
+    "species": "goodra",
+    "form": "Hisui",
+    "shiny": false
+  },
+  {
+    "filename": "Menu_CP_0706-Hisui_shiny.png",
+    "national_dex_number": 706,
+    "species": "goodra",
+    "form": "Hisui",
+    "shiny": true
+  },
+  {
+    "filename": "Menu_CP_0707.png",
+    "national_dex_number": 707,
+    "species": "klefki",
+    "form": null,
+    "shiny": false
+  },
+  {
+    "filename": "Menu_CP_0707_shiny.png",
+    "national_dex_number": 707,
+    "species": "klefki",
+    "form": null,
+    "shiny": true
+  },
+  {
+    "filename": "Menu_CP_0709.png",
+    "national_dex_number": 709,
+    "species": "trevenant",
+    "form": null,
+    "shiny": false
+  },
+  {
+    "filename": "Menu_CP_0709_shiny.png",
+    "national_dex_number": 709,
+    "species": "trevenant",
+    "form": null,
+    "shiny": true
+  },
+  {
+    "filename": "Menu_CP_0711.png",
+    "national_dex_number": 711,
+    "species": "gourgeist",
+    "form": null,
+    "shiny": false
+  },
+  {
+    "filename": "Menu_CP_0711_shiny.png",
+    "national_dex_number": 711,
+    "species": "gourgeist",
+    "form": null,
+    "shiny": true
+  },
+  {
+    "filename": "Menu_CP_0711-Jumbo.png",
+    "national_dex_number": 711,
+    "species": "gourgeist",
+    "form": "Jumbo",
+    "shiny": false
+  },
+  {
+    "filename": "Menu_CP_0711-Jumbo_shiny.png",
+    "national_dex_number": 711,
+    "species": "gourgeist",
+    "form": "Jumbo",
+    "shiny": true
+  },
+  {
+    "filename": "Menu_CP_0711-Large.png",
+    "national_dex_number": 711,
+    "species": "gourgeist",
+    "form": "Large",
+    "shiny": false
+  },
+  {
+    "filename": "Menu_CP_0711-Large_shiny.png",
+    "national_dex_number": 711,
+    "species": "gourgeist",
+    "form": "Large",
+    "shiny": true
+  },
+  {
+    "filename": "Menu_CP_0711-Small.png",
+    "national_dex_number": 711,
+    "species": "gourgeist",
+    "form": "Small",
+    "shiny": false
+  },
+  {
+    "filename": "Menu_CP_0711-Small_shiny.png",
+    "national_dex_number": 711,
+    "species": "gourgeist",
+    "form": "Small",
+    "shiny": true
+  },
+  {
+    "filename": "Menu_CP_0713.png",
+    "national_dex_number": 713,
+    "species": "avalugg",
+    "form": null,
+    "shiny": false
+  },
+  {
+    "filename": "Menu_CP_0713_shiny.png",
+    "national_dex_number": 713,
+    "species": "avalugg",
+    "form": null,
+    "shiny": true
+  },
+  {
+    "filename": "Menu_CP_0713-Hisui.png",
+    "national_dex_number": 713,
+    "species": "avalugg",
+    "form": "Hisui",
+    "shiny": false
+  },
+  {
+    "filename": "Menu_CP_0713-Hisui_shiny.png",
+    "national_dex_number": 713,
+    "species": "avalugg",
+    "form": "Hisui",
+    "shiny": true
+  },
+  {
+    "filename": "Menu_CP_0715.png",
+    "national_dex_number": 715,
+    "species": "noivern",
+    "form": null,
+    "shiny": false
+  },
+  {
+    "filename": "Menu_CP_0715_shiny.png",
+    "national_dex_number": 715,
+    "species": "noivern",
+    "form": null,
+    "shiny": true
+  },
+  {
+    "filename": "Menu_CP_0724.png",
+    "national_dex_number": 724,
+    "species": "decidueye",
+    "form": null,
+    "shiny": false
+  },
+  {
+    "filename": "Menu_CP_0724_shiny.png",
+    "national_dex_number": 724,
+    "species": "decidueye",
+    "form": null,
+    "shiny": true
+  },
+  {
+    "filename": "Menu_CP_0724-Hisui.png",
+    "national_dex_number": 724,
+    "species": "decidueye",
+    "form": "Hisui",
+    "shiny": false
+  },
+  {
+    "filename": "Menu_CP_0724-Hisui_shiny.png",
+    "national_dex_number": 724,
+    "species": "decidueye",
+    "form": "Hisui",
+    "shiny": true
+  },
+  {
+    "filename": "Menu_CP_0727.png",
+    "national_dex_number": 727,
+    "species": "incineroar",
+    "form": null,
+    "shiny": false
+  },
+  {
+    "filename": "Menu_CP_0727_shiny.png",
+    "national_dex_number": 727,
+    "species": "incineroar",
+    "form": null,
+    "shiny": true
+  },
+  {
+    "filename": "Menu_CP_0730.png",
+    "national_dex_number": 730,
+    "species": "primarina",
+    "form": null,
+    "shiny": false
+  },
+  {
+    "filename": "Menu_CP_0730_shiny.png",
+    "national_dex_number": 730,
+    "species": "primarina",
+    "form": null,
+    "shiny": true
+  },
+  {
+    "filename": "Menu_CP_0733.png",
+    "national_dex_number": 733,
+    "species": "toucannon",
+    "form": null,
+    "shiny": false
+  },
+  {
+    "filename": "Menu_CP_0733_shiny.png",
+    "national_dex_number": 733,
+    "species": "toucannon",
+    "form": null,
+    "shiny": true
+  },
+  {
+    "filename": "Menu_CP_0740.png",
+    "national_dex_number": 740,
+    "species": "crabominable",
+    "form": null,
+    "shiny": false
+  },
+  {
+    "filename": "Menu_CP_0740_shiny.png",
+    "national_dex_number": 740,
+    "species": "crabominable",
+    "form": null,
+    "shiny": true
+  },
+  {
+    "filename": "Menu_CP_0740-Mega.png",
+    "national_dex_number": 740,
+    "species": "crabominable",
+    "form": "Mega",
+    "shiny": false
+  },
+  {
+    "filename": "Menu_CP_0740-Mega_shiny.png",
+    "national_dex_number": 740,
+    "species": "crabominable",
+    "form": "Mega",
+    "shiny": true
+  },
+  {
+    "filename": "Menu_CP_0745.png",
+    "national_dex_number": 745,
+    "species": "lycanroc",
+    "form": null,
+    "shiny": false
+  },
+  {
+    "filename": "Menu_CP_0745_shiny.png",
+    "national_dex_number": 745,
+    "species": "lycanroc",
+    "form": null,
+    "shiny": true
+  },
+  {
+    "filename": "Menu_CP_0745-Dusk.png",
+    "national_dex_number": 745,
+    "species": "lycanroc",
+    "form": "Dusk",
+    "shiny": false
+  },
+  {
+    "filename": "Menu_CP_0745-Dusk_shiny.png",
+    "national_dex_number": 745,
+    "species": "lycanroc",
+    "form": "Dusk",
+    "shiny": true
+  },
+  {
+    "filename": "Menu_CP_0745-Midnight.png",
+    "national_dex_number": 745,
+    "species": "lycanroc",
+    "form": "Midnight",
+    "shiny": false
+  },
+  {
+    "filename": "Menu_CP_0745-Midnight_shiny.png",
+    "national_dex_number": 745,
+    "species": "lycanroc",
+    "form": "Midnight",
+    "shiny": true
+  },
+  {
+    "filename": "Menu_CP_0748.png",
+    "national_dex_number": 748,
+    "species": "toxapex",
+    "form": null,
+    "shiny": false
+  },
+  {
+    "filename": "Menu_CP_0748_shiny.png",
+    "national_dex_number": 748,
+    "species": "toxapex",
+    "form": null,
+    "shiny": true
+  },
+  {
+    "filename": "Menu_CP_0750.png",
+    "national_dex_number": 750,
+    "species": "mudsdale",
+    "form": null,
+    "shiny": false
+  },
+  {
+    "filename": "Menu_CP_0750_shiny.png",
+    "national_dex_number": 750,
+    "species": "mudsdale",
+    "form": null,
+    "shiny": true
+  },
+  {
+    "filename": "Menu_CP_0752.png",
+    "national_dex_number": 752,
+    "species": "araquanid",
+    "form": null,
+    "shiny": false
+  },
+  {
+    "filename": "Menu_CP_0752_shiny.png",
+    "national_dex_number": 752,
+    "species": "araquanid",
+    "form": null,
+    "shiny": true
+  },
+  {
+    "filename": "Menu_CP_0758.png",
+    "national_dex_number": 758,
+    "species": "salazzle",
+    "form": null,
+    "shiny": false
+  },
+  {
+    "filename": "Menu_CP_0758_shiny.png",
+    "national_dex_number": 758,
+    "species": "salazzle",
+    "form": null,
+    "shiny": true
+  },
+  {
+    "filename": "Menu_CP_0763.png",
+    "national_dex_number": 763,
+    "species": "tsareena",
+    "form": null,
+    "shiny": false
+  },
+  {
+    "filename": "Menu_CP_0763_shiny.png",
+    "national_dex_number": 763,
+    "species": "tsareena",
+    "form": null,
+    "shiny": true
+  },
+  {
+    "filename": "Menu_CP_0765.png",
+    "national_dex_number": 765,
+    "species": "oranguru",
+    "form": null,
+    "shiny": false
+  },
+  {
+    "filename": "Menu_CP_0765_shiny.png",
+    "national_dex_number": 765,
+    "species": "oranguru",
+    "form": null,
+    "shiny": true
+  },
+  {
+    "filename": "Menu_CP_0766.png",
+    "national_dex_number": 766,
+    "species": "passimian",
+    "form": null,
+    "shiny": false
+  },
+  {
+    "filename": "Menu_CP_0766_shiny.png",
+    "national_dex_number": 766,
+    "species": "passimian",
+    "form": null,
+    "shiny": true
+  },
+  {
+    "filename": "Menu_CP_0778.png",
+    "national_dex_number": 778,
+    "species": "mimikyu",
+    "form": null,
+    "shiny": false
+  },
+  {
+    "filename": "Menu_CP_0778_shiny.png",
+    "national_dex_number": 778,
+    "species": "mimikyu",
+    "form": null,
+    "shiny": true
+  },
+  {
+    "filename": "Menu_CP_0780.png",
+    "national_dex_number": 780,
+    "species": "drampa",
+    "form": null,
+    "shiny": false
+  },
+  {
+    "filename": "Menu_CP_0780_shiny.png",
+    "national_dex_number": 780,
+    "species": "drampa",
+    "form": null,
+    "shiny": true
+  },
+  {
+    "filename": "Menu_CP_0780-Mega.png",
+    "national_dex_number": 780,
+    "species": "drampa",
+    "form": "Mega",
+    "shiny": false
+  },
+  {
+    "filename": "Menu_CP_0780-Mega_shiny.png",
+    "national_dex_number": 780,
+    "species": "drampa",
+    "form": "Mega",
+    "shiny": true
+  },
+  {
+    "filename": "Menu_CP_0784.png",
+    "national_dex_number": 784,
+    "species": "kommo-o",
+    "form": null,
+    "shiny": false
+  },
+  {
+    "filename": "Menu_CP_0784_shiny.png",
+    "national_dex_number": 784,
+    "species": "kommo-o",
+    "form": null,
+    "shiny": true
+  },
+  {
+    "filename": "Menu_CP_0823.png",
+    "national_dex_number": 823,
+    "species": "corviknight",
+    "form": null,
+    "shiny": false
+  },
+  {
+    "filename": "Menu_CP_0823_shiny.png",
+    "national_dex_number": 823,
+    "species": "corviknight",
+    "form": null,
+    "shiny": true
+  },
+  {
+    "filename": "Menu_CP_0841.png",
+    "national_dex_number": 841,
+    "species": "flapple",
+    "form": null,
+    "shiny": false
+  },
+  {
+    "filename": "Menu_CP_0841_shiny.png",
+    "national_dex_number": 841,
+    "species": "flapple",
+    "form": null,
+    "shiny": true
+  },
+  {
+    "filename": "Menu_CP_0842.png",
+    "national_dex_number": 842,
+    "species": "appletun",
+    "form": null,
+    "shiny": false
+  },
+  {
+    "filename": "Menu_CP_0842_shiny.png",
+    "national_dex_number": 842,
+    "species": "appletun",
+    "form": null,
+    "shiny": true
+  },
+  {
+    "filename": "Menu_CP_0844.png",
+    "national_dex_number": 844,
+    "species": "sandaconda",
+    "form": null,
+    "shiny": false
+  },
+  {
+    "filename": "Menu_CP_0844_shiny.png",
+    "national_dex_number": 844,
+    "species": "sandaconda",
+    "form": null,
+    "shiny": true
+  },
+  {
+    "filename": "Menu_CP_0855.png",
+    "national_dex_number": 855,
+    "species": "polteageist",
+    "form": null,
+    "shiny": false
+  },
+  {
+    "filename": "Menu_CP_0855_shiny.png",
+    "national_dex_number": 855,
+    "species": "polteageist",
+    "form": null,
+    "shiny": true
+  },
+  {
+    "filename": "Menu_CP_0858.png",
+    "national_dex_number": 858,
+    "species": "hatterene",
+    "form": null,
+    "shiny": false
+  },
+  {
+    "filename": "Menu_CP_0858_shiny.png",
+    "national_dex_number": 858,
+    "species": "hatterene",
+    "form": null,
+    "shiny": true
+  },
+  {
+    "filename": "Menu_CP_0861.png",
+    "national_dex_number": 861,
+    "species": "grimmsnarl",
+    "form": null,
+    "shiny": false
+  },
+  {
+    "filename": "Menu_CP_0861_shiny.png",
+    "national_dex_number": 861,
+    "species": "grimmsnarl",
+    "form": null,
+    "shiny": true
+  },
+  {
+    "filename": "Menu_CP_0866.png",
+    "national_dex_number": 866,
+    "species": "mr. rime",
+    "form": null,
+    "shiny": false
+  },
+  {
+    "filename": "Menu_CP_0866_shiny.png",
+    "national_dex_number": 866,
+    "species": "mr. rime",
+    "form": null,
+    "shiny": true
+  },
+  {
+    "filename": "Menu_CP_0867.png",
+    "national_dex_number": 867,
+    "species": "runerigus",
+    "form": null,
+    "shiny": false
+  },
+  {
+    "filename": "Menu_CP_0867_shiny.png",
+    "national_dex_number": 867,
+    "species": "runerigus",
+    "form": null,
+    "shiny": true
+  },
+  {
+    "filename": "Menu_CP_0869.png",
+    "national_dex_number": 869,
+    "species": "alcremie",
+    "form": null,
+    "shiny": false
+  },
+  {
+    "filename": "Menu_CP_0869_shiny.png",
+    "national_dex_number": 869,
+    "species": "alcremie",
+    "form": null,
+    "shiny": true
+  },
+  {
+    "filename": "Menu_CP_0869-Caramel_Swirl.png",
+    "national_dex_number": 869,
+    "species": "alcremie",
+    "form": "Caramel_Swirl",
+    "shiny": false
+  },
+  {
+    "filename": "Menu_CP_0869-Caramel_Swirl_shiny.png",
+    "national_dex_number": 869,
+    "species": "alcremie",
+    "form": "Caramel_Swirl",
+    "shiny": true
+  },
+  {
+    "filename": "Menu_CP_0869-Lemon_Cream.png",
+    "national_dex_number": 869,
+    "species": "alcremie",
+    "form": "Lemon_Cream",
+    "shiny": false
+  },
+  {
+    "filename": "Menu_CP_0869-Lemon_Cream_shiny.png",
+    "national_dex_number": 869,
+    "species": "alcremie",
+    "form": "Lemon_Cream",
+    "shiny": true
+  },
+  {
+    "filename": "Menu_CP_0869-Matcha_Cream.png",
+    "national_dex_number": 869,
+    "species": "alcremie",
+    "form": "Matcha_Cream",
+    "shiny": false
+  },
+  {
+    "filename": "Menu_CP_0869-Matcha_Cream_shiny.png",
+    "national_dex_number": 869,
+    "species": "alcremie",
+    "form": "Matcha_Cream",
+    "shiny": true
+  },
+  {
+    "filename": "Menu_CP_0869-Mint_Cream.png",
+    "national_dex_number": 869,
+    "species": "alcremie",
+    "form": "Mint_Cream",
+    "shiny": false
+  },
+  {
+    "filename": "Menu_CP_0869-Mint_Cream_shiny.png",
+    "national_dex_number": 869,
+    "species": "alcremie",
+    "form": "Mint_Cream",
+    "shiny": true
+  },
+  {
+    "filename": "Menu_CP_0869-Rainbow_Swirl.png",
+    "national_dex_number": 869,
+    "species": "alcremie",
+    "form": "Rainbow_Swirl",
+    "shiny": false
+  },
+  {
+    "filename": "Menu_CP_0869-Rainbow_Swirl_shiny.png",
+    "national_dex_number": 869,
+    "species": "alcremie",
+    "form": "Rainbow_Swirl",
+    "shiny": true
+  },
+  {
+    "filename": "Menu_CP_0869-Ruby_Cream.png",
+    "national_dex_number": 869,
+    "species": "alcremie",
+    "form": "Ruby_Cream",
+    "shiny": false
+  },
+  {
+    "filename": "Menu_CP_0869-Ruby_Cream_shiny.png",
+    "national_dex_number": 869,
+    "species": "alcremie",
+    "form": "Ruby_Cream",
+    "shiny": true
+  },
+  {
+    "filename": "Menu_CP_0869-Ruby_Swirl.png",
+    "national_dex_number": 869,
+    "species": "alcremie",
+    "form": "Ruby_Swirl",
+    "shiny": false
+  },
+  {
+    "filename": "Menu_CP_0869-Ruby_Swirl_shiny.png",
+    "national_dex_number": 869,
+    "species": "alcremie",
+    "form": "Ruby_Swirl",
+    "shiny": true
+  },
+  {
+    "filename": "Menu_CP_0869-Salted_Cream.png",
+    "national_dex_number": 869,
+    "species": "alcremie",
+    "form": "Salted_Cream",
+    "shiny": false
+  },
+  {
+    "filename": "Menu_CP_0869-Salted_Cream_shiny.png",
+    "national_dex_number": 869,
+    "species": "alcremie",
+    "form": "Salted_Cream",
+    "shiny": true
+  },
+  {
+    "filename": "Menu_CP_0870.png",
+    "national_dex_number": 870,
+    "species": "falinks",
+    "form": null,
+    "shiny": false
+  },
+  {
+    "filename": "Menu_CP_0870_shiny.png",
+    "national_dex_number": 870,
+    "species": "falinks",
+    "form": null,
+    "shiny": true
+  },
+  {
+    "filename": "Menu_CP_0870-Mega.png",
+    "national_dex_number": 870,
+    "species": "falinks",
+    "form": "Mega",
+    "shiny": false
+  },
+  {
+    "filename": "Menu_CP_0870-Mega_shiny.png",
+    "national_dex_number": 870,
+    "species": "falinks",
+    "form": "Mega",
+    "shiny": true
+  },
+  {
+    "filename": "Menu_CP_0877.png",
+    "national_dex_number": 877,
+    "species": "morpeko",
+    "form": null,
+    "shiny": false
+  },
+  {
+    "filename": "Menu_CP_0877_shiny.png",
+    "national_dex_number": 877,
+    "species": "morpeko",
+    "form": null,
+    "shiny": true
+  },
+  {
+    "filename": "Menu_CP_0877-Hangry.png",
+    "national_dex_number": 877,
+    "species": "morpeko",
+    "form": "Hangry",
+    "shiny": false
+  },
+  {
+    "filename": "Menu_CP_0877-Hangry_shiny.png",
+    "national_dex_number": 877,
+    "species": "morpeko",
+    "form": "Hangry",
+    "shiny": true
+  },
+  {
+    "filename": "Menu_CP_0887.png",
+    "national_dex_number": 887,
+    "species": "dragapult",
+    "form": null,
+    "shiny": false
+  },
+  {
+    "filename": "Menu_CP_0887_shiny.png",
+    "national_dex_number": 887,
+    "species": "dragapult",
+    "form": null,
+    "shiny": true
+  },
+  {
+    "filename": "Menu_CP_0899.png",
+    "national_dex_number": 899,
+    "species": "wyrdeer",
+    "form": null,
+    "shiny": false
+  },
+  {
+    "filename": "Menu_CP_0899_shiny.png",
+    "national_dex_number": 899,
+    "species": "wyrdeer",
+    "form": null,
+    "shiny": true
+  },
+  {
+    "filename": "Menu_CP_0900.png",
+    "national_dex_number": 900,
+    "species": "kleavor",
+    "form": null,
+    "shiny": false
+  },
+  {
+    "filename": "Menu_CP_0900_shiny.png",
+    "national_dex_number": 900,
+    "species": "kleavor",
+    "form": null,
+    "shiny": true
+  },
+  {
+    "filename": "Menu_CP_0902.png",
+    "national_dex_number": 902,
+    "species": "basculegion",
+    "form": null,
+    "shiny": false
+  },
+  {
+    "filename": "Menu_CP_0902_shiny.png",
+    "national_dex_number": 902,
+    "species": "basculegion",
+    "form": null,
+    "shiny": true
+  },
+  {
+    "filename": "Menu_CP_0902-Female.png",
+    "national_dex_number": 902,
+    "species": "basculegion",
+    "form": "Female",
+    "shiny": false
+  },
+  {
+    "filename": "Menu_CP_0902-Female_shiny.png",
+    "national_dex_number": 902,
+    "species": "basculegion",
+    "form": "Female",
+    "shiny": true
+  },
+  {
+    "filename": "Menu_CP_0903.png",
+    "national_dex_number": 903,
+    "species": "sneasler",
+    "form": null,
+    "shiny": false
+  },
+  {
+    "filename": "Menu_CP_0903_shiny.png",
+    "national_dex_number": 903,
+    "species": "sneasler",
+    "form": null,
+    "shiny": true
+  },
+  {
+    "filename": "Menu_CP_0904.png",
+    "national_dex_number": 904,
+    "species": "overqwil",
+    "form": null,
+    "shiny": false
+  },
+  {
+    "filename": "Menu_CP_0904_shiny.png",
+    "national_dex_number": 904,
+    "species": "overqwil",
+    "form": null,
+    "shiny": true
+  },
+  {
+    "filename": "Menu_CP_0908.png",
+    "national_dex_number": 908,
+    "species": "meowscarada",
+    "form": null,
+    "shiny": false
+  },
+  {
+    "filename": "Menu_CP_0908_shiny.png",
+    "national_dex_number": 908,
+    "species": "meowscarada",
+    "form": null,
+    "shiny": true
+  },
+  {
+    "filename": "Menu_CP_0911.png",
+    "national_dex_number": 911,
+    "species": "skeledirge",
+    "form": null,
+    "shiny": false
+  },
+  {
+    "filename": "Menu_CP_0911_shiny.png",
+    "national_dex_number": 911,
+    "species": "skeledirge",
+    "form": null,
+    "shiny": true
+  },
+  {
+    "filename": "Menu_CP_0914.png",
+    "national_dex_number": 914,
+    "species": "quaquaval",
+    "form": null,
+    "shiny": false
+  },
+  {
+    "filename": "Menu_CP_0914_shiny.png",
+    "national_dex_number": 914,
+    "species": "quaquaval",
+    "form": null,
+    "shiny": true
+  },
+  {
+    "filename": "Menu_CP_0923.png",
+    "national_dex_number": 923,
+    "species": "pawmot",
+    "form": null,
+    "shiny": false
+  },
+  {
+    "filename": "Menu_CP_0923_shiny.png",
+    "national_dex_number": 923,
+    "species": "pawmot",
+    "form": null,
+    "shiny": true
+  },
+  {
+    "filename": "Menu_CP_0925.png",
+    "national_dex_number": 925,
+    "species": "maushold",
+    "form": null,
+    "shiny": false
+  },
+  {
+    "filename": "Menu_CP_0925_shiny.png",
+    "national_dex_number": 925,
+    "species": "maushold",
+    "form": null,
+    "shiny": true
+  },
+  {
+    "filename": "Menu_CP_0925-Three.png",
+    "national_dex_number": 925,
+    "species": "maushold",
+    "form": "Three",
+    "shiny": false
+  },
+  {
+    "filename": "Menu_CP_0925-Three_shiny.png",
+    "national_dex_number": 925,
+    "species": "maushold",
+    "form": "Three",
+    "shiny": true
+  },
+  {
+    "filename": "Menu_CP_0934.png",
+    "national_dex_number": 934,
+    "species": "garganacl",
+    "form": null,
+    "shiny": false
+  },
+  {
+    "filename": "Menu_CP_0934_shiny.png",
+    "national_dex_number": 934,
+    "species": "garganacl",
+    "form": null,
+    "shiny": true
+  },
+  {
+    "filename": "Menu_CP_0936.png",
+    "national_dex_number": 936,
+    "species": "armarouge",
+    "form": null,
+    "shiny": false
+  },
+  {
+    "filename": "Menu_CP_0936_shiny.png",
+    "national_dex_number": 936,
+    "species": "armarouge",
+    "form": null,
+    "shiny": true
+  },
+  {
+    "filename": "Menu_CP_0937.png",
+    "national_dex_number": 937,
+    "species": "ceruledge",
+    "form": null,
+    "shiny": false
+  },
+  {
+    "filename": "Menu_CP_0937_shiny.png",
+    "national_dex_number": 937,
+    "species": "ceruledge",
+    "form": null,
+    "shiny": true
+  },
+  {
+    "filename": "Menu_CP_0939.png",
+    "national_dex_number": 939,
+    "species": "bellibolt",
+    "form": null,
+    "shiny": false
+  },
+  {
+    "filename": "Menu_CP_0939_shiny.png",
+    "national_dex_number": 939,
+    "species": "bellibolt",
+    "form": null,
+    "shiny": true
+  },
+  {
+    "filename": "Menu_CP_0952.png",
+    "national_dex_number": 952,
+    "species": "scovillain",
+    "form": null,
+    "shiny": false
+  },
+  {
+    "filename": "Menu_CP_0952_shiny.png",
+    "national_dex_number": 952,
+    "species": "scovillain",
+    "form": null,
+    "shiny": true
+  },
+  {
+    "filename": "Menu_CP_0952-Mega.png",
+    "national_dex_number": 952,
+    "species": "scovillain",
+    "form": "Mega",
+    "shiny": false
+  },
+  {
+    "filename": "Menu_CP_0952-Mega_shiny.png",
+    "national_dex_number": 952,
+    "species": "scovillain",
+    "form": "Mega",
+    "shiny": true
+  },
+  {
+    "filename": "Menu_CP_0956.png",
+    "national_dex_number": 956,
+    "species": "espathra",
+    "form": null,
+    "shiny": false
+  },
+  {
+    "filename": "Menu_CP_0956_shiny.png",
+    "national_dex_number": 956,
+    "species": "espathra",
+    "form": null,
+    "shiny": true
+  },
+  {
+    "filename": "Menu_CP_0959.png",
+    "national_dex_number": 959,
+    "species": "tinkaton",
+    "form": null,
+    "shiny": false
+  },
+  {
+    "filename": "Menu_CP_0959_shiny.png",
+    "national_dex_number": 959,
+    "species": "tinkaton",
+    "form": null,
+    "shiny": true
+  },
+  {
+    "filename": "Menu_CP_0964.png",
+    "national_dex_number": 964,
+    "species": "palafin",
+    "form": null,
+    "shiny": false
+  },
+  {
+    "filename": "Menu_CP_0964_shiny.png",
+    "national_dex_number": 964,
+    "species": "palafin",
+    "form": null,
+    "shiny": true
+  },
+  {
+    "filename": "Menu_CP_0964-Hero.png",
+    "national_dex_number": 964,
+    "species": "palafin",
+    "form": "Hero",
+    "shiny": false
+  },
+  {
+    "filename": "Menu_CP_0964-Hero_shiny.png",
+    "national_dex_number": 964,
+    "species": "palafin",
+    "form": "Hero",
+    "shiny": true
+  },
+  {
+    "filename": "Menu_CP_0968.png",
+    "national_dex_number": 968,
+    "species": "orthworm",
+    "form": null,
+    "shiny": false
+  },
+  {
+    "filename": "Menu_CP_0968_shiny.png",
+    "national_dex_number": 968,
+    "species": "orthworm",
+    "form": null,
+    "shiny": true
+  },
+  {
+    "filename": "Menu_CP_0970.png",
+    "national_dex_number": 970,
+    "species": "glimmora",
+    "form": null,
+    "shiny": false
+  },
+  {
+    "filename": "Menu_CP_0970_shiny.png",
+    "national_dex_number": 970,
+    "species": "glimmora",
+    "form": null,
+    "shiny": true
+  },
+  {
+    "filename": "Menu_CP_0970-Mega.png",
+    "national_dex_number": 970,
+    "species": "glimmora",
+    "form": "Mega",
+    "shiny": false
+  },
+  {
+    "filename": "Menu_CP_0970-Mega_shiny.png",
+    "national_dex_number": 970,
+    "species": "glimmora",
+    "form": "Mega",
+    "shiny": true
+  },
+  {
+    "filename": "Menu_CP_0972.png",
+    "national_dex_number": 972,
+    "species": "houndstone",
+    "form": null,
+    "shiny": false
+  },
+  {
+    "filename": "Menu_CP_0972_shiny.png",
+    "national_dex_number": 972,
+    "species": "houndstone",
+    "form": null,
+    "shiny": true
+  },
+  {
+    "filename": "Menu_CP_0979.png",
+    "national_dex_number": 979,
+    "species": "annihilape",
+    "form": null,
+    "shiny": false
+  },
+  {
+    "filename": "Menu_CP_0979_shiny.png",
+    "national_dex_number": 979,
+    "species": "annihilape",
+    "form": null,
+    "shiny": true
+  },
+  {
+    "filename": "Menu_CP_0981.png",
+    "national_dex_number": 981,
+    "species": "farigiraf",
+    "form": null,
+    "shiny": false
+  },
+  {
+    "filename": "Menu_CP_0981_shiny.png",
+    "national_dex_number": 981,
+    "species": "farigiraf",
+    "form": null,
+    "shiny": true
+  },
+  {
+    "filename": "Menu_CP_0983.png",
+    "national_dex_number": 983,
+    "species": "kingambit",
+    "form": null,
+    "shiny": false
+  },
+  {
+    "filename": "Menu_CP_0983_shiny.png",
+    "national_dex_number": 983,
+    "species": "kingambit",
+    "form": null,
+    "shiny": true
+  },
+  {
+    "filename": "Menu_CP_1000.png",
+    "national_dex_number": 1000,
+    "species": "gholdengo",
+    "form": null,
+    "shiny": false
+  },
+  {
+    "filename": "Menu_CP_1000_shiny.png",
+    "national_dex_number": 1000,
+    "species": "gholdengo",
+    "form": null,
+    "shiny": true
+  },
+  {
+    "filename": "Menu_CP_1013.png",
+    "national_dex_number": 1013,
+    "species": "sinistcha",
+    "form": null,
+    "shiny": false
+  },
+  {
+    "filename": "Menu_CP_1013_shiny.png",
+    "national_dex_number": 1013,
+    "species": "sinistcha",
+    "form": null,
+    "shiny": true
+  },
+  {
+    "filename": "Menu_CP_1018.png",
+    "national_dex_number": 1018,
+    "species": "archaludon",
+    "form": null,
+    "shiny": false
+  },
+  {
+    "filename": "Menu_CP_1018_shiny.png",
+    "national_dex_number": 1018,
+    "species": "archaludon",
+    "form": null,
+    "shiny": true
+  },
+  {
+    "filename": "Menu_CP_1019.png",
+    "national_dex_number": 1019,
+    "species": "hydrapple",
+    "form": null,
+    "shiny": false
+  },
+  {
+    "filename": "Menu_CP_1019_shiny.png",
+    "national_dex_number": 1019,
+    "species": "hydrapple",
+    "form": null,
+    "shiny": true
+  }
+]

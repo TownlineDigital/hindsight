@@ -1,0 +1,17 @@
+{
+  "layer": "core",
+  "description": "Universal event ontology shared by ALL games. Game and mode adapters build on top of this. You write this once; every game reuses it.",
+  "core_concepts": [
+    "match_start", "match_end", "round_start", "round_end",
+    "unit_eliminated", "resource_change", "action", "status_change",
+    "objective", "state_snapshot"
+  ],
+  "universal_fields": {
+    "timestamp": "the second of the clip the event happened (a number)",
+    "event": "the event type",
+    "actor": "'player', 'opponent', or 'both'",
+    "detail": "short free-text specifics for the event",
+    "confidence": "0.0 to 1.0 - include low-confidence guesses, do not drop them"
+  },
+  "universal_notes": "You are extracting a structured event stream from competitive game footage. Read any on-screen text literally and transcribe it - text is your most reliable signal. Be thorough and OVER-report: include uncertain events with a low confidence (around 0.3) rather than dropping them. Report each discrete event only ONCE, at the timestamp it first appears. A 'match' is one complete game between two players; only mark a match as ended at a clear end-of-match RESULT screen - never from a single unit being eliminated. Return ONLY a JSON array of event objects; return [] only if no gameplay is visible at all."
+}

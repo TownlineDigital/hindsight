@@ -1,0 +1,27 @@
+# Server/deploy dependencies (used by the Dockerfile) - deliberately a subset
+# of requirements.txt: excludes paddlepaddle/paddleocr, which are only used
+# by the standalone legacy 3_read_ocr.py script, not by analyze_matches.py's
+# actual OCR tier (that's pytesseract + ocr_battle_reader.py/
+# battle_text_parser.py - see requirements.txt's own comments and
+# ARCHITECTURE_HANDOFF.md). Leaving them out keeps the deploy image's build
+# fast and small; if 3_read_ocr.py is ever needed on the server, install them
+# there separately.
+#
+# pytesseract itself still needs the real Tesseract OCR binary - that's
+# installed at the OS level in the Dockerfile (apt-get tesseract-ocr), not
+# here.
+
+google-genai
+imageio-ffmpeg
+opencv-python
+pytesseract
+Pillow
+
+# Backend API
+fastapi
+uvicorn[standard]
+python-multipart
+
+# Accounts + persistent job storage
+supabase
+python-dotenv

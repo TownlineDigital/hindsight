@@ -1,0 +1,31 @@
+# Install everything with:  pip install -r requirements.txt
+# (PaddleOCR is optional - see the README. If it fails, install the top three
+#  lines only and skip step 3 for now.)
+
+google-genai
+imageio-ffmpeg
+opencv-python
+
+# Local, free OCR-based battle-text reading (ocr_battle_reader.py /
+# battle_text_parser.py - see ARCHITECTURE_HANDOFF.md). pytesseract is just
+# a Python wrapper - it also needs the real Tesseract OCR program installed
+# separately (it's not a pip package): on Windows, the UB-Mannheim installer
+# (https://github.com/UB-Mannheim/tesseract/wiki) is the standard distribution;
+# on Mac, `brew install tesseract`; on Linux, `apt install tesseract-ocr`. If
+# `tesseract` isn't on your PATH after installing, point pytesseract at it
+# directly: `pytesseract.pytesseract.tesseract_cmd = r"C:\Program Files\Tesseract-OCR\tesseract.exe"`.
+pytesseract
+Pillow
+
+# Backend API (see backend/ and ARCHITECTURE_HANDOFF.md section 8):
+fastapi
+uvicorn[standard]
+python-multipart
+
+# Accounts + persistent job storage (see backend/README_BACKEND.md "Accounts"):
+supabase
+python-dotenv
+
+# Optional - only needed for step 3 (PaddleOCR):
+paddlepaddle
+paddleocr

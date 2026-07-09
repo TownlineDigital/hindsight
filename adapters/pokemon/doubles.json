@@ -1,0 +1,27 @@
+{
+  "layer": "mode",
+  "mode": "doubles",
+  "display_name": "Pokemon Champions - Doubles (VGC-style)",
+  "description": "Doubles: TWO Pokemon active per side (four on the field). A team preview precedes each match; each player brings 4 of 6. A match ends when all of one side's brought 4 have fainted.",
+  "event_types": ["team_preview"],
+  "remove_event_types": ["terastallized"],
+  "rules": {
+    "active_per_side": 2,
+    "team_size": 6,
+    "bring_count": 4,
+    "speed_control": ["Tailwind", "Trick Room", "Icy Wind", "Thunder Wave", "paralysis"],
+    "format_notes": "This is DOUBLES: 2 Pokemon active per side, team of 6, bring 4 of 6 (read directly off the selection screen, don't guess). Species Clause is in effect - Mega Evolution is a transformation of an existing team member, not a second Pokemon; never count 'X' and 'X (Mega)' as two different picks. Coaching must respect: 2 active per side, bring 4 of 6, win by KOing all of the opponent's brought Pokemon. Regulation-specific facts (which species/mechanics are actually legal right now - Mega/Dynamax/Terastallization, the exact roster) come from a SEPARATE regulation layer (adapters/pokemon/regulations/<id>.json, merged in by compose_schema.py's --regulation flag), not from this mode file - this file only covers what's true of doubles as a MODE, regardless of which regulation is active. See ARCHITECTURE_HANDOFF.md section 3a."
+  },
+  "fields": {
+    "player_active": "field_state: the player's TWO active Pokemon, comma-separated, if visible",
+    "opponent_active": "field_state: the opponent's TWO active Pokemon, comma-separated, if visible"
+  },
+  "notes": "This is DOUBLES: TWO Pokemon active per side, FOUR on the field. A 'field_state' must list both of the player's active Pokemon (player_active) and both of the opponent's (opponent_active), with their HP in detail. TEAM PREVIEW: before each match a screen shows BOTH players' 6 Pokemon and each picks 4 - emit ONE 'team_preview' listing the 6 per side (and the 4 brought if shown); team preview marks a NEW MATCH starting. A match ends only when ALL of one side's brought (up to 4) Pokemon have fainted, shown by a 'You won!'/defeat/results screen - emit ONE 'battle_end' per match with winner 'player' or 'opponent' (expect up to ~4 faints per side per match). This game has a small CLOSED roster (not the full Pokedex, exact roster and legal mechanics depend on which regulation is active - see the separate regulation layer). Species Clause: Mega Evolution is the SAME team member transforming, never a second Pokemon.",
+  "example_output": [
+    {"timestamp": 10, "event": "team_preview", "actor": "both", "pokemon": null, "player_active": null, "opponent_active": null, "detail": "P1 team: Incineroar, Sylveon, Blaziken, Torterra, Corviknight, Garchomp | P2 team: Metagross, Whimsicott, Farigiraf, Talonflame, Kingambit, Grimmsnarl", "hp_percent": null, "winner": null, "confidence": 0.85},
+    {"timestamp": 45, "event": "field_state", "actor": "both", "pokemon": null, "player_active": "Incineroar, Sylveon", "opponent_active": "Metagross, Whimsicott", "detail": "Incineroar 100% / Sylveon 100% vs Metagross 100% / Whimsicott 100%", "hp_percent": null, "winner": null, "confidence": 0.85},
+    {"timestamp": 60, "event": "move_used", "actor": "player", "pokemon": "Sylveon", "player_active": null, "opponent_active": null, "detail": "Hyper Voice", "hp_percent": null, "winner": null, "confidence": 0.9},
+    {"timestamp": 240, "event": "pokemon_fainted", "actor": "opponent", "pokemon": "Metagross", "player_active": null, "opponent_active": null, "detail": "fainted (opponent's last brought Pokemon)", "hp_percent": 0, "winner": null, "confidence": 0.9},
+    {"timestamp": 243, "event": "battle_end", "actor": "player", "pokemon": null, "player_active": null, "opponent_active": null, "detail": "You won the battle!", "hp_percent": null, "winner": "player", "confidence": 0.95}
+  ]
+}
