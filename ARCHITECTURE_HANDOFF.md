@@ -2990,3 +2990,337 @@ via the Read tool first. Worth a cleanup pass later to physically move
 #232/#233 to its correct chronological position, but that's a pure
 documentation reordering with no code impact, so it wasn't done as part of
 this task.
+
+## 12. The "Gameplay" rework: named uploads + combined "All Gameplay" view (2026-07-09, tasks #243-249)
+
+**Why this exists:** direct user request, verbatim: "I think we need to
+rework the 'Job' Dropdown in the top right, I think we need to start
+referring to it as 'Gameplay' and when they go to upload... the system asks
+the user to name the file something easily identifiable for future
+reference. There should also be a default option instead of just the most
+recent job, it gives you the combined report as opposed to the most recent
+Gameplay upload." Follow-up clarification when asked how deep "combined"
+should go: "All gameplay should combine the matches, the opponent intel, win
+rate/matchup breakdowns. It should show all of the data combined since it's
+all for the same game." That second message is the reason this isn't just a
+label change plus a link to the existing Career tab — every tab that shows
+per-upload data (Matches, Opponent intel, Progression) had to be made to work
+against `career.merge_user_events`' merged event stream, not just Overview.
+
+**Three parts, three layers of the stack:**
+
+### 12a. Naming an upload (backend + DB)
+
+- `supabase_schema.sql`: new nullable `name text` column on `public.jobs`,
+  added via the same `alter table ... add column if not exists` pattern the
+  `player`/`regulation` columns already used (so re-running the whole schema
+  file against an existing project is still a no-op except for genuinely new
+  columns). Nullable rather than `not null` so pre-existing rows created
+  before this column existed don't need a backfill to stay valid — in
+  practice a NEW job's `name` is never actually blank, because:
+- `backend/jobs.py`: `create_job()` gained a `name: Optional[str] = None`
+  parameter. `name = (name or "").strip() or _default_job_name(source_type)`
+  means an omitted/blank name always gets replaced with a real, non-empty
+  fallback string (e.g. `"Video upload - Jul 09, 2026"`) right at creation —
+  the frontend's Gameplay dropdown never has to special-case "no name yet."
+  `_default_job_name()` picks a human label per `source_type` ("Video URL" /
+  "Video upload" / "Showdown replay" / "Seed data") and appends
+  `time.strftime('%b %d, %Y')` — `%d` (zero-padded), not the GNU-only `%-d`,
+  since this needs to run identically on a dev's Windows machine and inside
+  the Linux Docker deploy, and Windows' `strftime` doesn't support the
+  no-leading-zero variant. `_local_discover()`'s synthesized row (a
+  hand-seeded `jobs/demo/` folder that never went through `create_job`) gets
+  `"name": None` explicitly, with a comment explaining why — it's the one
+  legitimately-nullable case in practice.
+- `backend/models.py`: `JobStatus` gained `name: Optional[str] = None`.
+- `backend/main.py`: `POST /jobs` gained a `name: Optional[str] = Form(None,
+  ...)` parameter, threaded through to `jobs.create_job(..., name=name)` and
+  into both `JobStatus` return sites (the immediate post-creation response,
+  and `GET /jobs/{job_id}`'s `job_status`). `GET /jobs` (`list_jobs`) needed
+  no change — it already returns `jobs.list_jobs()`'s raw dicts, which
+  already includes `name` via `_row_to_job`.
+- `frontend/src/components/NewJobPanel.jsx`: a new "Name this Gameplay" text
+  input (optional, `maxLength=200`, shared across all three source tabs —
+  video URL/upload/Showdown), appended to `formData` only if non-blank
+  (`if (name.trim()) formData.append("name", name.trim())`) so an empty
+  input genuinely omits the field rather than sending `""` and fighting the
+  backend's own `(name or "").strip() or _default...` fallback logic.
+
+### 12b. Renaming the dropdown + the combined default (frontend)
+
+- `frontend/src/components/Header.jsx`: the label changed from "Job" to
+  "Gameplay"; each `<option>` now shows `j.name || j.job_id` instead of the
+  raw job_id (falling back to the id only for that pre-existing-column edge
+  case above); "+ New job" became "+ New Gameplay". A new sentinel constant,
+  `ALL_GAMEPLAY = "__all__"`, is exported from this file and pinned as the
+  FIRST option in the dropdown ("All Gameplay (Combined)") whenever there's
+  at least one job to show — chosen as a 12-char-hex-incompatible string so
+  it can never collide with a real `job_id` (all of which come from
+  `uuid.uuid4().hex[:12]`, see `backend/jobs.create_job`).
+- `frontend/src/App.jsx`: `loadJobs()` now defaults `preferredId` to
+  `ALL_GAMEPLAY` whenever at least one job has `status === "done"` (this is
+  the literal "default option instead of just the most recent job" the user
+  asked for) — falling back to the old "prefer `demo`, else the first job"
+  behavior only when NOTHING is done yet (nothing to combine, so showing a
+  still-processing job's own progress is more useful than an empty combined
+  view). A new `loadCombinedDashboard()` mirrors `loadDashboard()` exactly
+  but calls the `/career/*` endpoints instead of `/jobs/{id}/*` — same
+  `Promise.all` shape, same `data` state shape, so every existing tab
+  (Overview/Progression/Matches/Opponent intel) renders unmodified regardless
+  of which loader populated `data`. `openJob(id, list)` — the single place
+  that already decided poll-vs-load for a real job id — gained one new
+  branch at the top: `if (id === ALL_GAMEPLAY) { loadCombinedDashboard();
+  return; }`. Combined mode never needs polling: `merge_user_events` only
+  ever looks at jobs already `status === "done"`, so there's nothing in it
+  that could still be "running." A derived `isCombined = jobId ===
+  ALL_GAMEPLAY` is computed once and threaded down to the few children that
+  need to behave differently in combined mode (see 12c).
+
+### 12c. Making "combined" mean genuinely combined data, not a redirect
+
+The user's clarifying message ("All gameplay should combine the matches, the
+opponent intel, win rate/matchup breakdowns... show all of the data
+combined") explicitly rejected the simpler alternatives considered first
+(redirect the Matches/Opponent-intel tabs to the existing Career tab, or hide
+those tabs entirely in combined mode) — genuine merged data has to render in
+the SAME tabs a single-upload view uses.
+
+- `backend/main.py` gained three new `/career/*` endpoints, following the
+  exact existing pattern every other `/career/*` route already uses
+  (`merged, _ = career.merge_user_events(user["id"]); return
+  analytics.compute_X(merged)`):
+  - `GET /career/events` — the raw merged array, the combined-view analog of
+    `GET /jobs/{id}/events`. Needed because `MatchesTable`/`MatchSummary`/
+    `BattleReplay` all consume a job's raw events directly (not just
+    already-aggregated stats), to build per-match team panels, recaps, and
+    battle replays.
+  - `GET /career/opponent-strength` — `analytics.compute_opponent_strength(merged)`,
+    the combined analog of the per-job endpoint, feeding the Opponent intel
+    tab unmodified.
+  - `GET /career/battle-profile` — `analytics.compute_job_battle_profile(merged)`
+    (the same §11 function, just fed merged events instead of one job's),
+    feeding the Progression tab's existing `BattleProfile` component
+    unmodified.
+- `frontend/src/api.js` gained matching `careerEvents`/`careerOpponentStrength`/
+  `careerBattleProfile` wrappers.
+- `frontend/src/components/MatchesTable.jsx` gained an `isCombined` prop and
+  a `sourceJobIdFor(events, matchNumber)` helper. **The key constraint this
+  whole part is built around:** `career.merge_user_events` remaps every
+  match to a GLOBAL match number unique across jobs (see §"Design cross-job
+  career event merge module"/`backend/career.py`'s own docstring), but each
+  event still carries `source_job_id` — the ORIGINAL job it came from — and a
+  merged match is always entirely from one job (matches are never split
+  across jobs). Frame-serving (`GET /jobs/{id}/frame/...`) and every
+  `reference_frame` path are stored relative to that original job's own
+  folder, so combined-mode `MatchesTable` looks up each expanded match's real
+  `source_job_id` from its first event and passes THAT (not the `__all__`
+  sentinel) down to `MatchSummary`/`BattleReplay` as `jobId` — this is what
+  makes team-preview/recap photos and battle-replay frames work correctly in
+  combined mode without any change to the frame-serving endpoint itself.
+- **Corrections are deliberately disabled in combined mode, not fixed** —
+  documented as a conscious scope decision, not an oversight. Every
+  correction path in this codebase (`MatchSummary.jsx`'s `WinnerCard`/
+  `GenericOccurrenceCard`/`ClarificationCard`, and `MatchEvents.jsx`'s
+  `EventRow`) computes an index that is the event's ordinal POSITION within
+  whatever `events` array was actually passed in, and sends that raw index to
+  `PATCH /jobs/{job_id}/events/{index}`, which indexes into that ONE job's
+  own `events.json` file on disk by array position. Since `merge_user_events`
+  concatenates arrays from multiple jobs, an index computed against the
+  merged array does not correspond to any single job's real `events.json`
+  position — even after routing `jobId` correctly (previous bullet), the
+  INDEX itself is still wrong. Safely fixing this would mean either
+  preserving each event's original per-job index through the merge (a
+  `merge_user_events` signature/shape change touching every one of its 6+
+  existing call sites) or changing the correction endpoint itself to accept
+  `(job_id, index)` pairs explicitly — both larger changes than what was
+  asked for. Instead:
+  - `MatchSummary.jsx` gained an `isCombined` prop. When true: `WinnerCard`
+    and the `identityGroups`/`genericItems` clarification cards are replaced
+    with a plain read-only `note-banner` ("This match's winner isn't
+    confirmed... open its original Gameplay upload... corrections aren't
+    available in the combined view"); the per-turn strategic-analysis fetch
+    is skipped entirely (see next bullet); "Show every event instead" still
+    works but passes `readOnly` through.
+  - **Per-turn battle-intelligence lines are also skipped in combined mode**,
+    for a related but distinct reason: `GET /jobs/{id}/strategic-analysis`
+    returns results keyed by that job's OWN local match numbers, but
+    `matchNumber` in combined mode is the remapped GLOBAL number — the two
+    numbering schemes don't line up, and the original local number isn't
+    preserved anywhere on a merged event (by `merge_user_events`' own
+    design). Rather than risk silently showing a WRONG match's per-turn
+    report, `MatchSummary` simply doesn't fetch strategic analysis at all
+    when `isCombined` — falling back to "no turn intel," the exact same
+    graceful degradation already used when the fetch fails for any other
+    reason. The base recap (teams, plain-English event list, result) is
+    entirely unaffected — this only silences the bonus per-turn score line.
+  - `MatchEvents.jsx` gained a `readOnly` prop, threaded into `EventRow`:
+    when true, the "Correct this" button is replaced with a small "Corrections
+    unavailable in the combined view" note instead of opening the edit form.
+- `CoachChat.jsx` gained a `forceCareer` prop (passed as `isCombined` from
+  `App.jsx`, alongside `jobId={isCombined ? null : jobId}`) — when true, the
+  "This job" vs "All-time (career)" scope toggle is hidden entirely and scope
+  starts on `"career"`, since there's no single job to ground a "this job"
+  question in while viewing the combined dropdown option.
+
+**Verification**: full backend test suite (`python -m unittest discover -s
+tests`) — 944 tests, all passing, no regressions from the `jobs.py`/
+`models.py`/`main.py` changes. `py_compile` clean across every touched
+backend file. The frontend half (`Header.jsx`, `App.jsx`, `api.js`,
+`MatchesTable.jsx`, `MatchSummary.jsx`, `MatchEvents.jsx`, `CoachChat.jsx`,
+`NewJobPanel.jsx`) was reviewed by hand for balanced braces/JSX structure and
+correct prop threading — the sandbox's npm registry access returned a bare
+`403 Forbidden` on every package this session (same limitation noted in
+§11's verification caveat), so `npm run build` could not be run to confirm
+here. A plain `npm install && npm run build` from `frontend/` on the user's
+own machine (normal registry access) should build cleanly against the
+existing `package.json`, which was not touched — worth confirming there
+before considering this fully verified end-to-end.
+
+**Known limitation, stated plainly**: fixing an event misread while viewing
+"All Gameplay (Combined)" is not supported by design (see 12c above) — a
+user who spots something wrong in the combined Matches/Opponent-intel view
+needs to switch the Gameplay dropdown to that match's specific original
+upload to correct it. This was a deliberate scope decision to avoid a larger,
+riskier backend rework, not an oversight; revisit if per-job index
+preservation through the merge is ever worth doing.
+
+## 13. Date-range filter + period comparison for "All Gameplay" (2026-07-09, tasks #250-256)
+
+**Why this exists:** direct follow-up to §12, verbatim: "I want dates to be
+an interactable field so in the future when users are seeing 'All Gameplay'
+combined, they can filter it by date and even compare how their stats have
+improved or declined comparatively." Asked how comparison should be
+displayed (side-by-side stat cards vs. a trend chart with a range slider vs.
+just the filter with no comparison UI); the user picked side-by-side stat
+cards with delta arrows in the Overview tab, alongside the existing record
+cards — that choice governs every frontend decision below.
+
+### 13a. Backend: date-range filtering by SESSION, not by event
+
+`backend/career.py` gained two functions:
+
+- `parse_date_boundary(value, end_of_day=False)` — parses a `'YYYY-MM-DD'`
+  string into a unix timestamp comparable against `_created_at_key()`'s
+  normalized output. `end_of_day=True` pushes the boundary to 23:59:59 UTC,
+  so an `until` set to the same calendar date as `since` still includes
+  every session created any time that day. Returns `None` (meaning "no
+  boundary," never a crash) for a blank/missing/unparseable value.
+- `filter_by_date(merged_events, sessions, since=None, until=None)` — filters
+  by whole SESSION (i.e. whole completed upload), not by individual event
+  timestamp. This is deliberate: an event's own `timestamp` field is seconds
+  into THAT upload's own video/replay, not a real-world date; only a
+  session's `created_at` is a real calendar date. Critically, this does NOT
+  touch `merge_user_events`' own global match-number remap — filtering
+  narrows WHICH sessions are included, but a kept match's global number is
+  untouched. That's what makes period comparison safe: fetching two
+  different date ranges and comparing their stats never has to reconcile two
+  different match-numbering schemes, because there's only ever the one
+  scheme.
+
+Every one of the 8 `/career/*` GET endpoints in `backend/main.py`
+(`career_record`, `career_report`, `career_matches`, `career_events`,
+`career_opponent_strength`, `career_battle_profile`, `career_skill_scores`,
+`career_skill_scores_trend`) gained optional `since`/`until` query params
+(via `fastapi.Query`, with shared docstring constants for consistent API
+docs), threaded straight into a `career.filter_by_date(merged, sessions,
+since, until)` call right after `merge_user_events`. Omitting both params
+keeps every endpoint byte-for-byte identical to its pre-existing "all time"
+behavior — no caller anywhere in the codebase was broken by this change.
+
+13 new tests in `tests/test_career.py` (`TestParseDateBoundary`,
+`TestFilterByDate`) cover: both-None passthrough, inclusive boundaries,
+narrowing to a window, malformed date strings being silently ignored rather
+than crashing, and — the one that actually matters for period comparison —
+that match numbers stay stable and comparable before and after filtering.
+
+### 13b. Frontend: the range shape, the filter UI, and wiring it into App.jsx
+
+A "range" is a plain `{since, until}` object everywhere in the frontend —
+`api.js`, `lib/dateRange.js`, `GameplayDateFilter.jsx`, `App.jsx` — each side
+either a `'YYYY-MM-DD'` string or `null` (no bound on that side). `api.js`
+gained a `rangeQuery(range)` helper and every `career*()` function now takes
+an optional `range` argument, building `?since=...&until=...` only when at
+least one side is set.
+
+`frontend/src/lib/dateRange.js` (new) holds the date arithmetic: preset
+ranges (`7d`/`30d`/`month`/`all`/`custom`), label formatting, and
+`previousPeriod(range)` — the default "Period B" suggestion, computed as the
+equal-length window immediately before Period A's own start. Deliberately
+builds date strings from `date.getFullYear()/getMonth()/getDate()` (local
+time) rather than `date.toISOString()`, since `toISOString()` converts to
+UTC first and can silently shift the calendar date by one in a
+negative-UTC-offset timezone.
+
+`frontend/src/components/GameplayDateFilter.jsx` (new) renders: a row of
+preset buttons (falling back to raw `<input type="date">` pairs under
+"Custom range") for the primary range, plus a "Compare to another period"
+checkbox that reveals an identical second row for the comparison range,
+defaulted via `previousPeriod()` the moment it's checked.
+
+`App.jsx` wiring (task #254):
+- New state: `dateRange` (default `{since: null, until: null}` — "all
+  time"), `compareRange` (`null` until the user turns comparison on),
+  `compareData`, `compareLoading`, `compareError`.
+- `loadCombinedDashboard(range)` now takes the range and passes it to every
+  `api.career*(range)` call. `openJob()`'s `ALL_GAMEPLAY` branch passes the
+  current `dateRange` (and kicks off `loadCompareData` too, if a compare
+  range is already set — relevant when switching back to combined mode
+  after having left it).
+- A new `loadCompareData(range)` fetches only what `PeriodComparison` needs
+  (`careerRecord` + `careerSkillScores`, not the full dashboard shape) for
+  Period B, and clears `compareData` back to `null` when comparison is
+  turned off.
+- Two `useEffect`s re-fetch on `[dateRange]` and `[compareRange]` changes
+  respectively (gated on `isCombined`), so editing the filter while already
+  viewing "All Gameplay" refetches without needing a manual refresh.
+  `isCombined` was moved earlier in the component (before these effects)
+  since both effects reference it.
+- `<GameplayDateFilter>` renders above the tab content whenever `isCombined`
+  and the active tab is one whose data it actually affects (Overview,
+  Progression, Matches, Opponents) — deliberately NOT shown on the Career or
+  Coach tabs, since neither `loadCareer()` nor `askCareerCoach()` accept a
+  range argument; showing the filter there would imply a scope it doesn't
+  actually have.
+- The Matches tab's `onCorrected` callback (which reloads the dashboard
+  after a correction) now passes `dateRange` through to
+  `loadCombinedDashboard`, so a correction doesn't silently reset an active
+  filter back to "all time."
+
+### 13c. `PeriodComparison.jsx` (new) — the side-by-side stat cards (task #255)
+
+Renders in the Overview tab, right below the existing `RecordCards`, only
+when `isCombined && compareRange && compareData` are all true. Takes
+`periodAData`/`periodBData` (each `{record, skillScores}` — Period A is
+always the currently-selected `dateRange`, Period B is `compareRange`) and
+renders one row per stat: win rate (with a `▲`/`▼` delta badge in points),
+record (W-L, informational, no arrow), matches played (informational, no
+arrow — more or fewer matches isn't inherently good or bad), and the four
+skill scores (tempo/adaptability/execution/closing) plus overall, each with
+a delta badge. Each row reads "Period B value → Period A value," so with the
+default `previousPeriod()` suggestion (B = the window right before A) it
+naturally reads as "before → after." Colors delta badges `--good`/`--bad`
+via a plain `> 0` / `< 0` check — no attempt to color-code "matches played"
+or the raw W-L string, since neither has an inherent "better" direction.
+New CSS: `.comparison-card`, `.comparison-grid`, `.comparison-row`,
+`.comparison-delta`, reusing the existing `--good`/`--bad`/`--muted` color
+variables rather than introducing new ones.
+
+**Verification**: `python3 -m py_compile backend/*.py *.py` clean; full
+backend suite (`python3 -m unittest discover -s tests`) — 957 tests, all
+passing (13 net-new vs. §12's 944). Frontend files (`api.js`,
+`lib/dateRange.js`, `GameplayDateFilter.jsx`, `PeriodComparison.jsx`,
+`App.jsx`, `styles.css`) reviewed by hand for balanced braces/parens/JSX
+structure and correct prop threading — `npm run build` could not be run in
+this sandbox (npm registry access returns `403 Forbidden` here, same
+limitation noted in §11 and §12's own verification caveats); a plain `npm
+install && npm run build` from `frontend/` on the user's own machine should
+build cleanly against the unmodified `package.json`, worth confirming before
+treating this as fully verified end-to-end.
+
+**Known limitation, stated plainly**: the date-range filter and comparison
+only apply to the `/career/*`-backed tabs (Overview, Progression, Matches,
+Opponents) — the Career tab and the Coach chat's "All-time (career)" scope
+remain unfiltered "all time" views, since neither `loadCareer()` nor
+`askCareerCoach()` were extended to accept a range. Extending those is a
+reasonable next step if a user asks for it, but wasn't part of what was
+requested here.

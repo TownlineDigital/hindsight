@@ -187,7 +187,7 @@ function GenericOccurrenceCard({ jobId, item, onResolved }) {
  * needs a look. "Show every event instead" still reaches the exhaustive,
  * ungated MatchEvents.jsx view underneath for the rare low-level field that
  * needs hand-correcting outside these three question types. */
-export default function MatchSummary({ jobId, events, matchNumber, onCorrected }) {
+export default function MatchSummary({ jobId, events, matchNumber, isCombined, onCorrected }) {
   const [showAll, setShowAll] = useState(false);
 
   const matchEvents = useMemo(
@@ -212,12 +212,22 @@ export default function MatchSummary({ jobId, events, matchNumber, onCorrected }
   // above already works fine without it, so this is a pure enhancement.
   const [strategicResults, setStrategicResults] = useState(null);
   useEffect(() => {
+    // Skipped entirely in combined mode: GET /jobs/{id}/strategic-analysis
+    // returns results keyed by THAT JOB'S OWN local match numbers, but
+    // `matchNumber` here is career.merge_user_events' remapped GLOBAL match
+    // number once a match's events came from a merge - the two numbering
+    // schemes don't line up (see backend/career.py's merge_user_events
+    // docstring: the original local match number isn't preserved anywhere on
+    // the merged event, by design). Rather than show a wrong/misattributed
+    // per-turn report, this just falls back to no turn intel, the same
+    // graceful degradation already used below when the fetch itself fails.
+    if (isCombined) { setStrategicResults([]); return; }
     let cancelled = false;
     api.strategicAnalysis(jobId)
       .then((results) => { if (!cancelled) setStrategicResults(results); })
       .catch(() => { if (!cancelled) setStrategicResults([]); });
     return () => { cancelled = true; };
-  }, [jobId]);
+  }, [jobId, isCombined]);
 
   const turnReports = useMemo(() => {
     const byTurn = new Map();
@@ -239,7 +249,7 @@ export default function MatchSummary({ jobId, events, matchNumber, onCorrected }
         <button type="button" className="link-button" onClick={() => setShowAll(false)}>
           ← Back to match summary
         </button>
-        <MatchEvents jobId={jobId} events={events} matchNumber={matchNumber} onCorrected={onCorrected} />
+        <MatchEvents jobId={jobId} events={events} matchNumber={matchNumber} onCorrected={onCorrected} readOnly={isCombined} />
       </div>
     );
   }
@@ -261,7 +271,13 @@ export default function MatchSummary({ jobId, events, matchNumber, onCorrected }
         </div>
       )}
 
-      {winnerInfo && <WinnerCard jobId={jobId} winnerInfo={winnerInfo} onResolved={onCorrected} />}
+      {winnerInfo && !isCombined && <WinnerCard jobId={jobId} winnerInfo={winnerInfo} onResolved={onCorrected} />}
+      {winnerInfo && isCombined && (
+        <div className="note-banner warn">
+          This match's winner isn't confirmed. Open its original Gameplay upload from the dropdown above to
+          resolve it - corrections aren't available in the combined "All Gameplay" view.
+        </div>
+      )}
 
       <div className="summary-teams">
         <div className="summary-team">
@@ -311,7 +327,7 @@ export default function MatchSummary({ jobId, events, matchNumber, onCorrected }
         <div className="empty">No events recorded for this match.</div>
       )}
 
-      {(identityGroups.length > 0 || genericItems.length > 0) && (
+      {(identityGroups.length > 0 || genericItems.length > 0) && !isCombined && (
         <>
           <h4 className="summary-heading">Worth a quick confirm</h4>
           {identityGroups.map((g) => (
@@ -328,9 +344,16 @@ export default function MatchSummary({ jobId, events, matchNumber, onCorrected }
           ))}
         </>
       )}
+      {(identityGroups.length > 0 || genericItems.length > 0) && isCombined && (
+        <div className="note-banner warn">
+          {identityGroups.length + genericItems.length} item{identityGroups.length + genericItems.length === 1 ? "" : "s"} in
+          this match would normally need a quick confirm. Open this match's original Gameplay upload from the
+          dropdown above to review them - corrections aren't available in the combined "All Gameplay" view.
+        </div>
+      )}
 
       <button type="button" className="link-button" onClick={() => setShowAll(true)}>
-        Show every event instead
+        {isCombined ? "Show every event" : "Show every event instead"}
       </button>
     </div>
   );

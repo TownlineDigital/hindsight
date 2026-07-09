@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { api } from "./api.js";
 import { supabase } from "./lib/supabase.js";
 import Auth from "./components/Auth.jsx";
-import Header from "./components/Header.jsx";
+import Header, { ALL_GAMEPLAY } from "./components/Header.jsx";
 import NewJobPanel from "./components/NewJobPanel.jsx";
 import RecordCards from "./components/RecordCards.jsx";
 import SkillScores from "./components/SkillScores.jsx";
@@ -15,6 +15,9 @@ import CoachChat from "./components/CoachChat.jsx";
 import CareerProgress from "./components/CareerProgress.jsx";
 import CoachSharing from "./components/CoachSharing.jsx";
 import StudentRoster from "./components/StudentRoster.jsx";
+import GameplayDateFilter from "./components/GameplayDateFilter.jsx";
+import PeriodComparison from "./components/PeriodComparison.jsx";
+import { formatRangeLabel } from "./lib/dateRange.js";
 
 function toRows(table) {
   return Object.entries(table || {})
@@ -70,16 +73,39 @@ export default function App() {
   const [careerLoading, setCareerLoading] = useState(false);
   const [careerError, setCareerError] = useState(null);
 
+  // Date-range filter + period-comparison state for the combined "All
+  // Gameplay" view (added 2026-07-09) - see GameplayDateFilter.jsx and
+  // lib/dateRange.js for the {since, until} range shape. dateRange always
+  // narrows the currently-loaded combined `data`; compareRange (when
+  // non-null) is a SECOND window fetched separately into compareData, for
+  // PeriodComparison.jsx's side-by-side stat cards in the Overview tab. Both
+  // only ever apply while isCombined - a single job has no "date range" to
+  // narrow, since it's already just the one Gameplay upload.
+  const [dateRange, setDateRange] = useState({ since: null, until: null });
+  const [compareRange, setCompareRange] = useState(null);
+  const [compareData, setCompareData] = useState(null);
+  const [compareLoading, setCompareLoading] = useState(false);
+  const [compareError, setCompareError] = useState(null);
+
   async function loadJobs() {
     const list = await api.listJobs();
     list.sort((a, b) => (a.job_id > b.job_id ? 1 : -1));
     setJobs(list);
     if (!list.length) return null;
-    const preferred = list.find((j) => j.job_id === "demo") || list.find((j) => j.status === "done") || list[0];
+    // Default to the combined "All Gameplay" view rather than just the most
+    // recent upload, as long as there's at least one completed job to
+    // combine (career.merge_user_events only ever includes done jobs) - a
+    // brand new account with only a still-processing job falls back to the
+    // old "show me that job's progress" behavior instead, since there's
+    // nothing yet to combine.
+    const hasCompleted = list.some((j) => j.status === "done");
+    const preferredId = hasCompleted
+      ? ALL_GAMEPLAY
+      : (list.find((j) => j.job_id === "demo") || list[0]).job_id;
     // Return the list alongside the pick, not just its id - the caller needs
     // the FRESH list (not React's possibly-still-stale `jobs` state right
     // after this setJobs() call) to correctly decide poll-vs-load below.
-    return { list, preferred };
+    return { list, preferredId };
   }
 
   async function loadDashboard(id) {
@@ -97,6 +123,56 @@ export default function App() {
       setData(null);
     } finally {
       setLoading(false);
+    }
+  }
+
+  // The "All Gameplay (Combined)" view - same data shape as loadDashboard()
+  // above (so every tab that reads `data` works unmodified), but sourced
+  // from the /career/* endpoints, which merge every completed job's events
+  // together (see backend/career.py's merge_user_events). Never needs
+  // polling: merge_user_events only ever looks at jobs that are already
+  // "done", so there's nothing here that could still be "running."
+  async function loadCombinedDashboard(range) {
+    setError(null);
+    setLoading(true);
+    try {
+      const [record, report, matches, opponentStrength, skillScores, events, battleProfile] = await Promise.all([
+        api.careerRecord(range), api.careerReport(range), api.careerMatches(range), api.careerOpponentStrength(range),
+        api.careerSkillScores(range), api.careerEvents(range), api.careerBattleProfile(range),
+      ]);
+      setData({ record, report, matches, opponentStrength, skillScores, events, battleProfile });
+    } catch (e) {
+      setError(e.message);
+      setData(null);
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  // Fetches Period B (compareRange) for PeriodComparison.jsx - only the two
+  // pieces its stat cards actually need (record for win rate/wins-losses,
+  // skillScores for the four skill scores + overall), not the full dashboard
+  // shape loadCombinedDashboard() builds. Clears compareData back to null
+  // when comparison is turned off (compareRange === null) rather than
+  // leaving stale Period B numbers on screen.
+  async function loadCompareData(range) {
+    if (!range) {
+      setCompareData(null);
+      setCompareError(null);
+      return;
+    }
+    setCompareError(null);
+    setCompareLoading(true);
+    try {
+      const [record, skillScores] = await Promise.all([
+        api.careerRecord(range), api.careerSkillScores(range),
+      ]);
+      setCompareData({ record, skillScores });
+    } catch (e) {
+      setCompareError(e.message);
+      setCompareData(null);
+    } finally {
+      setCompareLoading(false);
     }
   }
 
@@ -168,6 +244,11 @@ export default function App() {
   // rely on that state having already re-rendered.
   function openJob(id, list) {
     setJobId(id);
+    if (id === ALL_GAMEPLAY) {
+      loadCombinedDashboard(dateRange);
+      if (compareRange) loadCompareData(compareRange);
+      return;
+    }
     const job = (list || jobs).find((j) => j.job_id === id);
     if (job && (job.status === "queued" || job.status === "running")) {
       setLoading(true);
@@ -213,7 +294,7 @@ export default function App() {
       try {
         const result = await loadJobs();
         if (!result) { setLoading(false); return; }
-        openJob(result.preferred.job_id, result.list);
+        openJob(result.preferredId, result.list);
       } catch (e) {
         setError(`Couldn't reach the API: ${e.message}. Is uvicorn running?`);
         setLoading(false);
@@ -230,6 +311,33 @@ export default function App() {
       loadCareer();
     }
   }, [ready, tab]);
+
+  // Is the Gameplay dropdown currently set to "All Gameplay (Combined)"? A
+  // handful of child components (event correction, the coach's "this job"
+  // scope) need to know this, since they depend on jobId being a REAL job -
+  // see MatchesTable/MatchSummary's own comments on why correcting an event
+  // computed against career.merge_user_events' merged array can't safely be
+  // routed back to any single job's events.json. Declared here (rather than
+  // just before use, below) so the two date-range effects that follow can
+  // reference it.
+  const isCombined = jobId === ALL_GAMEPLAY;
+
+  // Refetch the combined dashboard whenever the date-range filter changes,
+  // while already on "All Gameplay (Combined)" - openJob() handles the
+  // initial load when the dropdown FIRST switches to combined, so this only
+  // needs to fire on later range edits. Skipped entirely on a single-job
+  // view: dateRange has no meaning there.
+  useEffect(() => {
+    if (ready && isCombined) loadCombinedDashboard(dateRange);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [dateRange]);
+
+  // Fetch (or clear) Period B whenever the comparison range changes, while
+  // in combined mode. Mirrors the dateRange effect above.
+  useEffect(() => {
+    if (ready && isCombined) loadCompareData(compareRange);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [compareRange]);
 
   const trend = useMemo(() => (data ? computeTrend(data.matches) : []), [data]);
 
@@ -267,7 +375,17 @@ export default function App() {
               : "Loading…"}
           </div>
         )}
-        {!error && !loading && !data && <div className="banner">No jobs yet. Click "+ New job" above, or run seed_demo_job.py.</div>}
+        {!error && !loading && !data && <div className="banner">No Gameplay yet. Click "+ New Gameplay" above, or run seed_demo_job.py.</div>}
+
+        {!error && data && isCombined &&
+          (tab === "overview" || tab === "progression" || tab === "matches" || tab === "opponents") && (
+          <GameplayDateFilter
+            range={dateRange}
+            onRangeChange={setDateRange}
+            compareRange={compareRange}
+            onCompareRangeChange={setCompareRange}
+          />
+        )}
 
         {!error && data && (
           <>
@@ -276,6 +394,20 @@ export default function App() {
                 <section>
                   <RecordCards record={data.record} report={data.report} trend={trend} />
                 </section>
+                {isCombined && compareRange && (
+                  <section>
+                    {compareError && <div className="banner">{compareError}</div>}
+                    {!compareError && compareLoading && <div className="banner info">Loading comparison period…</div>}
+                    {!compareError && !compareLoading && compareData && (
+                      <PeriodComparison
+                        periodALabel={formatRangeLabel(dateRange)}
+                        periodBLabel={formatRangeLabel(compareRange)}
+                        periodAData={{ record: data.record, skillScores: data.skillScores }}
+                        periodBData={compareData}
+                      />
+                    )}
+                  </section>
+                )}
                 <section>
                   <h2>Coaching flags</h2>
                   <CoachingFlags flags={data.report.flags} />
@@ -321,7 +453,8 @@ export default function App() {
                     matches={data.matches}
                     events={data.events}
                     jobId={jobId}
-                    onCorrected={() => loadDashboard(jobId)}
+                    isCombined={isCombined}
+                    onCorrected={() => (isCombined ? loadCombinedDashboard(dateRange) : loadDashboard(jobId))}
                   />
                 </section>
               </div>
@@ -346,7 +479,7 @@ export default function App() {
             {tab === "coach" && (
               <div className="tab-panel">
                 <section>
-                  <CoachChat jobId={jobId} />
+                  <CoachChat jobId={isCombined ? null : jobId} forceCareer={isCombined} />
                 </section>
               </div>
             )}

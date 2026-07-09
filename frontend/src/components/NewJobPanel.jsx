@@ -69,6 +69,7 @@ function DropZone({ accept, multiple, files, onFiles, hint }) {
 
 export default function NewJobPanel({ onClose, onJobCreated }) {
   const [tab, setTab] = useState("url");
+  const [name, setName] = useState("");
   const [mode, setMode] = useState("doubles");
   const [regulation, setRegulation] = useState("m-b");
   const [url, setUrl] = useState("");
@@ -88,6 +89,10 @@ export default function NewJobPanel({ onClose, onJobCreated }) {
     formData.append("game", "pokemon");
     formData.append("mode", mode);
     formData.append("regulation", regulation);
+    // Optional - left blank, the server auto-generates a fallback label (see
+    // backend/jobs._default_job_name) so this Gameplay upload is never shown
+    // as a bare, cryptic job id in the header's Gameplay dropdown.
+    if (name.trim()) formData.append("name", name.trim());
 
     if (tab === "url") {
       if (!url.trim()) { setError("Enter a video URL."); return; }
@@ -125,7 +130,7 @@ export default function NewJobPanel({ onClose, onJobCreated }) {
     <div className="modal-backdrop" onClick={onClose}>
       <div className="modal card" onClick={(e) => e.stopPropagation()}>
         <div className="modal-header">
-          <h3>New job</h3>
+          <h3>New Gameplay</h3>
           <button type="button" className="modal-close" onClick={onClose} aria-label="Close">✕</button>
         </div>
 
@@ -144,6 +149,15 @@ export default function NewJobPanel({ onClose, onJobCreated }) {
         {error && <div className="banner">{error}</div>}
 
         <form onSubmit={submit} className="new-job-form">
+          <label className="field">
+            <span>Name this Gameplay</span>
+            <input
+              value={name} onChange={(e) => setName(e.target.value)}
+              placeholder="e.g. Ranked ladder set 3, vs. regionals practice partner"
+              maxLength={200}
+            />
+          </label>
+
           <div className="two-col">
             <label className="field">
               <span>Mode</span>

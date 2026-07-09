@@ -94,7 +94,7 @@ export function ImageLightbox({ src, onClose }) {
   );
 }
 
-function EventRow({ jobId, event, onSaved }) {
+function EventRow({ jobId, event, onSaved, readOnly }) {
   const [editing, setEditing] = useState(false);
   const [fields, setFields] = useState({});
   const [saving, setSaving] = useState(false);
@@ -211,11 +211,17 @@ function EventRow({ jobId, event, onSaved }) {
                 <span key={k} className="event-field"><b>{k}:</b> {String(event[k] ?? "–")}</span>
               ))}
             </div>
-            <button type="button" className="event-edit-btn" onClick={startEdit}>Correct this</button>
+            {readOnly ? (
+              <span className="muted small" title="Open this match's original Gameplay upload to make corrections">
+                Corrections unavailable in the combined view
+              </span>
+            ) : (
+              <button type="button" className="event-edit-btn" onClick={startEdit}>Correct this</button>
+            )}
           </>
         )}
 
-        {editing && (
+        {!readOnly && editing && (
           <div className="event-edit-form">
             {editableKeys.map((k) => (
               <label key={k} className="field small">
@@ -246,7 +252,7 @@ function EventRow({ jobId, event, onSaved }) {
 // `__idx` (the position in the FULL events array, not this filtered list) is
 // what the PATCH endpoint's {index} actually addresses, so it's attached
 // before filtering rather than recomputed from the filtered list's own order.
-export default function MatchEvents({ jobId, events, matchNumber, onCorrected }) {
+export default function MatchEvents({ jobId, events, matchNumber, onCorrected, readOnly }) {
   const matchEvents = (events || [])
     .map((e, i) => ({ ...e, __idx: i }))
     .filter((e) => e.match === matchNumber)
@@ -271,11 +277,11 @@ export default function MatchEvents({ jobId, events, matchNumber, onCorrected })
       {teamPreview && (
         <div className="team-preview-section">
           <h4 className="team-preview-heading">Team Preview</h4>
-          <EventRow jobId={jobId} event={teamPreview} onSaved={onCorrected} />
+          <EventRow jobId={jobId} event={teamPreview} onSaved={onCorrected} readOnly={readOnly} />
         </div>
       )}
       {otherEvents.map((e) => (
-        <EventRow key={e.__idx} jobId={jobId} event={e} onSaved={onCorrected} />
+        <EventRow key={e.__idx} jobId={jobId} event={e} onSaved={onCorrected} readOnly={readOnly} />
       ))}
     </div>
   );

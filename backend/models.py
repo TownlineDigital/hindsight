@@ -24,6 +24,12 @@ class JobStatus(BaseModel):
     mode: str
     regulation: Optional[str] = None
     source_type: Optional[str] = None
+    # User-given label for this upload (backend/jobs.create_job always fills
+    # in an auto-generated fallback when the caller leaves this blank - see
+    # _default_job_name - so in practice this is only None for a job created
+    # before this field existed). Shown in the frontend's Gameplay dropdown
+    # instead of the raw job_id.
+    name: Optional[str] = None
 
 
 class CoachQuestion(BaseModel):

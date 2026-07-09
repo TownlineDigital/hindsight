@@ -70,8 +70,32 @@ def _local_discover():
                 "game": "pokemon", "mode": "doubles", "regulation": "m-b", "source_type": "seed", "url": None,
                 "video": None, "matches_found": None, "cost_estimate_usd": None,
                 "error": None, "created_at": d.stat().st_mtime, "user_id": LOCAL_USER["id"],
+                # No name was ever set for a hand-seeded/pre-existing folder
+                # discovered straight off disk (it never went through
+                # create_job) - None, not a guessed label; the frontend falls
+                # back to showing the raw job_id for these, same as any other
+                # unnamed row (see _row_to_job/create_job's own comments).
+                "name": None,
             }
 # -----------------------------------------------------------------------------
+
+
+def _default_job_name(source_type: Optional[str]) -> str:
+    """Auto-generated fallback label (task: "Gameplay" rename/naming feature,
+    2026-07-09) when the caller doesn't supply one via create_job's `name`
+    param - so no upload is ever shown as a bare, cryptic job_id hex string in
+    the frontend's Gameplay dropdown. Deliberately simple/generic rather than
+    trying to be clever (e.g. reading the video filename) - callers that want
+    a more specific default (like the actual uploaded filename) can still
+    pass their own `name` through; this is only the last-resort fallback."""
+    label = {
+        "url": "Video URL", "upload": "Video upload",
+        "showdown": "Showdown replay", "seed": "Seed data",
+    }.get(source_type, (source_type or "Gameplay").capitalize())
+    # %d (zero-padded) rather than the GNU-only %-d - this runs both on a
+    # dev's Windows machine and inside the Linux Docker deploy, and Windows'
+    # strftime doesn't support the no-leading-zero variant.
+    return f"{label} - {time.strftime('%b %d, %Y')}"
 
 
 def _row_to_job(row: dict) -> dict:
@@ -85,22 +109,29 @@ def _row_to_job(row: dict) -> dict:
         "url": row.get("url"), "video": row.get("video"), "player": row.get("player"),
         "matches_found": row.get("matches_found"), "cost_estimate_usd": row.get("cost_estimate_usd"),
         "error": row.get("error"), "created_at": row.get("created_at"),
-        "user_id": row["user_id"],
+        "user_id": row["user_id"], "name": row.get("name"),
     }
 
 
 def create_job(user_id: str, game: str, mode: str, source_type: str,
                regulation: str = "m-b", url: Optional[str] = None,
-               player: Optional[str] = None) -> dict:
+               player: Optional[str] = None, name: Optional[str] = None) -> dict:
     """player: only meaningful for source_type="showdown" - which side of the
     replay is "you" (a Showdown username or "p1"/"p2"). None for video jobs.
 
     regulation: which Pokemon Champions regulation's roster/legal-mechanics
     data to enforce (adapters/pokemon/regulations/<id>.json) - defaults to
-    "m-b" (current). See ARCHITECTURE_HANDOFF.md section 3a."""
+    "m-b" (current). See ARCHITECTURE_HANDOFF.md section 3a.
+
+    name: user-given label for this upload ("Ranked ladder set 3", ...) - a
+    blank/None value gets replaced with _default_job_name(source_type)'s
+    auto-generated fallback right here, so every job in the DB always has a
+    real, non-empty name from the moment it's created (the frontend never has
+    to special-case "no name yet")."""
     job_id = uuid.uuid4().hex[:12]
     d = JOBS_DIR / job_id
     d.mkdir(parents=True, exist_ok=True)
+    name = (name or "").strip() or _default_job_name(source_type)
 
     row = {
         "job_id": job_id, "user_id": user_id, "dir": str(d),
@@ -108,10 +139,10 @@ def create_job(user_id: str, game: str, mode: str, source_type: str,
         "total_steps": pipeline.total_steps_for(source_type), "game": game, "mode": mode,
         "regulation": regulation, "source_type": source_type, "url": url, "player": player,
         "video": None, "matches_found": None, "cost_estimate_usd": None,
-        "error": None, "created_at": time.time(),
+        "error": None, "created_at": time.time(), "name": name,
     }
     audit.record("job_created", job_id=job_id, user_id=user_id, game=game, mode=mode,
-                 regulation=regulation, source_type=source_type, url=url, player=player)
+                 regulation=regulation, source_type=source_type, url=url, player=player, name=name)
 
     if not configured():
         _local_discover()

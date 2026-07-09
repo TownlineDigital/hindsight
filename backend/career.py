@@ -35,6 +35,7 @@ import json
 import sys
 from datetime import datetime, timezone
 from pathlib import Path
+from typing import Optional
 
 BASE_DIR = Path(__file__).resolve().parent.parent   # poc-starter/ - see analytics.py's identical pattern
 if str(BASE_DIR) not in sys.path:
@@ -152,6 +153,74 @@ def merge_user_events(user_id: str):
         global_match_offset += len(local_matches)
 
     return merged_events, sessions
+
+
+def parse_date_boundary(value: Optional[str], end_of_day: bool = False) -> Optional[float]:
+    """Parses a 'YYYY-MM-DD' date string (what the frontend's date-range
+    filter sends - see GameplayDateFilter.jsx) into a unix timestamp,
+    comparable against _created_at_key()'s normalized output. `end_of_day`
+    pushes the boundary to 23:59:59 UTC of that date, so an `until` filter
+    set to the same calendar date as `since` still includes every session
+    created any time that day, not just at midnight. Returns None (meaning
+    "no boundary") for a blank/missing/unparseable value - a malformed query
+    param should silently mean "don't filter on this side," never a 500."""
+    if not value:
+        return None
+    try:
+        d = datetime.strptime(value.strip(), "%Y-%m-%d").replace(tzinfo=timezone.utc)
+        if end_of_day:
+            d = d.replace(hour=23, minute=59, second=59)
+        return d.timestamp()
+    except (ValueError, TypeError):
+        return None
+
+
+def filter_by_date(merged_events: list, sessions: list,
+                    since: Optional[str] = None, until: Optional[str] = None):
+    """Narrows merge_user_events()'s output down to only the upload SESSIONS
+    (i.e. whole completed jobs) created within [since, until] (inclusive,
+    both optional 'YYYY-MM-DD' strings) - powers the combined "All Gameplay"
+    view's date-range filter and period-comparison feature (added 2026-07-09).
+
+    Filters by SESSION (whole job), not by individual match/event timestamp:
+    an event's own "timestamp" field is seconds into that job's own video/
+    replay, not a real-world date - the only real-world date anything here
+    has is a session's created_at (when that job was uploaded). So a whole
+    upload either falls inside the window or it doesn't; there's no such
+    thing as "half a job" being in-range.
+
+    Deliberately does NOT touch merge_user_events()'s own global match-number
+    remapping - that remapping already happened before this function ever
+    sees the data, so match numbers stay STABLE and comparable whether or
+    not a filter is applied (match 12 means the same real match whether
+    you're looking at "All time" or a narrowed date range that happens to
+    include it). This is what makes it safe to fetch two different date
+    ranges (period comparison) and treat their numbers as directly
+    comparable, rather than each range re-deriving its own local numbering.
+
+    Returns the exact same (merged_events, sessions) shape merge_user_events()
+    does, so every existing analytics.compute_X(events) call site (and
+    compute_skill_score_trend(events, sessions)) works completely unchanged
+    whether or not a filter was actually applied. When both since and until
+    are None/blank, returns the inputs unchanged (no filtering work at all) -
+    this is the "All time" case, and the overwhelmingly common one."""
+    since_ts = parse_date_boundary(since)
+    until_ts = parse_date_boundary(until, end_of_day=True)
+    if since_ts is None and until_ts is None:
+        return merged_events, sessions
+
+    def _in_range(session: dict) -> bool:
+        t = _created_at_key(session.get("created_at"))
+        if since_ts is not None and t < since_ts:
+            return False
+        if until_ts is not None and t > until_ts:
+            return False
+        return True
+
+    keep = {s["session"] for s in sessions if _in_range(s)}
+    filtered_sessions = [s for s in sessions if s["session"] in keep]
+    filtered_events = [e for e in merged_events if e.get("session") in keep]
+    return filtered_events, filtered_sessions
 
 
 def match_durations(user_id: str) -> dict:

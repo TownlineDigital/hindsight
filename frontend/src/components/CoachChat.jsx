@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { api } from "../api.js";
 
-export default function CoachChat({ jobId }) {
+export default function CoachChat({ jobId, forceCareer = false }) {
   const [log, setLog] = useState([]);
   const [input, setInput] = useState("");
   const [sending, setSending] = useState(false);
@@ -9,7 +9,11 @@ export default function CoachChat({ jobId }) {
   // "career" = grounded in EVERY completed job on this account, with a
   // session-by-session progression block so the coach can actually answer
   // "have I improved" questions (see backend/career.py, POST /career/coach).
-  const [scope, setScope] = useState("job");
+  // forceCareer (set when the header's Gameplay dropdown is on "All Gameplay
+  // (Combined)" - see App.jsx's isCombined) means there's no single job to
+  // ground "This job" scope in, so that toggle is hidden entirely and scope
+  // always starts on "career".
+  const [scope, setScope] = useState(forceCareer ? "career" : "job");
 
   async function send() {
     const question = input.trim();
@@ -30,14 +34,16 @@ export default function CoachChat({ jobId }) {
 
   return (
     <div className="card">
-      <div className="tabs-inline small" style={{ marginBottom: 12 }}>
-        <button className={`tab-inline ${scope === "job" ? "active" : ""}`} onClick={() => setScope("job")}>
-          This job
-        </button>
-        <button className={`tab-inline ${scope === "career" ? "active" : ""}`} onClick={() => setScope("career")}>
-          All-time (career)
-        </button>
-      </div>
+      {!forceCareer && (
+        <div className="tabs-inline small" style={{ marginBottom: 12 }}>
+          <button className={`tab-inline ${scope === "job" ? "active" : ""}`} onClick={() => setScope("job")}>
+            This job
+          </button>
+          <button className={`tab-inline ${scope === "career" ? "active" : ""}`} onClick={() => setScope("career")}>
+            All-time (career)
+          </button>
+        </div>
+      )}
       <div className="chat-log">
         {!log.length && (
           <div className="empty">

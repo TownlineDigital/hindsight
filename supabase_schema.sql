@@ -43,6 +43,16 @@ alter table public.jobs add column if not exists player text;
 -- fix is missing it. This is a no-op if the column already exists.
 alter table public.jobs add column if not exists regulation text not null default 'm-b';
 
+-- "name" (added 2026-07-09 for the "Gameplay" rename/naming feature) - a
+-- user-given label for this upload ("Ranked ladder set 3", "vs. regionals
+-- practice partner", ...), shown in the frontend's Gameplay dropdown instead
+-- of the raw job_id. Nullable: backend/jobs.create_job always fills in an
+-- auto-generated fallback (e.g. "Video upload - Jul 9") when the caller
+-- doesn't supply one, so in practice this is never blank for a NEW job, but
+-- stays nullable here so older rows created before this column existed don't
+-- need a backfill to remain valid.
+alter table public.jobs add column if not exists name text;
+
 -- Keep updated_at current on every write (handy for "processing... how long
 -- has it been" UI later, and for debugging).
 create or replace function public.set_updated_at()

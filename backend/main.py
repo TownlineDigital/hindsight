@@ -19,7 +19,7 @@ from pathlib import Path
 from typing import List, Optional
 
 from dotenv import load_dotenv
-from fastapi import Depends, FastAPI, File, Form, HTTPException, UploadFile
+from fastapi import Depends, FastAPI, File, Form, HTTPException, Query, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
@@ -114,6 +114,10 @@ async def create_job(
                        "username (case-insensitive) or 'p1'/'p2'. Only meaningful for "
                        "source_type='showdown'; a replay has no built-in notion of 'the player' the "
                        "way a video of your own POV does."),
+    name: Optional[str] = Form(None, description="User-given label for this upload, shown in the "
+                               "frontend's Gameplay dropdown instead of the raw job_id. Optional - a "
+                               "blank/omitted value gets an auto-generated fallback (see "
+                               "backend/jobs._default_job_name)."),
     user: dict = Depends(auth.current_user),
 ):
     if source_type not in ("url", "upload", "showdown"):
@@ -130,7 +134,7 @@ async def create_job(
 
     job = jobs.create_job(user_id=user["id"], game=game, mode=mode, source_type=source_type,
                           regulation=regulation, url=url,
-                          player=player if source_type == "showdown" else None)
+                          player=player if source_type == "showdown" else None, name=name)
 
     if source_type == "upload":
         ext = Path(file.filename or "vod.mp4").suffix or ".mp4"
@@ -159,7 +163,7 @@ async def create_job(
     jobs.start_job(job["job_id"], user["id"])
     return JobStatus(job_id=job["job_id"], status="queued", step="queued", step_index=0,
                      total_steps=job["total_steps"], game=game, mode=mode, regulation=regulation,
-                     source_type=source_type)
+                     source_type=source_type, name=job["name"])
 
 
 @app.get("/jobs")
@@ -176,6 +180,7 @@ def job_status(job_id: str, user: dict = Depends(auth.current_user)):
         matches_found=job.get("matches_found"), cost_estimate_usd=job.get("cost_estimate_usd"),
         error=job.get("error"), video=job.get("video"), game=job["game"], mode=job["mode"],
         regulation=job.get("regulation"), source_type=job.get("source_type"),
+        name=job.get("name"),
     )
 
 
@@ -441,15 +446,35 @@ def job_coach(job_id: str, body: CoachQuestion, user: dict = Depends(auth.curren
 # this was missing before and how the merge works. No job_id in any of these
 # routes: the "job" here is implicitly "all of this user's matches, ever."
 
+# since/until (both optional, 'YYYY-MM-DD') on every /career/* route below:
+# narrows the merge down to only the upload sessions created in that window,
+# via career.filter_by_date - see that function's own docstring for why this
+# filters by whole SESSION (job) rather than by individual event timestamp.
+# Left blank/omitted on both, every route below behaves exactly as it did
+# before this filter existed ("All time"). Added 2026-07-09 for the combined
+# "All Gameplay" view's date-range filter and period-comparison feature -
+# GameplayDateFilter.jsx (frontend) is what actually sets these.
+_DATE_PARAM_DOC = ("'YYYY-MM-DD' - only include Gameplay uploaded on or after this date. "
+                   "Omit for no lower bound (start of time).")
+_DATE_PARAM_DOC_UNTIL = ("'YYYY-MM-DD' - only include Gameplay uploaded on or before this date "
+                        "(inclusive of the whole day). Omit for no upper bound (now).")
+
+
 @app.get("/career/record")
-def career_record(user: dict = Depends(auth.current_user)):
-    merged, _sessions = career.merge_user_events(user["id"])
+def career_record(since: Optional[str] = Query(None, description=_DATE_PARAM_DOC),
+                   until: Optional[str] = Query(None, description=_DATE_PARAM_DOC_UNTIL),
+                   user: dict = Depends(auth.current_user)):
+    merged, sessions = career.merge_user_events(user["id"])
+    merged, sessions = career.filter_by_date(merged, sessions, since, until)
     return analytics.compute_record(merged)
 
 
 @app.get("/career/report")
-def career_report(user: dict = Depends(auth.current_user)):
-    merged, _sessions = career.merge_user_events(user["id"])
+def career_report(since: Optional[str] = Query(None, description=_DATE_PARAM_DOC),
+                   until: Optional[str] = Query(None, description=_DATE_PARAM_DOC_UNTIL),
+                   user: dict = Depends(auth.current_user)):
+    merged, sessions = career.merge_user_events(user["id"])
+    merged, sessions = career.filter_by_date(merged, sessions, since, until)
     # No single format `rules` block applies across every job (different jobs
     # could in principle use different regulations/modes) - passing rules=None
     # makes compute_report fall back to "assume Tera is legal" for the combined
@@ -459,14 +484,21 @@ def career_report(user: dict = Depends(auth.current_user)):
 
 
 @app.get("/career/matches")
-def career_matches(user: dict = Depends(auth.current_user)):
+def career_matches(since: Optional[str] = Query(None, description=_DATE_PARAM_DOC),
+                    until: Optional[str] = Query(None, description=_DATE_PARAM_DOC_UNTIL),
+                    user: dict = Depends(auth.current_user)):
     """Same merge_in-duration pattern as GET /jobs/{id}/matches/summary
     (see that endpoint's own comment) - duration_seconds never lived in
     events.json, only in each job's own matches.csv, so it has to be
     merged in separately here too. career.match_durations() handles the
     cross-job global-match-number remapping (see its own docstring for why
-    this isn't just a third merge_user_events() return value)."""
-    merged, _sessions = career.merge_user_events(user["id"])
+    this isn't just a third merge_user_events() return value). Note
+    match_durations() is itself NOT date-filtered (it's keyed by the SAME
+    global match numbers filter_by_date leaves untouched - see that
+    function's docstring - so looking up by `row["match"]` below still finds
+    the right duration even though the durations dict spans every session)."""
+    merged, sessions = career.merge_user_events(user["id"])
+    merged, sessions = career.filter_by_date(merged, sessions, since, until)
     rows = analytics.compute_match_list(merged)
     durations = career.match_durations(user["id"])
     for row in rows:
@@ -474,26 +506,83 @@ def career_matches(user: dict = Depends(auth.current_user)):
     return rows
 
 
+@app.get("/career/events")
+def career_events(since: Optional[str] = Query(None, description=_DATE_PARAM_DOC),
+                   until: Optional[str] = Query(None, description=_DATE_PARAM_DOC_UNTIL),
+                   user: dict = Depends(auth.current_user)):
+    """Raw merged events across every completed job this user has uploaded -
+    the combined-view analog of GET /jobs/{id}/events. Each event carries
+    `session` (1-based upload-session index) and `source_job_id` (which
+    original job it came from - see career.merge_user_events' docstring),
+    which the frontend uses to route per-match frame/replay requests back to
+    the right job and to disable event-correction editing in combined mode
+    (a corrected index only makes sense against one job's own events.json,
+    not this merged array - see MatchSummary.jsx)."""
+    merged, sessions = career.merge_user_events(user["id"])
+    merged, sessions = career.filter_by_date(merged, sessions, since, until)
+    return merged
+
+
+@app.get("/career/opponent-strength")
+def career_opponent_strength(since: Optional[str] = Query(None, description=_DATE_PARAM_DOC),
+                              until: Optional[str] = Query(None, description=_DATE_PARAM_DOC_UNTIL),
+                              user: dict = Depends(auth.current_user)):
+    """Combined-view analog of GET /jobs/{id}/opponent-strength, computed
+    over every match across every completed job this user has uploaded."""
+    merged, sessions = career.merge_user_events(user["id"])
+    merged, sessions = career.filter_by_date(merged, sessions, since, until)
+    return analytics.compute_opponent_strength(merged)
+
+
+@app.get("/career/battle-profile")
+def career_battle_profile(since: Optional[str] = Query(None, description=_DATE_PARAM_DOC),
+                           until: Optional[str] = Query(None, description=_DATE_PARAM_DOC_UNTIL),
+                           user: dict = Depends(auth.current_user)):
+    """Combined-view analog of GET /jobs/{id}/battle-profile (see that
+    endpoint's docstring) - the job-wide "overall skill set" rollup, but
+    computed across every match in every completed job this user has ever
+    uploaded instead of just one job. Same null-not-404 contract: returns
+    null in the response body when there's merged event data but no match
+    in it has any turns yet."""
+    merged, sessions = career.merge_user_events(user["id"])
+    merged, sessions = career.filter_by_date(merged, sessions, since, until)
+    return analytics.compute_job_battle_profile(merged)
+
+
 @app.get("/career/skill-scores")
-def career_skill_scores(user: dict = Depends(auth.current_user)):
+def career_skill_scores(since: Optional[str] = Query(None, description=_DATE_PARAM_DOC),
+                         until: Optional[str] = Query(None, description=_DATE_PARAM_DOC_UNTIL),
+                         user: dict = Depends(auth.current_user)):
     """All-time skill scores across every match this user has ever uploaded -
     the single blended number. See /career/skill-scores/trend for the
     session-by-session breakdown that actually shows improvement over time;
-    this endpoint alone can only ever answer "how good am I, overall.\""""
-    merged, _sessions = career.merge_user_events(user["id"])
+    this endpoint alone can only ever answer "how good am I, overall.\" With
+    since/until set, "all-time" narrows to just that window - this is the
+    endpoint the period-comparison feature calls twice (once per period) to
+    get each side's overall/tempo/adaptability/execution/closing numbers."""
+    merged, sessions = career.merge_user_events(user["id"])
+    merged, sessions = career.filter_by_date(merged, sessions, since, until)
     return analytics.compute_skill_scores(merged)
 
 
 @app.get("/career/skill-scores/trend")
-def career_skill_scores_trend(user: dict = Depends(auth.current_user)):
+def career_skill_scores_trend(since: Optional[str] = Query(None, description=_DATE_PARAM_DOC),
+                               until: Optional[str] = Query(None, description=_DATE_PARAM_DOC_UNTIL),
+                               user: dict = Depends(auth.current_user)):
     """The actual "track how the player has improved" endpoint: one entry per
     upload session (oldest first), each with a `per_session` skill-score
     snapshot (computed from ONLY that session's matches - the real trend
     signal) and a `cumulative` snapshot (computed from every match up through
     that session - noisier early, smooths out as more data accumulates). See
     backend/career.py's compute_skill_score_trend docstring for why both are
-    returned rather than picking one."""
+    returned rather than picking one. since/until narrow which sessions
+    appear at all (each session's own per_session/cumulative snapshots are
+    still computed from the FILTERED merged_events, so a cumulative value
+    here reflects "everything up through this session, WITHIN the filtered
+    window" - consistent with every other /career/* route's since/until
+    semantics, not a separate meaning)."""
     merged, sessions = career.merge_user_events(user["id"])
+    merged, sessions = career.filter_by_date(merged, sessions, since, until)
     return career.compute_skill_score_trend(merged, sessions)
 
 

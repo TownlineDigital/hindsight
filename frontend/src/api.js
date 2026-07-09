@@ -22,6 +22,22 @@ async function getJSON(url, opts = {}) {
   return body;
 }
 
+// Builds a "?since=...&until=..." query string from an optional
+// {since, until} range (both 'YYYY-MM-DD' strings, either/both may be
+// omitted/null/undefined) - shared by every /career/* call below that
+// supports date-range filtering (added 2026-07-09 for the combined "All
+// Gameplay" view's date-range filter + period-comparison feature). Returns
+// "" (no query string at all) when neither side is set, so an ordinary
+// "All time" call is byte-for-byte the same URL it always was.
+function rangeQuery(range) {
+  const since = range?.since;
+  const until = range?.until;
+  const parts = [];
+  if (since) parts.push(`since=${encodeURIComponent(since)}`);
+  if (until) parts.push(`until=${encodeURIComponent(until)}`);
+  return parts.length ? `?${parts.join("&")}` : "";
+}
+
 // Fetches one stored reference frame (GET /jobs/{id}/frame/{path}) as a
 // blob: URL instead of a plain JSON response - <img src="..."> can't carry
 // an Authorization header, so this is what lets a private (Supabase-auth'd)
@@ -102,12 +118,26 @@ export const api = {
   // "Career" endpoints - aggregate across EVERY completed job this account
   // has ever uploaded, not just the currently-selected job (see
   // backend/career.py). No jobId argument: the scope is implicitly "this
-  // whole account's match history."
-  careerRecord: () => getJSON("/career/record"),
-  careerReport: () => getJSON("/career/report"),
-  careerMatches: () => getJSON("/career/matches"),
-  careerSkillScores: () => getJSON("/career/skill-scores"),
-  careerSkillScoresTrend: () => getJSON("/career/skill-scores/trend"),
+  // whole account's match history." Every one of these takes an OPTIONAL
+  // `range` argument - {since, until} 'YYYY-MM-DD' strings (either/both
+  // omittable) - added 2026-07-09 so the combined "All Gameplay" view can
+  // narrow down to a date window (GameplayDateFilter.jsx) or fetch a second
+  // window to compare against (PeriodComparison.jsx). Omitting `range`
+  // entirely keeps the original "All time" behavior byte-for-byte.
+  careerRecord: (range) => getJSON(`/career/record${rangeQuery(range)}`),
+  careerReport: (range) => getJSON(`/career/report${rangeQuery(range)}`),
+  careerMatches: (range) => getJSON(`/career/matches${rangeQuery(range)}`),
+  careerSkillScores: (range) => getJSON(`/career/skill-scores${rangeQuery(range)}`),
+  careerSkillScoresTrend: (range) => getJSON(`/career/skill-scores/trend${rangeQuery(range)}`),
+
+  // Combined "All Gameplay" view (added 2026-07-09 for the Gameplay dropdown
+  // rework) - the career-wide analogs of events/opponent-strength/battle-profile,
+  // used the same way GET /jobs/{id}/... are used for one job, but merged
+  // across every completed job on this account. See backend/main.py's
+  // /career/events, /career/opponent-strength, /career/battle-profile.
+  careerEvents: (range) => getJSON(`/career/events${rangeQuery(range)}`),
+  careerOpponentStrength: (range) => getJSON(`/career/opponent-strength${rangeQuery(range)}`),
+  careerBattleProfile: (range) => getJSON(`/career/battle-profile${rangeQuery(range)}`),
   askCareerCoach: (question) =>
     getJSON("/career/coach", {
       method: "POST",

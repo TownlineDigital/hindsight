@@ -22,6 +22,7 @@ import tempfile
 import time
 import types
 import unittest
+from datetime import datetime, timezone
 
 
 def _ensure_stub(name, attrs):
@@ -400,6 +401,143 @@ class TestSkillScoreTrend(unittest.TestCase):
 
     def test_empty_sessions_list_returns_empty_trend(self):
         self.assertEqual(career.compute_skill_score_trend([], []), [])
+
+
+def _ts(date_str):
+    """'YYYY-MM-DD' -> unix timestamp at midnight UTC that day - a real,
+    known instant to seed a job's created_at with in the tests below,
+    parallel to how parse_date_boundary() itself parses the exact same
+    string shape (see career.parse_date_boundary's docstring)."""
+    return datetime.strptime(date_str, "%Y-%m-%d").replace(tzinfo=timezone.utc).timestamp()
+
+
+class TestParseDateBoundary(unittest.TestCase):
+    """career.parse_date_boundary - the 'YYYY-MM-DD' -> unix timestamp
+    conversion that powers the combined "All Gameplay" view's date-range
+    filter (added 2026-07-09, tasks #250-256)."""
+
+    def test_none_returns_none(self):
+        self.assertIsNone(career.parse_date_boundary(None))
+
+    def test_blank_string_returns_none(self):
+        self.assertIsNone(career.parse_date_boundary(""))
+        self.assertIsNone(career.parse_date_boundary("   "))
+
+    def test_unparseable_string_returns_none_not_a_crash(self):
+        self.assertIsNone(career.parse_date_boundary("not-a-date"))
+        self.assertIsNone(career.parse_date_boundary("2026/06/01"))   # wrong separator
+
+    def test_valid_date_parses_to_midnight_utc(self):
+        result = career.parse_date_boundary("2026-06-01")
+        expected = datetime(2026, 6, 1, tzinfo=timezone.utc).timestamp()
+        self.assertEqual(result, expected)
+
+    def test_end_of_day_pushes_to_23_59_59(self):
+        """Without end_of_day, an `until` of '2026-06-01' would exclude every
+        session created any time that day after midnight - this is the fix
+        that makes 'same day as since' still include the whole day."""
+        start_of_day = career.parse_date_boundary("2026-06-01")
+        end_of_day = career.parse_date_boundary("2026-06-01", end_of_day=True)
+        self.assertGreater(end_of_day, start_of_day)
+        self.assertEqual(end_of_day - start_of_day, 23 * 3600 + 59 * 60 + 59)
+
+
+class TestFilterByDate(_CareerJobSeedingMixin, unittest.TestCase):
+    """career.filter_by_date - narrows merge_user_events()'s output to only
+    the upload sessions created within [since, until]. Shares
+    _CareerJobSeedingMixin (temp JOBS_DIR, local-mode skip, _seed_job) with
+    TestCareerMerge/TestMatchDurations above."""
+
+    def test_both_none_returns_input_unchanged(self):
+        uid = "user-n"
+        self._seed_job("job1", [True], created_at=_ts("2026-06-01"), user_id=uid)
+        merged, sessions = career.merge_user_events(uid)
+
+        filtered_events, filtered_sessions = career.filter_by_date(merged, sessions, None, None)
+        self.assertEqual(filtered_events, merged)
+        self.assertEqual(filtered_sessions, sessions)
+
+    def test_excludes_sessions_before_since(self):
+        uid = "user-o"
+        self._seed_job("early", [True], created_at=_ts("2026-05-01"), user_id=uid)
+        self._seed_job("late", [False], created_at=_ts("2026-06-15"), user_id=uid)
+        merged, sessions = career.merge_user_events(uid)
+
+        filtered_events, filtered_sessions = career.filter_by_date(merged, sessions, since="2026-06-01")
+        self.assertEqual([s["job_id"] for s in filtered_sessions], ["late"])
+        self.assertTrue(all(e["source_job_id"] == "late" for e in filtered_events))
+
+    def test_excludes_sessions_after_until(self):
+        uid = "user-p"
+        self._seed_job("early", [True], created_at=_ts("2026-06-01"), user_id=uid)
+        self._seed_job("late", [False], created_at=_ts("2026-07-01"), user_id=uid)
+        merged, sessions = career.merge_user_events(uid)
+
+        filtered_events, filtered_sessions = career.filter_by_date(merged, sessions, until="2026-06-15")
+        self.assertEqual([s["job_id"] for s in filtered_sessions], ["early"])
+        self.assertTrue(all(e["source_job_id"] == "early" for e in filtered_events))
+
+    def test_boundaries_are_inclusive(self):
+        """A session created exactly ON the since/until date should be
+        INCLUDED, not treated as just outside the window - see
+        parse_date_boundary's end_of_day handling for the `until` side."""
+        uid = "user-q"
+        self._seed_job("on-since", [True], created_at=_ts("2026-06-01") + 3600, user_id=uid)  # 1am that day
+        self._seed_job("on-until", [False], created_at=_ts("2026-06-10") + 20 * 3600, user_id=uid)  # 8pm that day
+        merged, sessions = career.merge_user_events(uid)
+
+        filtered_events, filtered_sessions = career.filter_by_date(
+            merged, sessions, since="2026-06-01", until="2026-06-10")
+        self.assertEqual({s["job_id"] for s in filtered_sessions}, {"on-since", "on-until"})
+
+    def test_both_bounds_narrows_to_the_window(self):
+        uid = "user-r"
+        self._seed_job("before", [True], created_at=_ts("2026-05-01"), user_id=uid)
+        self._seed_job("inside", [True], created_at=_ts("2026-06-05"), user_id=uid)
+        self._seed_job("after", [False], created_at=_ts("2026-07-01"), user_id=uid)
+        merged, sessions = career.merge_user_events(uid)
+
+        filtered_events, filtered_sessions = career.filter_by_date(
+            merged, sessions, since="2026-06-01", until="2026-06-30")
+        self.assertEqual([s["job_id"] for s in filtered_sessions], ["inside"])
+
+    def test_match_numbers_stay_stable_after_filtering(self):
+        """The whole point of NOT touching merge_user_events' own global
+        match-number remap (see filter_by_date's docstring) - a match's
+        global number must be the same whether you're looking at "All time"
+        or a narrowed range that happens to include it, so two different
+        date-range fetches can treat their match numbers as comparable."""
+        uid = "user-s"
+        self._seed_job("jobA", [True, True], created_at=_ts("2026-06-01"), user_id=uid)   # global 1, 2
+        self._seed_job("jobB", [False], created_at=_ts("2026-07-01"), user_id=uid)          # global 3
+        merged, sessions = career.merge_user_events(uid)
+
+        # Filter down to ONLY jobB's window - its match should still read as
+        # global match 3, not get renumbered to 1 just because it's alone now.
+        filtered_events, _ = career.filter_by_date(merged, sessions, since="2026-06-20")
+        global_matches = sorted({e["match"] for e in filtered_events if e.get("match") is not None})
+        self.assertEqual(global_matches, [3])
+
+    def test_no_jobs_in_range_returns_empty(self):
+        uid = "user-t"
+        self._seed_job("job1", [True], created_at=_ts("2026-06-01"), user_id=uid)
+        merged, sessions = career.merge_user_events(uid)
+
+        filtered_events, filtered_sessions = career.filter_by_date(merged, sessions, since="2027-01-01")
+        self.assertEqual(filtered_events, [])
+        self.assertEqual(filtered_sessions, [])
+
+    def test_invalid_date_strings_are_ignored_not_a_crash(self):
+        """A malformed since/until query param should silently mean 'no
+        filter on this side' - see parse_date_boundary's own docstring -
+        never a 500, and never accidentally excluding everything."""
+        uid = "user-u"
+        self._seed_job("job1", [True], created_at=_ts("2026-06-01"), user_id=uid)
+        merged, sessions = career.merge_user_events(uid)
+
+        filtered_events, filtered_sessions = career.filter_by_date(merged, sessions, since="garbage", until="also-garbage")
+        self.assertEqual(filtered_events, merged)
+        self.assertEqual(filtered_sessions, sessions)
 
 
 if __name__ == "__main__":
