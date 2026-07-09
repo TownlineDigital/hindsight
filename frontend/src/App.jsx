@@ -200,6 +200,21 @@ export default function App() {
   async function pollJob(id) {
     try {
       const status = await api.jobStatus(id);
+      // Clear any error left over from a PREVIOUSLY viewed job before acting
+      // on this poll tick. Root cause of a real bug (2026-07-09): switching
+      // the Gameplay dropdown from a failed job to a still-running one and
+      // hitting Refresh correctly called this function with the right job
+      // id (confirmed via network tab - the GET /jobs/{id} calls were all
+      // hitting the NEW job and returning 200), but the OLD job's error
+      // banner never disappeared, because the render below is gated on
+      // `!error` (`{!error && loading && ...}`) and nothing on this path
+      // ever reset `error` back to null - only loadDashboard/
+      // loadCombinedDashboard and this function's own "done"/"failed"
+      // branches did. So a stale "events.json not ready yet (job status:
+      // failed...)" banner from the last job you looked at would just sit
+      // there forever, silently blocking the progress bar from ever
+      // showing up even though polling was working correctly underneath it.
+      setError(null);
       if (status.status === "done") {
         setJobProgress(null);
         await loadDashboard(id);
@@ -252,6 +267,10 @@ export default function App() {
     }
     const job = (list || jobs).find((j) => j.job_id === id);
     if (job && (job.status === "queued" || job.status === "running")) {
+      // Clear immediately (not just inside pollJob) so switching from a
+      // failed job straight to a running one never even flashes the old
+      // error banner while the first status fetch is in flight.
+      setError(null);
       setLoading(true);
       pollJob(id);
     } else {
