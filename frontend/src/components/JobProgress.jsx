@@ -31,6 +31,14 @@ import { api } from "../api.js";
 export default function JobProgress({ jobId, jobProgress }) {
   const [frameUrl, setFrameUrl] = useState(null);
   const [creep, setCreep] = useState(0);
+  // Ticks up every 2.5s regardless of whether a new frame's appeared -
+  // added 2026-07-09 after direct feedback that the bar sitting at a flat
+  // 0% through the whole get_video step "makes it feel like something's
+  // wrong." get_video (downloading the VOD via yt-dlp) and compose_schema
+  // don't write any frames to disk, so the frame-driven `creep` above never
+  // moves during them - this is a second, honest "time is passing and the
+  // job is still alive" signal for exactly those steps, not a fake ETA.
+  const [elapsedTicks, setElapsedTicks] = useState(0);
   const lastPathRef = useRef(null);
   const urlRef = useRef(null);
   const lastStepRef = useRef(null);
@@ -73,6 +81,15 @@ export default function JobProgress({ jobId, jobProgress }) {
     };
   }, [jobId]);
 
+  // The elapsed-time ticker (see elapsedTicks above) - separate from the
+  // frame-polling effect since it has to keep running even on ticks where
+  // no new frame shows up.
+  useEffect(() => {
+    if (!jobId) return undefined;
+    const interval = setInterval(() => setElapsedTicks((t) => t + 1), 2500);
+    return () => clearInterval(interval);
+  }, [jobId]);
+
   // Reset the within-step creep whenever the pipeline actually advances to a
   // new named step - otherwise the creep from a long analyze_matches run
   // would carry over and make the NEXT step start already part-full.
@@ -81,6 +98,7 @@ export default function JobProgress({ jobId, jobProgress }) {
     if (lastStepRef.current !== stepIndex) {
       lastStepRef.current = stepIndex;
       setCreep(0);
+      setElapsedTicks(0);
     }
   }, [stepIndex]);
 
@@ -91,8 +109,21 @@ export default function JobProgress({ jobId, jobProgress }) {
   // the way into the current step - leaves visible headroom so the jump to
   // the NEXT step (driven by real step_index, not this creep) always reads
   // as forward progress rather than the bar appearing to reverse.
-  const creepPct = Math.min(stepSpan * 0.8, creep * stepSpan * 0.06);
-  const pct = jobProgress ? Math.min(99, Math.round(stepBase + creepPct)) : 0;
+  const frameCreepPct = Math.min(stepSpan * 0.8, creep * stepSpan * 0.06);
+  // Slower, time-based version of the same idea for steps that never write
+  // any frames (get_video, compose_schema) - without this, frameCreepPct
+  // stays 0 for the entire step and the bar just sits dead at stepBase,
+  // which for step 1 (get_video) means a flat, alarming-looking 0%. Capped
+  // a bit short of frameCreepPct's own ceiling so a step that DOES have
+  // real frames is still visibly driven by that stronger signal, not this
+  // ambient one - taking the max of the two below means whichever signal
+  // is actually moving "wins."
+  const timeCreepPct = Math.min(stepSpan * 0.6, elapsedTicks * stepSpan * 0.025);
+  const creepPct = Math.max(frameCreepPct, timeCreepPct);
+  // Floor of 2% once a job is genuinely underway - "0%" reads as "hasn't
+  // started / stuck" even when get_video is actively downloading a VOD in
+  // the background (direct user feedback, 2026-07-09).
+  const pct = jobProgress ? Math.max(2, Math.min(99, Math.round(stepBase + creepPct))) : 0;
 
   return (
     <div className="card job-progress">
