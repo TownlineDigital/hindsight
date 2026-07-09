@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { api } from "./api.js";
 import { supabase } from "./lib/supabase.js";
 import Auth from "./components/Auth.jsx";
@@ -65,6 +65,20 @@ export default function App() {
   // banner show real progress ("compose_schema, step 2/8") instead of a bare
   // "Loading…", and is what the poll loop below checks to know when to stop.
   const [jobProgress, setJobProgress] = useState(null);
+  // Tracks which job the CURRENT poll loop is allowed to write state for -
+  // added 2026-07-09 after a real bug: pollJob's setTimeout chain below had
+  // no cancellation at all, so picking a running job and hitting Refresh
+  // started a poll loop that ran forever every 3s, and nothing stopped it
+  // when you switched to a DIFFERENT running job and started a second loop.
+  // With two accounts' worth of jobs both stuck "running" (Test #6 and the
+  // older orphaned 8c10092ac4a9), that meant two independent loops writing
+  // to the same jobProgress state, each on its own timer - the UI appeared
+  // to randomly flip between "get_video" and "analyze_matches" because it
+  // was actually alternating between two DIFFERENT jobs' real statuses, not
+  // one job's progress bouncing. Every pollJob(id) call now checks this ref
+  // before applying any update, and stale loops for an abandoned job simply
+  // stop rescheduling themselves instead of running forever in the background.
+  const activePollIdRef = useRef(null);
 
   // Career tab data - aggregated across EVERY completed job on this account
   // (see backend/career.py), not just the currently-selected job. Loaded
@@ -200,6 +214,12 @@ export default function App() {
   async function pollJob(id) {
     try {
       const status = await api.jobStatus(id);
+      // Stale-loop guard (see activePollIdRef above) - if the user's since
+      // switched to a different job, this tick's result is for a job nobody
+      // is looking at anymore. Bail out WITHOUT applying any state and
+      // WITHOUT scheduling another setTimeout, so the old loop actually
+      // terminates instead of quietly polling forever in the background.
+      if (activePollIdRef.current !== id) return;
       // Clear any error left over from a PREVIOUSLY viewed job before acting
       // on this poll tick. Root cause of a real bug (2026-07-09): switching
       // the Gameplay dropdown from a failed job to a still-running one and
@@ -227,9 +247,12 @@ export default function App() {
         setError(`Job failed: ${status.error || "unknown error"}`);
       } else {
         setJobProgress(status);
-        setTimeout(() => pollJob(id), 3000);
+        setTimeout(() => {
+          if (activePollIdRef.current === id) pollJob(id);
+        }, 3000);
       }
     } catch (e) {
+      if (activePollIdRef.current !== id) return;
       setJobProgress(null);
       setLoading(false);
       setError(e.message);
@@ -244,6 +267,7 @@ export default function App() {
     const list = await api.listJobs();
     list.sort((a, b) => (a.job_id > b.job_id ? 1 : -1));
     setJobs(list);
+    activePollIdRef.current = newJobId;
     pollJob(newJobId);
   }
 
@@ -261,6 +285,7 @@ export default function App() {
   function openJob(id, list) {
     setJobId(id);
     if (id === ALL_GAMEPLAY) {
+      activePollIdRef.current = null;
       loadCombinedDashboard(dateRange);
       if (compareRange) loadCompareData(compareRange);
       return;
@@ -272,8 +297,15 @@ export default function App() {
       // error banner while the first status fetch is in flight.
       setError(null);
       setLoading(true);
+      activePollIdRef.current = id;
       pollJob(id);
     } else {
+      // Switching to a job that ISN'T queued/running (e.g. picking a done
+      // or failed job right after viewing a different running one) also has
+      // to disown any in-flight poll loop - otherwise that old loop is
+      // still "active" by its own id check and keeps writing jobProgress
+      // updates for a job you've since navigated away from entirely.
+      activePollIdRef.current = null;
       loadDashboard(id);
     }
   }
