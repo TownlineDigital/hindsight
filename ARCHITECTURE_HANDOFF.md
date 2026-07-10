@@ -3865,3 +3865,561 @@ upload.
   section)
 - Chrome Web Store packaging — load-unpacked only for now
 - Firefox/Safari support — Chromium-family (`chrome.*` APIs) only
+
+## 18. Live-coaching / "optimal play" roadmap, Phase 1: data foundation (2026-07-09)
+
+**Why this exists:** direct follow-up to §17, in the same session. User asked
+a pointed, honest question first: "will the tool also consider what moves the
+player has available and give recommendations for the optimal moveset or
+switch out? Is there a way the system can definitively determine the optimal
+action in real time? is this reliable? or is AI not at this level of
+competence yet." The honest answer (given in-chat, not repeated in full
+here): VGC doubles is a simultaneous-move, hidden-information game, so there
+is no rigorous single "definitively optimal" action outside of a full
+equilibrium computation over an opponent-build probability distribution —
+any real system can only ever offer "highest expected-value option given
+current information," never "the correct play," directly extending this
+project's existing Objective Team Preview Evaluation honesty convention
+(§14c/§15b). With that framing accepted, the user then scoped a full 4-phase
+roadmap in one message: "we should include the damage calculator and
+speed/EV inference layer. But the tool should combine popular builds of the
+pokemon your opponent has to infer potential moves, then it should have a
+live during the game recommendation of optimal plays, and a post play review
+where the system determines the short comings, how much of it was the
+players fault, and how much of it was mainly rng." Confirmed via
+`AskUserQuestion`: **"Phase 1: data foundation (Recommended)"** — this
+section is that piece only.
+
+**The 4-phase roadmap, for reference in future sessions:**
+
+1. **Data foundation** (this section) — base stats + real per-species build
+   data (abilities/items/EV spreads/moves/teammates), so later phases have
+   something to compute against.
+2. **Damage calculator** — not started. Needs a real Gen 9 damage-formula
+   engine (STAB, weather, terrain, abilities, items, doubles spread-move
+   reduction, crits). `@smogon/calc` — the same npm library that powers
+   Pokemon Showdown's own official damage calculator — is the identified
+   candidate, specifically to avoid reimplementing that formula from
+   scratch. **Not integrated yet**; this sandbox has a documented `npm
+   install` 403 restriction, so building/testing this piece will need to
+   happen via the user's own machine or Render's build, not fully
+   verifiable in this environment.
+3. **Build/EV inference** — not started. Combine Phase 1's real Smogon
+   movesets with what an opponent's Pokemon actually reveals in a live
+   match (moves used, damage taken, speed order) to narrow from "the
+   popular builds" to "what this specific Pokemon is probably running."
+4. **Live recommendation + post-game luck/skill decomposition** — not
+   started. Live: surface the highest-EV action each turn using Phases 2-3.
+   Post-game: separate a loss into "a lower-EV action was chosen" (skill)
+   vs. "the right call didn't pay off" (variance/RNG) — genuinely new
+   territory, no existing heuristic in this codebase does this.
+
+### 18a. `meta_build.py`: `fetch_pokedex()` gains `base_stats`
+
+Extended the existing PokeAPI Pokedex fetch (types/abilities) with a fifth
+field: HP/Attack/Defense/Special-Attack/Special-Defense/Speed, read straight
+off PokeAPI's own `stats` array (`{"base_stat": int, "stat": {"name": str}}`
+per entry — a stable, long-documented part of its schema). This is the one
+piece every later phase needs and none of this project's existing data has:
+a damage calculator can't compute damage, and a speed-tier inference layer
+can't infer speed, without knowing a Pokemon's actual base stats.
+
+Cache-migration handling follows the same philosophy `supabase_schema.sql`
+already established for its own migrations (`alter table ... add column if
+not exists`): the old skip condition was `if name in dex: continue`, which
+would have permanently skipped every pre-existing cached entry and never
+backfilled `base_stats` onto it. Changed to `if name in dex and "base_stats"
+in dex[name]: continue` — old entries get re-fetched exactly once to pick up
+the new field; entries that already have it (including from a fresh, current
+run) are never re-fetched.
+
+**Honest caveat**: unlike the Smogon-sourced data below, this field's schema
+was NOT live-verified against a real PokeAPI response this session — a
+WebFetch of a real `/pokemon/<name>` response truncated before reaching the
+`stats` field (confirmed via a direct string-search on the fetched text), and
+a `curl` fallback from this sandbox's shell failed with exit 56 (blocked
+outbound network, the same restriction documented elsewhere in this file).
+The field shape used here matches PokeAPI's own long-published public
+schema, but this is "schema-accurate, not live-verified this session" —
+noted explicitly in `fetch_pokedex()`'s own docstring and in
+`tests/test_meta_external.py`'s fixture, rather than silently presented as
+equally verified to everything else in this section.
+
+### 18b. `meta_build.py`: Smogon per-species "moveset" build breakdown
+
+A second, richer Smogon data pull alongside the existing `external_meta`
+(see `fetch_external_meta()`'s own docstring, task #130): Smogon
+publishes a separate `moveset/` file per tier/month/rating-cutoff
+(`smogon.com/stats/<month>/moveset/<tier>-<cutoff>.txt`) with a per-species
+breakdown of Abilities/Items/Spreads/Moves/Teammates, each as their own
+usage percentage — real "what is this Pokemon actually running" data, not
+just "how popular is this species" (which is all the existing `external_meta`
+usage-percent file has). This is exactly the "popular builds of the
+opponent's Pokemon" data source the user asked for in the phase-3 scoping
+message above; Phase 1 only fetches and stores it; nothing yet does anything
+with it.
+
+Same source, same ToS-safe first-party-dump reasoning as the existing
+`external_meta` fetch (Smogon's own published stats, not a scraped or
+reverse-engineered third-party API) — confirmed real via a live `WebFetch` of
+`https://www.smogon.com/stats/2026-06/moveset/gen9championsvgc2026regmb-1760.txt`
+on 2026-07-09 (this session), same tier-slug mapping (`_smogon_tier_slug()`)
+already established and confirmed for the plain usage-stats file.
+
+- **`_parse_smogon_moveset_text(text)`** — parses the file's per-species
+  block format (name → border → "Raw count:" line → five `|`-bordered
+  sections) into `{species: {"raw_count": int, "abilities": {...}, "items":
+  {...}, "spreads": {...}, "moves": {...}, "teammates": {...}}}`. Each
+  species' block boundaries are found by locating every "Raw count:" line
+  and walking exactly 2 lines back to that block's own name line — not a
+  fixed-line-count assumption, since block length varies (a Mega with only
+  one legal item/ability, e.g. Charizard-Mega-Y, has a much shorter
+  Abilities/Items section than a normal Pokemon). Spreads are kept as one
+  raw `"Nature:HP/Atk/Def/SpA/SpD/Spe"` string mapped to its percentage
+  rather than split into individual EVs here — a deliberate "stay a
+  faithful transcription of what Smogon published, don't guess at what a
+  future caller wants" choice, matching this project's existing "don't
+  guess, don't crash" convention (`_parse_smogon_usage_text` does the same:
+  returns an empty dict rather than raising on an HTML 404 page).
+- **`fetch_external_moveset_meta(regulation, year=None, timeout=15)`** —
+  the same month/rating-cutoff walking strategy as the existing
+  `fetch_external_meta()` (current month → up to 2 prior months; cutoffs
+  1760/1630/1500/0 in order), pointed at the `moveset/` subdirectory
+  instead. Returns `None` (not a fabricated empty result) if every
+  month/cutoff combination fails — same "never overwrite good cached data
+  with nothing" contract as the existing fetch.
+
+`main()` now fetches and stores `external_moveset_meta` in the output
+`meta/<format>.json` alongside the pre-existing `external_meta`, gated
+behind the same `--no-fetch`/`--no-external-meta` flags (no new CLI flag
+needed — this is additively part of the same "fetch what's happening in the
+wider field" step). Nothing downstream (`coach_chat.py`'s
+`load_meta_context()`, the frontend) reads this new field yet — it is
+fetched and cached, not yet surfaced anywhere, matching this section's
+"data foundation only" scope.
+
+### 18c. Tests + verification
+
+`tests/test_meta_external.py` gained three new test classes (18 new tests,
+36 in the file total): `TestParseSmogonMovesetText` (9 tests, against a REAL
+captured excerpt — the Garchomp + Sinistcha blocks, fetched directly from
+the URL in §18b on 2026-07-09 — covering every one of the five sections plus
+the HTML-404/empty-string fail-soft cases), `TestFetchExternalMovesetMeta`
+(6 tests, `urlopen`-monkeypatched month/cutoff-walk coverage mirroring the
+existing `TestFetchExternalMeta` pattern exactly), and
+`TestFetchPokedexBaseStats` (4 tests — fetch-and-store, backfill-on-old-cache,
+skip-when-already-present, and fail-soft-on-network-error — using a
+hand-built fixture matching PokeAPI's schema, explicitly commented as
+schema-accurate-but-not-live-verified per §18a's caveat). Full suite:
+`python3 -m unittest discover -s tests` — 1029 tests, all passing (1011
+pre-existing + 18 new).
+
+Hit the project's known bash-mount-desync issue three separate times during
+this build — `meta_build.py`, `tests/test_meta_external.py`, and (discovered
+while writing this very section) this file, `ARCHITECTURE_HANDOFF.md` itself:
+bash's own `grep`/`wc -l`/`tail` consistently showed truncated/stale content
+(missing the newest classes/sections entirely, or cutting off mid-file) even
+though the `Read` tool showed complete, correct content throughout. Each was
+resolved the same way: verify true content via `Read`, then `Write` the full
+correct content to a scratch `.tmp` file in the outputs folder and `cp` it
+across mounts to the real path, then re-verify via `ast.parse` (Python)
+plus `wc -l`/`grep -c "^class "` (or `^## ` for this file) matching the
+`Read`-tool-verified content.
+
+**Known limitation, stated plainly**: this is data-foundation only. No
+damage math, no build inference, no live recommendation, and no post-game
+luck/skill decomposition exist yet — see the 4-phase roadmap above. The new
+`external_moveset_meta` and `base_stats` fields are fetched and cached but
+not read by anything yet, including `coach_chat.py`'s existing meta-grounding
+prompt context.
+
+## 19. Live-coaching roadmap, Phase 2: damage calculator (2026-07-09)
+
+**Why this exists:** direct continuation of §18's 4-phase roadmap, same
+session — user said "proceed" after §18 wrapped up. §18's roadmap flagged
+`@smogon/calc` (the npm library behind Pokemon Showdown's own damage
+calculator) as the natural reference implementation for Phase 2, but this
+project's backend is Python/FastAPI, not Node — that mismatch was surfaced
+to the user directly rather than silently picked for them. Confirmed via
+`AskUserQuestion` among three real options (port the formula into Python /
+run `@smogon/calc` via a Node subprocess / run it client-side in the
+extension only): **"Port the formula into Python (Recommended)"**. This
+section is that port.
+
+### 19a. `backend/damage_calc.py` — a from-scratch Python port of the Gen 9 damage formula
+
+Not a wrapper, not a subprocess call — the actual formula, reimplemented
+directly in Python from the same public specification `@smogon/calc` itself
+implements (Bulbapedia's "Damage" article; the core shape hasn't changed
+since Gen 3). This was the only option of the three that (a) needed zero new
+runtime/Dockerfile changes to this project's existing Python/FastAPI +
+Docker/Render deploy, and (b) could be fully built AND tested end-to-end in
+this sandbox — the other two both depend on `npm install`, which is
+403-blocked here (documented elsewhere in this file), so neither could have
+been verified without leaving the user to test blind on their own machine.
+
+Three pieces:
+
+- **`calc_stats(base_stats, level, ivs, evs, nature)`** — the real Gen stat
+  formula (including the "floor twice" rounding rule: floor the base/IV/EV/
+  level term, add 5, THEN multiply by nature and floor again — not a
+  single-pass shortcut). Takes the exact `base_stats` shape Phase 1's
+  `meta_build.py.fetch_pokedex()` already produces (§18a), so the two phases
+  plug directly together with no reshaping in between. `level` defaults to
+  50 (VGC doubles), not the mainline-game default of 100.
+- **`type_effectiveness(move_type, defend_types)`** — a thin wrapper on
+  `backend/pokedex.py`'s existing `type_multiplier()`/`TYPE_CHART`, reused
+  rather than re-copied a third time into this file (meta_build.py's own
+  PokeAPI-sourced type chart is a second copy already; pokedex.py's is the
+  "offline, always available, zero setup" one `type_synergy.py` already
+  depends on — this module follows that same established convention).
+- **`calculate_damage(attacker, defender, move, field)`** — the actual
+  formula: level/power/Atk/Def base term → doubles/multi-target 0.75x spread
+  reduction → weather (Sun/Rain boost or halve Fire/Water moves; Sandstorm/
+  Snow boost Rock Sp.Def / Ice Def respectively) → critical hits (1.5x,
+  optional) → STAB (1.5x, 2x with Adaptability, plus Gen 9's real same-type-
+  Terastallization mechanic and its 2.25x interaction with Adaptability) →
+  type effectiveness (dual-typing, 0x immunities) → burn (0.5x on physical,
+  negated by Guts) → a small set of real item modifiers (Life Orb 1.3x,
+  Choice Band/Specs 1.5x on the matching category, Expert Belt 1.2x only
+  when super-effective) → stat stages (-6..+6 on the attacking/defending
+  stat in play) → the real 16-value 0.85-1.00 random damage spread (not a
+  single "average" number — a caller gets the actual roll range, same as a
+  real damage calculator shows).
+
+Deliberately decoupled from any specific data source for everything except
+type effectiveness: every function takes plain numbers/dicts the caller
+supplies rather than reaching into `meta/<format>.json` or match data
+itself, mirroring `type_synergy.py`'s existing "objective, inspectable,
+works offline" design. A caller (a future live-coaching endpoint, or the
+Phase 2 browser-extension live assistant from §17e) wires this up to real
+Pokemon; the module itself has zero import-time dependency on any of that.
+
+### 19b. What's modeled vs. explicitly out of scope
+
+Named directly in the module's own docstring, not left implicit:
+
+| Modeled | Not modeled (Phase 2 scope, not a silent gap) |
+|---|---|
+| Full stat calc (base/IV/EV/level/nature) | Ability/item interactions beyond the small named set (Multiscale, Ice Face, Solid Rock/Filter/Tinted Lens, Thick Fat, Technician, Sheer Force, and many more) |
+| STAB incl. Adaptability + same-type Tera | Screens (Reflect/Light Screen/Aurora Veil), Friend Guard, Terrain |
+| Type effectiveness (dual-type, immunities) | Multi-hit moves, secondary effects |
+| Doubles spread-move 0.75x reduction | Moves whose base power varies by field state (Weather Ball, Facade, etc.) |
+| Weather (Sun/Rain on Fire/Water; Sand/Snow on Rock Sp.Def/Ice Def) | Freeze-Dry's water-is-super-effective special case |
+| Burn halving (+ Guts negation) | Weather-setting abilities themselves — weather is a plain field input here, never derived from an ability |
+| Crits, Life Orb, Choice Band/Specs, Expert Belt | Bulbapedia's exact multi-stage intermediate-flooring order (this module floors once per roll after combining every modifier into one float — can very rarely differ from Showdown's own calc by 1 HP at a rounding boundary; a named simplification, not an unnoticed bug) |
+| Stat stages (-6..+6) | — |
+| The real 16-value random damage spread | — |
+
+An unrecognized ability/item string is simply ignored (no bonus applied,
+never an error) — the same "don't guess, don't crash" convention
+`meta_build.py`'s Smogon parsers already established.
+
+### 19c. Tests + verification
+
+`tests/test_damage_calc.py` (new file, 34 tests): every non-trivial number
+is checked against a hand-worked calculation shown directly in a code
+comment next to its assertion (e.g. `TestCalculateDamage.
+test_base_stab_only_min_max` derives `term1 = (2*50)//5+2 = 22`,
+`step = (22*100*200)//100 = 4400`, `base = 4400//50+2 = 90`, then the full
+roll range by hand) — not checked against an external tool, since this
+sandbox can't run `@smogon/calc` or Showdown's own calculator to compare
+against (same npm restriction as §18/§19a). Covers: stat calc (boosted/
+lowered/neutral stats, zero base stat, IV/EV defaults), type effectiveness
+(super-effective, immune, dual-type quad-effective, neutral), and the full
+damage formula in isolation per modifier (immunity, status move/zero power,
+spread-move reduction only firing with 2+ real targets, same-type Tera STAB,
+Adaptability+Tera's 2.25x interaction, crits, Choice Band boosting the
+matching category only, Life Orb, burn + Guts negation, Sun boosting Fire/
+halving Water, positive attack stat stages, negative defense stat stages,
+roll-spread monotonicity, and unrecognized ability/item strings being
+silently ignored rather than erroring). Full suite: `python3 -m unittest
+discover -s tests` — 1063 tests, all passing (1029 pre-existing + 34 new).
+
+Manually spot-checked the module interactively in this sandbox before
+writing the formal test file (immunity, spread reduction, same-type-Tera +
+Adaptability, crit, Choice Band, and status-move-zero-power cases), then
+converted each verified case into a permanent hand-commented test — the
+same "verify by hand first, then lock it in as a test" discipline used
+throughout this project. Unlike §18a's `base_stats` fixture caveat, nothing
+in this section carries a "not live-verified" caveat: every number here is
+independently derivable from the documented formula, not dependent on a
+third-party API response.
+
+**Known limitation, stated plainly**: this module computes damage for a
+single attack given fully-specified inputs — it does not yet know what any
+real Pokemon in a match is actually running (that's Phase 3, build/EV
+inference, combining this with Phase 1's Smogon movesets and what an
+opponent reveals in-battle) and nothing calls it yet (that's Phase 4, live
+recommendation). It is a correct, tested calculation engine with no caller
+wired up to it yet — exactly the same "one honest phase at a time" discipline
+established in §18.
+
+## 20. Live-coaching roadmap, Phase 3 (partial slice): item-reveal detection (2026-07-09)
+
+**Why this exists:** direct user follow-up in the same session, verbatim:
+"damage with items like focus sash and choice scarf and life orb until we
+know the opponent has it on their pokemon." Read as a design question about
+§19's damage calculator: an opponent's held item is hidden information, so
+what should `calculate_damage()` actually assume about it before it's been
+revealed? Scoped via `AskUserQuestion` among three options (default to "no
+item" until confirmed / show both "no item" and "likely item" scenarios
+side by side / build in-battle detection first, skip the damage-calc
+composition) — confirmed: **"Default to 'no item' until confirmed
+(Recommended)."** This is a first, real slice of Phase 3 (build/EV
+inference) from §18's roadmap — not the full phase (no Smogon-popularity
+blending, no speed-tier inference from move order yet), just the "what has
+this specific Pokemon in THIS match actually shown us" piece, built because
+it's what the damage-calc composition question directly needed.
+
+### 20a. Why explicit-protocol-reveal only, not HP-math inference
+
+Investigated first (via a research pass over `showdown_import.py`,
+`decision_windows.py`, and `strategic_analysis.py`) whether Focus Sash could
+be detected by noticing "a Pokemon survived a hit that should have been
+lethal, at exactly 1 HP." Rejected: that signal is ambiguous by itself
+(Sturdy, Endure, or simply a non-lethal hit all look the same from HP alone)
+— and unnecessary, because Showdown's own protocol already states outright,
+via its own dedicated lines, exactly which one actually happened
+(`-activate`/`-enditem` for Focus Sash specifically). Building a probabilistic
+HP-math guesser when a deterministic, ground-truth signal already exists in
+the data would have been strictly worse — the same "don't guess when real
+evidence is available" principle `meta_build.py`'s Smogon parsers and
+`damage_calc.py`'s unrecognized-ability/item handling already follow.
+
+### 20b. `showdown_import.py`: three new/extended protocol handlers
+
+A research pass (general-purpose agent, read `showdown_import.py`,
+`decision_windows.py`, `strategic_analysis.py`, grepped for existing
+item-tag handling) found the real gap precisely: Showdown's protocol
+already carries explicit item-reveal signals on several different line
+types, and this project's parser was silently dropping all but one of them.
+
+- **`-damage`/`-heal` handler** (pre-existing) — extended to also check
+  `args[2]` for Showdown's own `[from] item: X` cause tag (e.g.
+  `|-damage|p1a: Garchomp|88/100|[from] item: Life Orb` — real Life Orb
+  recoil, the line immediately after that same Pokemon's own move dealt
+  damage that turn; the same tag shape covers Leftovers/berry heals, Rocky
+  Helmet contact damage, etc.). Deliberately does NOT fire on `[from]
+  move:`/`[from] ability:` tags (recoil moves, Rough Skin) — a different,
+  unrelated cause, left alone on purpose.
+- **`-activate` handler** (new) — fires only when `args[1]` starts with
+  `"item:"` (Showdown uses `-activate` for many unrelated things —
+  confusion, trapping, etc. — so this is deliberately narrow). Real example:
+  `|-activate|p2a: Wynaut|item: Focus Sash`, the exact line Showdown emits
+  the instant Focus Sash actually saves a Pokemon.
+- **`-enditem` handler** (new) — an item being consumed/removed: a berry
+  eaten, Air Balloon popped, or Focus Sash used up (Focus Sash triggers
+  BOTH `-activate` and this line for the same event — harmless, since
+  `item_inference.py`'s dict-shaped output naturally de-dupes a repeated
+  item on the same Pokemon).
+
+All three emit the pre-existing `item_or_ability_activated` event type
+(reused, not a new event type invented) with a new structured `item` field
+alongside the existing free-text `detail`. The pre-existing combined
+`-ability`/`-item` handler was also lightly extended at the same time to add
+this same structured `item` field on genuine `-item` reveals (e.g. a
+Trick/Switcheroo swap) — previously that handler only produced free text,
+with no machine-readable field a caller could key off without parsing
+`detail` strings.
+
+### 20c. `backend/item_inference.py`
+
+One real function, `revealed_items(match_events) -> {"actor:pokemon": item}`,
+plus a `item_for(match_events, actor, pokemon)` convenience lookup. Scans a
+match's events for `item_or_ability_activated` rows that carry the new
+structured `item` field (see §20b) — nothing else. A Pokemon with no
+matching event simply isn't in the output; `item_for()` returns `None` for
+it, which is the honest, correct answer for "not yet confirmed," never a
+guess.
+
+The composition with `damage_calc.py` needs no glue code at all:
+`damage_calc.calculate_damage()` already treats a missing/`None` `item` key
+as "no item bonus" (§19's own "don't guess, don't crash" convention), so
+`attacker["item"] = item_inference.item_for(match_events, "opponent",
+"Garchomp")` — confirmed or `None` — is the entire integration. The two
+modules were each built independently correct and compose correctly by
+construction, verified directly in §20d below rather than assumed.
+
+### 20d. Tests + verification
+
+- `tests/test_showdown_import.py` gained `TestItemRevealParsing` (9 tests):
+  Life Orb recoil tag, Leftovers heal tag, confirming a `[from] move:`/
+  ability-caused hit does NOT falsely produce an item event, Focus Sash's
+  paired `-activate`+`-enditem` lines, a consumed berry via bare `-enditem`,
+  the pre-existing `-item` (Trick) reveal now also carrying the structured
+  `item` field, confirming an `-ability` reveal does NOT get an `item`
+  field, confirming `-activate` for an unrelated cause (confusion) produces
+  nothing, and confirming this file's one real captured replay (which
+  genuinely has no item reveals on screen) still produces zero item events
+  — the new parsing doesn't fabricate anything on real data that has none.
+- `tests/test_item_inference.py` (new file, 12 tests): `TestRevealedItems`
+  and `TestItemFor` unit-test the module directly (multiple actors/Pokemon,
+  malformed-entry tolerance, later reveals overwriting earlier ones e.g.
+  after a Trick), and `TestFullCompositionWithShowdownAndDamageCalc` — the
+  real end-to-end proof — feeds a synthetic Showdown log through
+  `showdown_import.BattleParser`, pulls a confirmed Life Orb item out via
+  `item_inference.item_for()`, and confirms it measurably changes a
+  `damage_calc.calculate_damage()` result; then, symmetrically, confirms an
+  opponent Pokemon that never had its item revealed in that same match
+  produces `item_for() -> None`, and that composing that `None` straight
+  into `damage_calc.py`'s attacker dict is byte-for-byte identical to
+  explicitly passing `item=None` — the exact "default to no item until
+  confirmed" behavior the user asked for, verified across all three modules
+  together, not just asserted within one of them.
+
+Full suite: `python3 -m unittest discover -s tests` — 1084 tests, all
+passing (1063 pre-existing + 9 + 12 new). Hit the project's known bash-
+mount-desync issue on `showdown_import.py` and `tests/
+test_showdown_import.py` during this build (bash's own `ast.parse`/`grep`
+truncated mid-edit on both, while the `Read` tool showed complete, correct
+content throughout) — resolved via the established Write-`.tmp`-then-`cp`
+pattern for the former, and a `sed`-preserved-head + heredoc-appended-tail
+pattern for the latter (the pre-edit portion of that file was still
+correctly cached by bash, so only the newly-added tail needed to be
+reconstructed and appended, rather than rewriting the whole file by hand).
+
+**Known limitation, stated plainly**: this only covers items Showdown's own
+protocol explicitly reveals DURING a match already in hand — it has no
+opinion at all about an opponent's Pokemon before anything has happened to
+it (team preview, turn 1 before any item-revealing event has fired), and
+it does not attempt Choice Scarf detection via speed-order anomalies (the
+third option in the `AskUserQuestion` scoping, "build in-battle detection
+first," covered Choice Scarf via move-order/speed inference specifically —
+not built; only explicit protocol reveals are covered here, and a Choice
+Scarf that never gets Tricked/Switcheroo'd away and never otherwise
+triggers a `-item` line stays unconfirmed under this module even if its
+speed clearly implies one). Full build/EV inference (Phase 3 proper —
+combining this confirmed-item signal with Phase 1's Smogon popularity data
+into an actual probability-weighted guess for STILL-unconfirmed items) is
+not built; this section is explicitly the "ground truth only" foundation
+Phase 3 proper would sit on top of, not Phase 3 itself.
+
+## 21. Design philosophy: educational tool, not a cheat sheet (2026-07-10)
+
+**Why this exists:** direct user question, verbatim: "How can we insure
+this remains a educational tool for users not cheat sheet." This section
+records the answer as an explicit, checkable constraint - something every
+future phase of the live-coaching roadmap (§18-§20) gets evaluated against,
+not just a one-time conversation. Written BEFORE Phase 4 (live
+recommendation) is built, deliberately - that's the phase where the line
+between "coach" and "autopilot" is easiest to blur by default.
+
+### 21a. The bigger constraint: this may not just be a pedagogy question
+
+Investigated Smogon's actual tournament rules before answering purely on
+design philosophy, since a live-assist tool that crosses into real-time
+"do this" prompting during a competitive match isn't just bad teaching - it
+can be a bannable offense on the platform this tool targets. Findings, from
+Smogon's own published rules (https://www.smogon.com/tournaments/rules and
+the "Tournament Rules and General Guidelines" thread,
+https://www.smogon.com/forums/threads/tournament-rules-and-general-guidelines.3642760/,
+both fetched 2026-07-10):
+
+- **"Ghosting"** is an official, tournament-bannable (3 months to 1 year)
+  offense, defined exactly as: *"giving any piece of advice to someone
+  playing a game. Any form of direct advice is considered ghosting. A
+  player should be able to make their own decisions based on what they
+  observe by themselves... Our tournaments are designed to be tests of
+  individual skill, not the skill of one player with the support of others
+  providing suggestions."* As written, this governs advice from OTHER
+  PEOPLE (the rule's own examples are voice calls and livestream feeds) -
+  it does not explicitly name personal software tools.
+- **The same ruleset's "Mechanics Questions" section is the more directly
+  relevant precedent for THIS project.** Players may ask a tournament
+  helper only OBJECTIVE, game-state-independent mechanics facts ("Can a
+  Magic Guard Pokemon be fully paralyzed in DPP?"). Explicitly listed as
+  **NOT allowed**: *"Will that Rotom-W outspeed my Gyarados?"* (the rule's
+  own reason: "answering requires assumptions on EVs, natures, items") and
+  *"Does the enemy Clefable have Calm Mind?"* (the rule's own reason:
+  "inviting speculation on Clefable's moveset, not a question about
+  mechanics"). These are close to word-for-word the exact questions §20's
+  item-reveal work and any future Phase 3 build-inference/speed-tier
+  feature would try to answer for a player mid-match.
+- **Regular (non-tournament) ladder play has no equivalent written
+  restriction** in Pokemon Showdown's own FAQ/rules pages (checked
+  https://pokemonshowdown.com/pages/faq, 2026-07-10) - no mention of
+  third-party tool restrictions at all. This tracks with real precedent:
+  community-built, openly promoted tools like Showdex ("An Auto-Updating
+  Damage Calculator Built into Showdown," discussed on Smogon's own forums)
+  and Smogon's own official calc.pokemonshowdown.com are widely used
+  without controversy.
+
+**The distinction that actually matters, reading these side by side**: a
+calculator where the PLAYER supplies their own assumptions (their own
+guess at an opponent's item/EVs, then sees the resulting damage number) is
+well-precedented, computational, "objective timesaver" territory - the
+player is still doing 100% of the observation and judgment; the tool is
+only doing arithmetic. A tool that AUTOMATICALLY infers or guesses the
+opponent's hidden information (their likely item, EVs, "will this Pokemon
+outspeed yours") and hands the player a conclusion is functionally
+answering exactly the category of question Smogon's own tournament rules
+call out BY NAME as not allowed to get from another person - regardless of
+whether the source is a human or an algorithm, the player is no longer
+doing that observation/judgment themselves.
+
+### 21b. What this means for §18-§20's roadmap, concretely
+
+- Phase 1 (data foundation) and Phase 2 (damage calculator) are squarely on
+  the safe, precedented side: they compute a result FROM inputs, they don't
+  generate the inputs themselves. `damage_calc.py` requires the caller to
+  supply `item`, `ability`, stat spreads, etc. explicitly - it never guesses
+  an opponent's held item on its own. This is the same shape as
+  calc.pokemonshowdown.com/Showdex.
+- §20's item-reveal detection stays on the safe side FOR THE SAME REASON it
+  was scoped that way in the first place (§20a): it only reports items
+  Showdown's own protocol already publicly confirmed happened in this
+  match (a Focus Sash save, a Life Orb recoil tick) - information any
+  attentive player watching their own screen already has, just organized
+  for reuse in a calculation. It does not guess at anything unconfirmed.
+- Any future "build inference" work that guesses an UNCONFIRMED opponent
+  item/EV spread/moveset from Smogon popularity data, and any Phase 4 live
+  recommendation that acts on that guess, is the piece that risks crossing
+  the line drawn in §21a - not because it's unhelpful, but because it starts
+  doing observation/judgment the player is supposed to be doing themselves,
+  the same category of thing Smogon's own rules name explicitly. If/when
+  that work happens, it should default to being framed and gated as a
+  practice/post-game-study feature, not something left open during a real
+  competitive match (tournament or otherwise) - see 21c.
+
+### 21c. Concrete design levers, independent of the rules question
+
+Even setting the rules question aside, these are the mechanisms that keep
+this tool teaching rather than replacing the player's own thinking:
+
+- **Explain, don't just answer.** A cheat sheet says "use Move X." A coach
+  shows the damage roll, the type matchup, and why Move X beats the
+  alternatives this turn. `damage_calc.py` already returns the full
+  modifier breakdown and roll spread, not a single verdict - any future UI
+  built on it should keep surfacing the reasoning, never just a bottom-line
+  command.
+- **Rank options, don't crown one.** Showing 2-3 viable plays with
+  tradeoffs (already the intended shape of `type_synergy.best_selection()`,
+  §15b) keeps the player making the actual decision instead of executing a
+  dictated one.
+- **Keep any live output factual, not prescriptive.** Already decided
+  earlier in this project's own scoping (before §17): live features are
+  score + mistake flags only, no automatic per-turn "do this" commentary.
+  Worth holding as a hard line through Phase 4, not just an initial
+  simplification to revisit later.
+- **Push the deep analysis to post-game, not mid-game.** The luck-vs-skill
+  decomposition and Team Preview Skill Score (§15) are inherently
+  retrospective - reviewing a decision after it's made is teaching; being
+  told the answer while still deciding is not. The more of the "smart"
+  analysis that lives in post-game review rather than live in-battle, the
+  safer this stays on the educational side of the line drawn in §21a too.
+- **Track improvement over time, not just answers.** Surfacing a trend
+  (e.g. a rising Preview Skill score across matches, §15) rewards actually
+  getting better at the underlying judgment, not looking up the right
+  answer once and moving on.
+
+**Known limitation, stated plainly**: this section is a design constraint
+and a rules-research summary, not new code - nothing in the current
+codebase actually violates any of the above yet (Phases 1-2 and §20's
+item-reveal slice are all input-driven, non-prescriptive by construction),
+but nothing enforces these principles automatically either. Whoever builds
+Phase 3 (build inference) and Phase 4 (live recommendation) needs to
+actively check new work against this section, not just against passing
+tests - a feature can be fully correct and well-tested and still cross the
+line described in 21a/21b if it isn't designed with this in mind from the
+start.

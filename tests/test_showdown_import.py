@@ -831,5 +831,120 @@ class TestFieldConditionParsing(unittest.TestCase):
         self.assertTrue(all(fs["tailwind"] == "player" for fs in field_states))
 
 
+class TestItemRevealParsing(unittest.TestCase):
+    """Regression tests for the 2026-07-09 item-reveal parsing added for
+    item_inference.py/damage_calc.py's "default to no item until confirmed"
+    behavior (direct user request - see backend/item_inference.py's own
+    docstring). Before this, showdown_import.py silently dropped every one
+    of these real protocol lines: Life Orb/Leftovers/Rocky Helmet-style
+    `[from] item:` damage/heal attributions, `-activate` item triggers
+    (Focus Sash saving a Pokemon), and `-enditem` consumption (a berry
+    eaten, Air Balloon popped). Synthetic logs fed directly through
+    BattleParser.feed_line(), same style TestTerastallizeParsing uses for
+    isolated protocol-line checks - none of these three lines appear in
+    this file's one real captured replay."""
+
+    def _events_for(self, extra_lines):
+        parser = si.BattleParser(match_number=1, player_id="p1")
+        for line in ["|player|p1|Ash|1|", "|player|p2|Gary|2|"] + extra_lines:
+            parser.feed_line(line)
+        return [e for e in parser.events if e["event"] == "item_or_ability_activated"]
+
+    def test_life_orb_recoil_tag_on_damage_line(self):
+        events = self._events_for([
+            "|switch|p1a: Garchomp|Garchomp, L50, M|100/100",
+            "|-damage|p1a: Garchomp|88/100|[from] item: Life Orb",
+        ])
+        self.assertEqual(len(events), 1)
+        e = events[0]
+        self.assertEqual(e["pokemon"], "Garchomp")
+        self.assertEqual(e["actor"], "player")
+        self.assertEqual(e["item"], "Life Orb")
+        self.assertIn("recoil", e["detail"])
+
+    def test_leftovers_heal_tag_on_heal_line(self):
+        events = self._events_for([
+            "|switch|p2a: Incineroar|Incineroar, L50, M|80/100",
+            "|-heal|p2a: Incineroar|86/100|[from] item: Leftovers",
+        ])
+        self.assertEqual(len(events), 1)
+        e = events[0]
+        self.assertEqual(e["item"], "Leftovers")
+        self.assertEqual(e["actor"], "opponent")
+        self.assertIn("heal", e["detail"])
+
+    def test_recoil_move_attribution_is_not_mistaken_for_an_item(self):
+        """"[from] move: ..."/ability attributions are a different, unrelated
+        cause (a real recoil move, Rough Skin, etc.) - must NOT produce an
+        item_or_ability_activated event with a structured item field."""
+        events = self._events_for([
+            "|switch|p1a: Garchomp|Garchomp, L50, M|100/100",
+            "|-damage|p1a: Garchomp|70/100|[from] Recoil",
+        ])
+        self.assertEqual(events, [])
+
+    def test_focus_sash_activate_and_enditem(self):
+        events = self._events_for([
+            "|switch|p1a: Whimsicott|Whimsicott, L50, F|100/100",
+            "|-damage|p1a: Whimsicott|1/100",
+            "|-activate|p1a: Whimsicott|item: Focus Sash",
+            "|-enditem|p1a: Whimsicott|Focus Sash",
+        ])
+        self.assertEqual(len(events), 2)
+        self.assertTrue(all(e["item"] == "Focus Sash" for e in events))
+        self.assertIn("activated", events[0]["detail"])
+        self.assertIn("consumed", events[1]["detail"])
+
+    def test_consumed_berry_via_enditem(self):
+        events = self._events_for([
+            "|switch|p2a: Incineroar|Incineroar, L50, M|20/100",
+            "|-enditem|p2a: Incineroar|Sitrus Berry",
+        ])
+        self.assertEqual(len(events), 1)
+        self.assertEqual(events[0]["item"], "Sitrus Berry")
+        self.assertIn("consumed", events[0]["detail"])
+
+    def test_direct_item_reveal_via_trick(self):
+        """A plain |-item| line (e.g. after Trick/Switcheroo) already had a
+        handler before this change - confirms it now ALSO gets the
+        structured `item` field item_inference.py needs, not just the
+        pre-existing free-text `detail`."""
+        events = self._events_for([
+            "|switch|p1a: Garchomp|Garchomp, L50, M|100/100",
+            "|-item|p1a: Garchomp|Choice Scarf|[from] move: Trick",
+        ])
+        self.assertEqual(len(events), 1)
+        self.assertEqual(events[0]["item"], "Choice Scarf")
+
+    def test_ability_reveal_does_not_get_an_item_field(self):
+        """-ability reveals share a handler with -item but must NOT produce
+        a structured `item` field (that would be wrong data - an ability is
+        not an item) - gets `ability` instead."""
+        events = self._events_for([
+            "|switch|p2a: Incineroar|Incineroar, L50, M|100/100",
+            "|-ability|p2a: Incineroar|Intimidate",
+        ])
+        self.assertEqual(len(events), 1)
+        self.assertNotIn("item", events[0])
+        self.assertEqual(events[0]["ability"], "Intimidate")
+
+    def test_activate_for_a_non_item_cause_is_ignored(self):
+        """-activate is used for many unrelated things (confusion, trapping,
+        etc.) - only "item: ..." activations should produce an event."""
+        events = self._events_for([
+            "|switch|p1a: Garchomp|Garchomp, L50, M|100/100",
+            "|-activate|p1a: Garchomp|confusion",
+        ])
+        self.assertEqual(events, [])
+
+    def test_real_replay_has_no_item_reveals(self):
+        """This file's one real captured replay (Reg M-A) never has an
+        item revealed on-screen - confirms the new parsing doesn't
+        fabricate any event on a real log that genuinely has none."""
+        events = si.parse_replay(REAL_REPLAY_JSON, match_number=1, player_id="Geordivgc")
+        item_events = [e for e in events if e["event"] == "item_or_ability_activated" and e.get("item")]
+        self.assertEqual(item_events, [])
+
+
 if __name__ == "__main__":
     unittest.main()

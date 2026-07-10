@@ -577,13 +577,69 @@ class BattleParser:
                 self._emit("hp_change", self._side_for(_side_of_position(position_id)),
                            pokemon=species, detail=f"HP: {hp_field.strip()}",
                            hp_percent=hp_percent)
+            # Item-reveal detection, added 2026-07-09 for item_inference.py
+            # (see that module's docstring - direct user request: don't
+            # assume the opponent has Life Orb/Choice Scarf/Focus Sash etc.
+            # in a damage calculation until it's actually been confirmed).
+            # Showdown attributes the CAUSE of damage/heal directly in the
+            # protocol line itself (args[2], e.g. "[from] item: Life Orb")
+            # rather than requiring any inference from HP math - a real
+            # example (Life Orb recoil): "|-damage|p1a: Garchomp|88/100|
+            # [from] item: Life Orb", the line immediately after the SAME
+            # Pokemon's own move dealt damage that turn. Only fires on an
+            # explicit "[from] item:" tag - "[from] move: ..."/"[from]
+            # ability: ..." attributions (recoil moves, Rough Skin, etc.)
+            # are a different, unrelated cause and are deliberately left
+            # alone here, same "don't guess beyond what the protocol
+            # actually says" discipline as everywhere else in this parser.
+            if len(args) >= 3 and args[2].strip().lower().startswith("[from] item:"):
+                item_name = args[2].split(":", 1)[1].strip()
+                if item_name:
+                    self._emit("item_or_ability_activated", self._side_for(_side_of_position(position_id)),
+                               pokemon=species,
+                               detail=f"item: {item_name} ({'recoil' if msg_type == '-damage' else 'heal'})",
+                               item=item_name)
 
         elif msg_type in ("-ability", "-item") and len(args) >= 2 and not args[1].startswith("[from]"):
             pokemon_id, value = args[0], args[1]
             position_id = _position_id(pokemon_id)
             species = self.active.get(position_id, pokemon_id.split(":")[-1].strip())
+            extra = {"item": value} if msg_type == "-item" else {"ability": value}
             self._emit("item_or_ability_activated", self._side_for(_side_of_position(position_id)),
-                       pokemon=species, detail=f"{msg_type.lstrip('-')}: {value}")
+                       pokemon=species, detail=f"{msg_type.lstrip('-')}: {value}", **extra)
+
+        elif msg_type == "-activate" and len(args) >= 2 and args[1].strip().lower().startswith("item:"):
+            # Real protocol example: "|-activate|p2a: Wynaut|item: Focus
+            # Sash" - fires the instant Focus Sash (or a similar activated
+            # item) actually does something, e.g. holding a Pokemon at 1 HP
+            # instead of fainting it. This is Showdown's OWN confirmation,
+            # not an inference from "it survived a hit that looked lethal"
+            # (which could also be Sturdy, Endure, a berry, or simply not
+            # having been lethal in the first place - no need to guess when
+            # the protocol says exactly which one it was).
+            pokemon_id, value = args[0], args[1]
+            position_id = _position_id(pokemon_id)
+            species = self.active.get(position_id, pokemon_id.split(":")[-1].strip())
+            item_name = value.split(":", 1)[1].strip()
+            if item_name:
+                self._emit("item_or_ability_activated", self._side_for(_side_of_position(position_id)),
+                           pokemon=species, detail=f"item: {item_name} (activated)", item=item_name)
+
+        elif msg_type == "-enditem" and len(args) >= 2:
+            # Real protocol example: "|-enditem|p2a: Wynaut|Sitrus Berry" -
+            # the item is consumed/removed (a berry eaten, Air Balloon
+            # popped, or Focus Sash used up - Focus Sash triggers BOTH
+            # -activate and this line; item_or_ability_activated events are
+            # deduplicated per-Pokemon-per-item by item_inference.py's
+            # dict-shaped output, so seeing the same item twice from one
+            # Pokemon is harmless, not double-counted).
+            pokemon_id, item_name = args[0], args[1]
+            position_id = _position_id(pokemon_id)
+            species = self.active.get(position_id, pokemon_id.split(":")[-1].strip())
+            item_name = item_name.strip()
+            if item_name and not item_name.startswith("["):
+                self._emit("item_or_ability_activated", self._side_for(_side_of_position(position_id)),
+                           pokemon=species, detail=f"item: {item_name} (consumed)", item=item_name)
 
         elif msg_type == "-mega" and len(args) >= 2:
             pokemon_id, stone = args[0], args[1]

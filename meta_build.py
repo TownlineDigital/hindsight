@@ -122,19 +122,38 @@ def fetch_type_chart():
 
 
 def fetch_pokedex(names, cache):
+    """`base_stats` (added 2026-07-09, Phase 1 of the live-coaching/damage-
+    calculator roadmap - see ARCHITECTURE_HANDOFF.md) is the one new field
+    here: HP/Attack/Defense/Special-Attack/Special-Defense/Speed, straight
+    off PokeAPI's own `stats` array (a stable, long-unchanged part of its
+    schema). This is foundational data a real damage calculator and any
+    speed-tier inference needs - type/ability alone (what this function
+    already fetched) can't answer "how much damage does this do" or "who
+    moves first."
+
+    Cache entries from before this field existed are missing `base_stats` -
+    the `"base_stats" not in dex[name]` check below re-fetches those ONE
+    more time to backfill it, rather than skipping them forever just because
+    `name in dex` was already true. Same "no-op once already there, but
+    don't silently skip a newly-added field on old rows" principle
+    supabase_schema.sql's `alter table add column if not exists` uses for
+    its own migrations, applied here to this JSON cache instead of a SQL
+    table."""
     dex = dict(cache)
     for name in sorted(names):
-        if name in dex:
+        if name in dex and "base_stats" in dex[name]:
             continue
         try:
             d = get_json(f"{POKEAPI}/pokemon/{slug(name)}")
             dex[name] = {
                 "types": [t["type"]["name"] for t in d["types"]],
                 "abilities": [a["ability"]["name"] for a in d["abilities"]],
+                "base_stats": {s["stat"]["name"]: s["base_stat"] for s in d.get("stats", [])},
             }
             time.sleep(0.1)
         except Exception:
-            dex[name] = {"types": [], "abilities": [], "note": "not resolved from PokeAPI"}
+            dex[name] = {"types": [], "abilities": [], "base_stats": {},
+                         "note": "not resolved from PokeAPI"}
     return dex
 
 
@@ -229,6 +248,151 @@ def fetch_external_meta(regulation, year=None, timeout=15):
     return None
 
 
+# ---- external_moveset_meta (Smogon's per-species BUILD breakdown) --------
+# Phase 1 of the live-coaching/damage-calculator roadmap (added 2026-07-09 -
+# see ARCHITECTURE_HANDOFF.md for the full 4-phase plan). external_meta
+# above only ever answers "how popular is this species" (a single usage %);
+# this answers "what is it actually running" - abilities/items/EV spreads/
+# moves/teammates, each with their own real percentage - which a build-
+# inference engine needs as its starting prior before narrowing based on
+# what a given opponent's Pokemon actually reveals in a real match.
+
+_MOVESET_BORDER = re.compile(r"^\+-+\+\s*$")
+_MOVESET_RAW_COUNT = re.compile(r"Raw count:\s*(\d+)")
+_MOVESET_ROW = re.compile(r"^\|\s*(?P<label>.+?)\s+(?P<pct>[\d.]+)%\s*\|?\s*$")
+_MOVESET_SECTIONS = ("Abilities", "Items", "Spreads", "Moves", "Teammates")
+
+
+def _strip_cell(line):
+    """"| Garchomp                               |" -> "Garchomp" - every
+    real content line in Smogon's moveset table is a `|`-bordered cell
+    shaped exactly like this, whether it's a species name, a section
+    header, or a data row."""
+    return line.strip().strip("|").strip()
+
+
+def _parse_smogon_moveset_text(text):
+    """Parses Smogon's per-species "moveset" stats table - confirmed against
+    a real fetched file (https://www.smogon.com/stats/2026-06/moveset/
+    gen9championsvgc2026regmb-1760.txt, fetched 2026-07-09 while building
+    this) - a DIFFERENT, richer file than the plain usage-percentage table
+    _parse_smogon_usage_text already handles (same source, same tier slug,
+    just a "moveset/" subdirectory). Each species gets one block:
+
+      +----------------------------------------+
+      | Garchomp                               |
+      +----------------------------------------+
+      | Raw count: 736366                      |
+      | Avg. weight: 0.004678881611271098      |
+      | Viability Ceiling: 85                  |
+      +----------------------------------------+
+      | Abilities                              |
+      | Rough Skin 96.191%                     |
+      | Sand Veil 3.809%                       |
+      +----------------------------------------+
+      | Items / Spreads / Moves / Teammates ... (same "<label> <pct>%" row shape)
+
+    Every section - INCLUDING Spreads, where label is the whole
+    "Nature:HP/Atk/Def/SpA/SpD/Spe" string (e.g. "Jolly:2/32/0/0/0/32") - is
+    kept as one raw string mapped to its percentage, rather than split into
+    individual EV numbers here. A future build-inference layer can parse
+    that string itself when it actually needs individual stat values; this
+    function stays a faithful, un-opinionated transcription of what Smogon
+    published rather than guessing at a caller's preferred shape.
+
+    Returns {species_name: {"raw_count": int, "abilities": {name: pct}, ...
+    "spreads": {...}, "moves": {...}, "teammates": {...}}} - an empty dict if
+    the text doesn't look like a real moveset table at all (e.g. an HTML 404
+    page slipped through), same "don't guess, don't crash" convention
+    _parse_smogon_usage_text already follows."""
+    lines = text.splitlines()
+    raw_count_idx = [i for i, ln in enumerate(lines) if _MOVESET_RAW_COUNT.search(ln)]
+    if not raw_count_idx:
+        return {}
+
+    # The species name is always exactly 2 lines above its own "Raw count:"
+    # line (name line, then a border line, then "Raw count:") - see the real
+    # excerpt in this function's own docstring above.
+    name_idx = [i - 2 for i in raw_count_idx]
+    boundaries = list(zip(name_idx, name_idx[1:] + [len(lines)]))
+
+    out = {}
+    for start, end in boundaries:
+        if start < 0:
+            continue
+        chunk = lines[start:end]
+        species = _strip_cell(chunk[0])
+        if not species:
+            continue
+
+        raw_count_m = _MOVESET_RAW_COUNT.search("\n".join(chunk))
+        entry = {"raw_count": int(raw_count_m.group(1)) if raw_count_m else None}
+
+        # Find each section header's line index within this chunk (a cell
+        # whose stripped text is exactly one of the known section names),
+        # then collect "<label> <pct>%" rows until the next table border.
+        section_idx = {}
+        for i, ln in enumerate(chunk):
+            cell = _strip_cell(ln)
+            if cell in _MOVESET_SECTIONS and cell not in section_idx:
+                section_idx[cell] = i
+
+        for section, hdr_i in section_idx.items():
+            rows = {}
+            for ln in chunk[hdr_i + 1:]:
+                if _MOVESET_BORDER.match(ln):
+                    break
+                m = _MOVESET_ROW.match(ln)
+                if m:
+                    rows[m.group("label")] = float(m.group("pct"))
+            entry[section.lower()] = rows
+
+        out[species] = entry
+    return out
+
+
+def fetch_external_moveset_meta(regulation, year=None, timeout=15):
+    """Same official-Smogon-source, same month/rating-cutoff walking
+    strategy as fetch_external_meta() (see that function's docstring for the
+    full "why this source, why it's ToS-safe" writeup - identical reasoning
+    applies here, it's the same publisher and same first-party dump, just a
+    different file) - but hits the "moveset/" breakdown file instead of the
+    plain usage-percent one, giving per-species ability/item/EV-spread/move/
+    teammate percentages instead of just one overall usage number.
+
+    Returns {"source", "tier", "month", "rating_cutoff", "movesets": {...}}
+    or None if every month/cutoff attempt failed - same "don't fabricate an
+    empty-but-present result" rule as fetch_external_meta."""
+    slug_year = year or time.strftime("%Y")
+    tier = _smogon_tier_slug(regulation, slug_year)
+    if not tier:
+        return None
+
+    now = time.time()
+    for months_back in range(3):
+        t = time.gmtime(now - months_back * 30 * 86400)
+        month = time.strftime("%Y-%m", t)
+        for cutoff in _RATING_CUTOFFS:
+            url = f"{SMOGON_STATS_BASE}/{month}/moveset/{tier}-{cutoff}.txt"
+            try:
+                req = urllib.request.Request(url, headers={"User-Agent": "vgc-coach/1.0"})
+                with urllib.request.urlopen(req, timeout=timeout) as r:
+                    text = r.read().decode("utf-8", errors="replace")
+            except (urllib.error.URLError, urllib.error.HTTPError, TimeoutError):
+                continue
+            movesets = _parse_smogon_moveset_text(text)
+            if not movesets:
+                continue   # looked like a 404/empty page - try the next cutoff/month
+            return {
+                "source": "https://www.smogon.com/stats",
+                "tier": tier,
+                "month": month,
+                "rating_cutoff": cutoff,
+                "movesets": movesets,
+            }
+    return None
+
+
 def main():
     ap = argparse.ArgumentParser(description="Build the meta/knowledge base for the coach.")
     ap.add_argument("--events", default="events.json")
@@ -265,6 +429,7 @@ def main():
             print(f"  (PokeAPI fetch failed: {str(e)[:80]} — keeping any cached mechanics.)")
 
     external_meta = prev.get("external_meta")
+    external_moveset_meta = prev.get("external_moveset_meta")
     if not args.no_fetch and not args.no_external_meta:
         regulation = rules.get("regulation")
         if regulation:
@@ -278,6 +443,21 @@ def main():
             else:
                 print("  (Smogon stats fetch failed/not yet published this month — "
                       "keeping any cached external meta.)")
+
+            # Phase 1 of the live-coaching/damage-calculator roadmap (see
+            # ARCHITECTURE_HANDOFF.md) - the richer per-species build
+            # breakdown (abilities/items/EV spreads/moves/teammates), same
+            # source, same regulation, fetched alongside the plain usage %
+            # above rather than as a separate CLI step.
+            print(f"Fetching official Smogon build breakdowns for regulation {regulation}...")
+            fetched_ms = fetch_external_moveset_meta(regulation)
+            if fetched_ms:
+                external_moveset_meta = fetched_ms
+                print(f"  external moveset meta: tier {fetched_ms['tier']}, {fetched_ms['month']}, "
+                      f"{len(fetched_ms['movesets'])} Pokemon with build breakdowns.")
+            else:
+                print("  (Smogon moveset-stats fetch failed/not yet published this month — "
+                      "keeping any cached external moveset meta.)")
         else:
             print("  (no rules.regulation in schema.json — skipping external meta fetch.)")
 
@@ -289,6 +469,7 @@ def main():
         "pokedex": pokedex,
         "own_meta": om,
         "external_meta": external_meta,
+        "external_moveset_meta": external_moveset_meta,
     }
     with open(out_path, "w", encoding="utf-8") as f:
         json.dump(out, f, indent=2, ensure_ascii=False)
