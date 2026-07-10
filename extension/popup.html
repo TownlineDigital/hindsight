@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8" />
+<title>VGC Coach - Showdown Auto-Upload</title>
+<style>
+  :root {
+    --bg: #0a0b12; --surface: #14161f; --border: #262a3c; --text: #eef0f7;
+    --muted: #8b91a9; --accent: #7c9cff; --good: #34d399; --bad: #f87171; --warn: #fbbf24;
+  }
+  * { box-sizing: border-box; }
+  body {
+    width: 320px; margin: 0; padding: 16px; background: var(--bg); color: var(--text);
+    font-family: -apple-system, "Segoe UI", Inter, Roboto, Arial, sans-serif; font-size: 13px;
+  }
+  h1 { font-size: 14px; margin: 0 0 4px; font-weight: 700; }
+  .sub { color: var(--muted); font-size: 11.5px; margin: 0 0 16px; line-height: 1.5; }
+
+  .step { margin-bottom: 14px; }
+  .step-label { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .04em; color: var(--muted); margin-bottom: 6px; }
+
+  input {
+    width: 100%; background: #1b1e2b; color: var(--text); border: 1px solid var(--border); border-radius: 6px;
+    padding: 8px 10px; font-size: 13px; font-family: inherit;
+  }
+  input:focus { outline: 2px solid rgba(124,156,255,.3); }
+
+  button {
+    background: #1b1e2b; color: var(--text); border: 1px solid var(--border); border-radius: 6px;
+    padding: 9px 12px; font-size: 12.5px; font-weight: 600; cursor: pointer; width: 100%;
+  }
+  button:hover { border-color: var(--accent); }
+  button:disabled { opacity: .55; cursor: default; }
+  button.primary { background: var(--accent); color: #0a0b12; border-color: var(--accent); font-size: 13.5px; padding: 11px 12px; }
+  button.link {
+    background: transparent; border: none; color: var(--accent); text-decoration: underline;
+    padding: 2px 0; font-size: 12px; font-weight: 500; width: auto;
+  }
+
+  #status {
+    display: flex; align-items: center; gap: 8px; margin-top: 14px; padding: 10px 12px;
+    border-radius: 8px; font-size: 12.5px; line-height: 1.5; background: #1b1e2b; border: 1px solid var(--border);
+  }
+  #status .dot { width: 9px; height: 9px; border-radius: 50%; flex-shrink: 0; background: var(--muted); }
+  #status.ok .dot { background: var(--good); }
+  #status.warn .dot { background: var(--warn); }
+  #status.bad .dot { background: var(--bad); }
+  #status.busy .dot { background: var(--accent); }
+
+  details { margin-top: 14px; }
+  summary { cursor: pointer; font-size: 11.5px; color: var(--muted); font-weight: 600; }
+  summary:hover { color: var(--text); }
+  .advanced-body { margin-top: 10px; display: flex; flex-direction: column; gap: 10px; }
+  .field-label { display: block; font-size: 11px; color: var(--muted); font-weight: 600; margin-bottom: 4px; }
+</style>
+</head>
+<body>
+  <h1>VGC Coach - Showdown Auto-Upload</h1>
+  <p class="sub">
+    Once connected, this uploads your replay to your dashboard automatically
+    every time a battle ends. Nothing else to do while playing.
+  </p>
+
+  <div class="step">
+    <div class="step-label">Step 1</div>
+    <button id="getKey">Get my key from the dashboard →</button>
+  </div>
+
+  <div class="step">
+    <div class="step-label">Step 2 - paste it here</div>
+    <input id="apiKey" type="text" placeholder="vgc_..." autocomplete="off" spellcheck="false" />
+  </div>
+
+  <button id="connect" class="primary">Connect</button>
+
+  <div id="status"><span class="dot"></span><span id="statusText">Checking…</span></div>
+
+  <details id="advanced">
+    <summary>Advanced settings</summary>
+    <div class="advanced-body">
+      <div>
+        <label class="field-label" for="baseUrl">Dashboard URL</label>
+        <input id="baseUrl" placeholder="https://vgc-coach-dashboard.onrender.com" />
+      </div>
+      <div>
+        <label class="field-label" for="username">Showdown username (only if auto-detect gets it wrong)</label>
+        <input id="username" placeholder="auto-detected by default" />
+      </div>
+      <button id="checkNow" class="link">Check current battle now</button>
+    </div>
+  </details>
+</body>
+<script src="popup.js"></script>
+</html>

@@ -37,9 +37,9 @@ if str(BASE_DIR) not in sys.path:
 # shell environment still wins (useful for CI/deployment).
 load_dotenv(BASE_DIR / ".env", override=False)
 
-from . import analytics, audit, auth, career, coaching, event_corrections, job_files, jobs   # noqa: E402  (after load_dotenv - jobs.py needs SUPABASE_* at import time)
+from . import analytics, api_keys, audit, auth, career, coaching, event_corrections, job_files, jobs   # noqa: E402  (after load_dotenv - jobs.py needs SUPABASE_* at import time)
 from .models import (   # noqa: E402
-    ClientEvent, CoachAnswer, CoachQuestion, EventCorrection, JobStatus,
+    ApiKeyCreate, ClientEvent, CoachAnswer, CoachQuestion, EventCorrection, JobStatus,
     NoteCreate, NoteUpdate, RedeemShareLink, RenameStudent, ShareLinkCreate,
 )
 
@@ -684,6 +684,36 @@ def my_coaching_notes(user: dict = Depends(auth.current_user)):
     what closes the loop and is the whole point of the notes feature, not
     just a one-way "coach observes silently" tool."""
     return coaching.list_notes_about_player(user["id"])
+
+
+# --------------------------------------------------------------- API keys --
+# Long-lived, per-user credentials for external clients that can't hold a
+# short-lived Supabase session - see backend/api_keys.py's module docstring
+# (the planned Pokemon Showdown browser extension is the first consumer).
+
+@app.post("/account/api-keys")
+def create_api_key(body: ApiKeyCreate, user: dict = Depends(auth.current_user)):
+    """Returns the plaintext key in the `key` field - the ONLY time it's
+    ever shown. Every later GET /account/api-keys call sees only key_prefix,
+    never enough to authenticate with (see api_keys.py's module docstring
+    for why only a hash is stored)."""
+    return api_keys.create_api_key(user["id"], label=body.label)
+
+
+@app.get("/account/api-keys")
+def list_api_keys(user: dict = Depends(auth.current_user)):
+    """Every key this player has ever generated, including revoked ones
+    (their own management view needs to show those too) - metadata only,
+    never a usable credential."""
+    return api_keys.list_api_keys(user["id"])
+
+
+@app.delete("/account/api-keys/{key_id}")
+def revoke_api_key(key_id: str, user: dict = Depends(auth.current_user)):
+    ok = api_keys.revoke_api_key(user["id"], key_id)
+    if not ok:
+        raise HTTPException(404, "No such API key (or it isn't yours).")
+    return {"revoked": True}
 
 
 @app.get("/coach-view/{token}")

@@ -43,6 +43,57 @@ function AnswerBreakdown({ title, answers }) {
   );
 }
 
+// The Team Preview Skill Score (added 2026-07-09, direct user request: "How
+// close was the player's chosen 4 to the best available 4, using only
+// information visible at team preview?") - see type_synergy.preview_skill's
+// docstring for exactly what this does and doesn't account for (type-chart
+// only; Speed Control/win-condition/overprediction/bring-probability are
+// explicitly out of scope pending moveset/ability/item/speed data). `tps` is
+// null whenever player_team isn't a genuine, fully-read 6 - shown as an
+// explanatory note rather than a blank space, so it's clear this is a data
+// gap, not "you get no score."
+const REGRET_PILL = {
+  "Excellent preview": "pill-good",
+  "Good preview": "pill-good",
+  "Questionable preview": "pill-warn",
+  "Major preview mistake": "pill-bad",
+};
+
+function TeamPreviewGrade({ tps }) {
+  if (!tps) {
+    return (
+      <p className="note" style={{ marginTop: 10 }}>
+        Team Preview Skill Score isn't available for this match — it needs a fully-read 6-mon
+        team preview (yours) to compare what you brought against all 15 possible selections.
+      </p>
+    );
+  }
+  const alt = tps.best_alternative;
+  return (
+    <div className="team-preview-skill" style={{ marginTop: 10 }}>
+      <h4>Team Preview Skill Score</h4>
+      <div className="skill-summary-row">
+        <span className={`pill ${REGRET_PILL[tps.regret_category] || ""}`}>{tps.regret_category}</span>
+        <span className="note">
+          Selected {tps.selected_score}/100 vs. best available {tps.best_score}/100
+          {tps.skill_pct != null && ` (${tps.skill_pct}% of best)`} — regret {tps.regret},
+          rank {tps.rank_of_selected} of {tps.candidates_scored} possible selections.
+        </span>
+      </div>
+      {alt && (
+        <p className="note" style={{ marginTop: 6 }}>
+          {alt.swap_out && alt.swap_in ? (
+            <>Best alternative: swap out <strong>{alt.swap_out}</strong> for{" "}
+              <strong>{alt.swap_in}</strong> (scores {alt.score}/100 on typing alone).</>
+          ) : (
+            <>Best alternative: {alt.candidate.join(", ")} (scores {alt.score}/100 on typing alone).</>
+          )}
+        </p>
+      )}
+    </div>
+  );
+}
+
 const VERDICT_LABEL = { favorable: "Favorable", unfavorable: "Unfavorable", even: "Even" };
 const VERDICT_PILL = { favorable: "pill-good", unfavorable: "pill-bad", even: "pill-warn" };
 
@@ -100,12 +151,12 @@ export default function OpponentStrength({ data }) {
           </thead>
           <tbody>
             {!data.matches.length && <tr><td colSpan={7} className="empty">No data</td></tr>}
-            {data.matches.map((m) => {
+            {data.matches.flatMap((m) => {
               const shared = Object.entries(m.shared_weaknesses || {}).map(([t, n]) => `${t} (${n})`).join(", ") || "none";
               const coverageFull = m.coverage === `${(m.opponent_brought || []).length}/${(m.opponent_brought || []).length}`;
               const tpe = m.team_preview_evaluation || {};
               const isOpen = expanded === m.match;
-              return (
+              const row = (
                 <tr key={m.match} className="match-row-clickable" onClick={() => setExpanded(isOpen ? null : m.match)}>
                   <td className="expand-arrow">{isOpen ? "▾" : "▸"}</td>
                   <td>{m.match}</td>
@@ -123,47 +174,48 @@ export default function OpponentStrength({ data }) {
                   <td className={m.player_won ? "good" : "bad"}>{m.player_won ? "You won" : "You lost"}</td>
                 </tr>
               );
+
+              // Expanded detail renders directly under the clicked row
+              // (reverted 2026-07-09, same change as MatchesTable.jsx - see
+              // its comment for the full reasoning on why embedding this
+              // back into the table doesn't create a new mobile-scrolling
+              // problem beyond what the 7-column summary row already has).
+              if (!isOpen) return [row];
+              return [
+                row,
+                <tr key={`${m.match}-detail`} className="match-detail-row">
+                  <td colSpan={7} className="match-detail-cell">
+                    <div className="matchup-detail">
+                      <div className="two-col">
+                        <div>
+                          <h4>Your team preview (all 6)</h4>
+                          <RosterList team={m.player_team} brought={m.player_brought} />
+                        </div>
+                        <div>
+                          <h4>Opponent's team preview (all 6)</h4>
+                          <RosterList team={m.opponent_team} brought={m.opponent_brought} />
+                        </div>
+                      </div>
+                      <TeamPreviewGrade tps={m.team_preview_skill} />
+                      <p className="note" style={{ marginTop: 10 }}>
+                        Type-only, brought-vs-brought (not the full preview) — see the note above
+                        the table for what this does and doesn't account for.
+                        {tpe.your_coverage && ` You had a type answer to ${tpe.your_coverage} of what they brought.`}
+                        {tpe.their_coverage && ` They had a type answer to ${tpe.their_coverage} of what you brought.`}
+                      </p>
+                      <div className="two-col" style={{ marginTop: 8 }}>
+                        <AnswerBreakdown title="Their brought 4 vs. your types" answers={tpe.your_type_answers} />
+                        <AnswerBreakdown title="Your brought 4 vs. their types" answers={tpe.their_type_answers} />
+                      </div>
+                    </div>
+                  </td>
+                </tr>,
+              ];
             })}
           </tbody>
         </table>
         </div>
       </div>
-      {(() => {
-        // Expanded match-preview detail renders OUTSIDE .table-scroll
-        // (added 2026-07-09, same reasoning as MatchesTable.jsx's own
-        // comment) - its .two-col roster/answer grids have their own
-        // mobile stacking (@media max-width: 800px) that works fine
-        // regardless, but keeping it out of the horizontally-scrolling
-        // table avoids extra empty space filling out the table's
-        // min-width and keeps the detail panel's own width fully fluid.
-        const m = data.matches.find((row) => row.match === expanded);
-        if (!m) return null;
-        const tpe = m.team_preview_evaluation || {};
-        return (
-          <div className="card matchup-detail" style={{ marginTop: 12 }}>
-            <div className="two-col">
-              <div>
-                <h4>Your team preview (all 6)</h4>
-                <RosterList team={m.player_team} brought={m.player_brought} />
-              </div>
-              <div>
-                <h4>Opponent's team preview (all 6)</h4>
-                <RosterList team={m.opponent_team} brought={m.opponent_brought} />
-              </div>
-            </div>
-            <p className="note" style={{ marginTop: 10 }}>
-              Type-only, brought-vs-brought (not the full preview) — see the note above
-              the table for what this does and doesn't account for.
-              {tpe.your_coverage && ` You had a type answer to ${tpe.your_coverage} of what they brought.`}
-              {tpe.their_coverage && ` They had a type answer to ${tpe.their_coverage} of what you brought.`}
-            </p>
-            <div className="two-col" style={{ marginTop: 8 }}>
-              <AnswerBreakdown title="Their brought 4 vs. your types" answers={tpe.your_type_answers} />
-              <AnswerBreakdown title="Your brought 4 vs. their types" answers={tpe.their_type_answers} />
-            </div>
-          </div>
-        );
-      })()}
     </div>
   );
 }

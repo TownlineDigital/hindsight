@@ -74,6 +74,13 @@ def per_match(evs):
     return {
         "winner": winner,
         "player_lead": tuple(sorted(split(tp.get("player_lead")))),
+        # Mirrors player_lead above - opponent_lead is written onto every
+        # team_preview event by the exact same code path (analyze_matches.py's
+        # derive_brought(), showdown_import.py) but was never surfaced here,
+        # so every downstream "lead" stat (by_lead, most_common lead) was
+        # player-only (added 2026-07-09, direct user request: "add Opponents
+        # lead to this chart - right now we only know the players leads").
+        "opponent_lead": tuple(sorted(split(tp.get("opponent_lead")))),
         "player_brought": p_brought,
         "opponent_brought": split(tp.get("opponent_brought")) or split(tp.get("opponent_team")),
         # Full 6-mon team preview for both sides (added 2026-07-09, direct

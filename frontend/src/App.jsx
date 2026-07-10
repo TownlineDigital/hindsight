@@ -13,6 +13,7 @@ import MatchesTable from "./components/MatchesTable.jsx";
 import OpponentStrength from "./components/OpponentStrength.jsx";
 import CoachChat from "./components/CoachChat.jsx";
 import CareerProgress from "./components/CareerProgress.jsx";
+import ApiKeys from "./components/ApiKeys.jsx";
 import CoachSharing from "./components/CoachSharing.jsx";
 import StudentRoster from "./components/StudentRoster.jsx";
 import GameplayDateFilter from "./components/GameplayDateFilter.jsx";
@@ -24,6 +25,37 @@ function toRows(table) {
   return Object.entries(table || {})
     .map(([label, v]) => ({ label, wins: v.wins, total: v.total, winPct: v.win_pct }))
     .sort((a, b) => b.total - a.total);
+}
+
+// Deep-linking support (added 2026-07-09 for the Showdown extension's
+// popup, whose "Get my key" button opens the dashboard straight to the API
+// keys panel via `?tab=network&view=api-keys`) - read the initial tab/
+// networkView from the URL's query string instead of always defaulting to
+// Overview/"share your stats". Validated against a fixed allowlist (rather
+// than trusting the query string outright) so a stray/typo'd `?tab=` value
+// can never land the app on a blank or crashing tab - falls back to the
+// same defaults as before this feature existed. Only read ONCE at mount
+// (inside useState's lazy-initializer form) - later navigation within the
+// app is unaffected by the URL, exactly like before.
+const VALID_TABS = new Set(["overview", "progression", "matches", "opponents", "career", "coach", "network"]);
+const VALID_NETWORK_VIEWS = new Set(["share", "students", "api-keys"]);
+
+function initialTabFromUrl() {
+  try {
+    const t = new URLSearchParams(window.location.search).get("tab");
+    return VALID_TABS.has(t) ? t : "overview";
+  } catch {
+    return "overview";
+  }
+}
+
+function initialNetworkViewFromUrl() {
+  try {
+    const v = new URLSearchParams(window.location.search).get("view");
+    return VALID_NETWORK_VIEWS.has(v) ? v : "share";
+  } catch {
+    return "share";
+  }
 }
 
 function computeTrend(matches) {
@@ -51,12 +83,12 @@ export default function App() {
 
   const [jobs, setJobs] = useState([]);
   const [jobId, setJobId] = useState(null);
-  const [tab, setTab] = useState("overview");
+  const [tab, setTab] = useState(initialTabFromUrl);
   // Which half of the "Coaching Network" tab is showing - being coached
   // (share your own stats) vs being a coach (manage students). One account
   // can do both (see backend/coaching.py's docstring), so this is just a
   // view toggle, not a role setting.
-  const [networkView, setNetworkView] = useState("share");
+  const [networkView, setNetworkView] = useState(initialNetworkViewFromUrl);
   const [data, setData] = useState(null);
   const [error, setError] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -480,6 +512,16 @@ export default function App() {
                     <WinRateTable title="Win rate by bring" rows={toRows(data.record.by_bring)} />
                   </div>
                 </section>
+                {data.record.opponent_by_lead && Object.keys(data.record.opponent_by_lead).length > 0 && (
+                  <section>
+                    <div className="two-col">
+                      <WinRateTable
+                        title="Your win rate vs opponent's lead"
+                        rows={toRows(data.record.opponent_by_lead)}
+                      />
+                    </div>
+                  </section>
+                )}
                 <section>
                   <div className="two-col">
                     <WinRateTable
@@ -548,8 +590,16 @@ export default function App() {
                   >
                     Your students
                   </button>
+                  <button
+                    className={`tab-inline ${networkView === "api-keys" ? "active" : ""}`}
+                    onClick={() => { setNetworkView("api-keys"); api.track("network_view_toggled", { view: "api-keys" }); }}
+                  >
+                    API keys
+                  </button>
                 </div>
-                {networkView === "share" ? <CoachSharing /> : <StudentRoster />}
+                {networkView === "share" && <CoachSharing />}
+                {networkView === "students" && <StudentRoster />}
+                {networkView === "api-keys" && <ApiKeys />}
               </div>
             )}
           </>

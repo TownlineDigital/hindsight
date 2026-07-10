@@ -19,6 +19,14 @@ dashboard with zero cloud setup, exactly like before accounts existed. The
 moment real Supabase credentials ARE set, this same code requires a real
 signed-in session again - there's no separate flag to remember to flip back.
 jobs.py has a matching local-mode fallback (see LOCAL_USER_ID there).
+
+API KEYS (added 2026-07-09 for the planned Showdown browser extension - see
+backend/api_keys.py's module docstring for the full design): current_user()
+accepts a Bearer token that's EITHER a Supabase session JWT (the normal
+signed-in-dashboard case) OR a long-lived API key generated via POST
+/account/api-keys. Which one a given token is gets decided by a cheap prefix
+check (api_keys.looks_like_api_key) before touching the network, so a normal
+session token never pays an extra round trip.
 """
 
 import os
@@ -62,9 +70,15 @@ def get_service_client() -> Client:
 def current_user(authorization: str = Header(default="")) -> dict:
     """FastAPI dependency - add `user: dict = Depends(current_user)` to any
     endpoint that needs to know who's calling. Raises 401 if the token is
-    missing, malformed, or no longer valid (expired/signed out) - UNLESS
-    Supabase isn't configured at all, in which case every request is treated
-    as LOCAL_USER (see module docstring)."""
+    missing, malformed, or no longer valid (expired/signed out/revoked) -
+    UNLESS Supabase isn't configured at all, in which case every request is
+    treated as LOCAL_USER (see module docstring).
+
+    Accepts either a Supabase session JWT (normal dashboard sign-in) or a
+    long-lived API key (see backend/api_keys.py) - decided by prefix, not by
+    trying one then falling back to the other, so a malformed/expired
+    session token never gets misreported as an API-key failure or vice
+    versa."""
     if not configured():
         return LOCAL_USER
     if not authorization.startswith("Bearer "):
@@ -73,6 +87,15 @@ def current_user(authorization: str = Header(default="")) -> dict:
     token = authorization[len("Bearer "):].strip()
     if not token:
         raise HTTPException(401, "Empty bearer token.")
+
+    from . import api_keys   # local import: avoids a circular import (api_keys
+                              # imports configured/get_service_client from this
+                              # module at module load time)
+    if api_keys.looks_like_api_key(token):
+        resolved = api_keys.resolve_api_key(token)
+        if resolved is None:
+            raise HTTPException(401, "Invalid or revoked API key.")
+        return resolved
 
     client = get_service_client()
     try:

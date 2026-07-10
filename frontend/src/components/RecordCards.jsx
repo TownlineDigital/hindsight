@@ -39,6 +39,17 @@ export default function RecordCards({ record, report, trend }) {
           <div className="big small-text">{report.leads.most_common}</div>
           <div className="note">{report.leads.predictability_pct}% of games</div>
         </div>
+        {report.leads.opponent_most_common && report.leads.opponent_most_common !== "(n/a)" && (
+          <div className="card">
+            <h3>Most common opponent lead</h3>
+            <div className="big small-text">{report.leads.opponent_most_common}</div>
+            <div className="note">
+              {report.leads.opponent_predictability_pct}% of games
+              {report.leads.vs_opponent_most_common_n > 0 &&
+                ` — your win rate against it: ${report.leads.win_rate_vs_opponent_most_common}%`}
+            </div>
+          </div>
+        )}
         {report.tera && (
           <div className="card">
             <h3>Win rate with Tera</h3>

@@ -3464,3 +3464,404 @@ usage stats or a Bayesian bring-probability model over team-preview reveals
 — all genuinely new data sources this project doesn't have yet. Phase 1's
 `team_matchup()` is a real, honest, useful heuristic, but it is typing-only
 and says so in its own docstring and in the Opponent Intel tab's UI copy.
+
+## 15. Opponent lead + Team Preview Skill Score (2026-07-09)
+
+**Why this exists:** two direct user requests in the same message. First,
+verbatim: "Let's also add Opponents lead to this chart - right now we only
+know the players leads." Second, a full write-up of a "Team Preview Skill
+Score" framework: "How close was the player's chosen 4 to the best available
+4, using only information visible at team preview? ... For every possible
+4-Pokémon selection from the player's team of 6, calculate an expected
+matchup score against the opponent's possible 4s ... Then compare the
+player's actual selected 4 against the best-scoring 4," including a
+`Preview Skill = Actual / Best * 100` formula, a `Preview Regret = Best -
+Actual` metric with named buckets (0-5 excellent / 6-12 good / 13-20
+questionable / 21+ major mistake), and a much larger optional formula
+(Threat Coverage + Defensive Stability + Speed Control + Win Condition
+Strength + Lead Flexibility + Synergy + Matchup Flexibility - Overprediction
+Risk - Redundancy Penalty - Unanswered Threat Penalty, plus an opponent
+bring-probability model).
+
+### 15a. Opponent lead — the data already existed, same as §14a
+
+`opponent_lead` is written onto every `team_preview` event by the exact same
+code path as `player_lead` (`analyze_matches.py`'s `derive_brought()`,
+`showdown_import.py`) — `coach_report.per_match()` just never surfaced it.
+Fixed by mirroring `player_lead`'s handling end to end:
+`coach_report.per_match()` now returns `opponent_lead` alongside
+`player_lead`; `analytics.compute_record()` gained `opponent_by_lead` (your
+win rate broken down by what the opponent led with, same shape as the
+pre-existing `by_lead`); `analytics.compute_report()` gained
+`leads.opponent_most_common`/`opponent_predictability_pct`/
+`win_rate_vs_opponent_most_common`/`vs_opponent_most_common_n` alongside the
+pre-existing player-only `most_common`/`predictability_pct` (additive, never
+replacing). Frontend: `RecordCards.jsx` gained a "Most common opponent lead"
+card next to "Most common lead"; `App.jsx`'s Progression tab gained a "Your
+win rate vs opponent's lead" table next to "Win rate by lead"/"Win rate by
+bring", rendered only when `opponent_by_lead` is non-empty.
+
+### 15b. `type_synergy.score_selection()` / `best_selection()` / `preview_skill()`
+
+New functions in `backend/type_synergy.py`, built entirely on the existing
+`team_risk()`/`_type_answers()` primitives — no new heuristics invented from
+scratch. Same Objective Team Preview Evaluation layer as `team_matchup()`
+(§14c): every function's signature is species-lists-only, structurally blind
+to `winner`, enforced the same way (`inspect.signature` tests in both
+`test_type_synergy.py` and `test_analytics.py`).
+
+- **`score_selection(candidate, opponent_brought)`** — a 0-100 composite for
+  one candidate brought-4 against a specific opponent brought-4: 65% offense
+  (fraction of the opponent's 4 the candidate has a ≥2x type-answer to, via
+  `_type_answers` — this is "Threat Coverage," the single largest category in
+  the user's own suggested weighting) + 35% defense
+  (`1 / (1 + team_risk(candidate)["risk_score"])`, a smooth decay standing in
+  for the user's Defensive Stability/Redundancy/Unanswered-Threat categories,
+  reusing `team_risk()` rather than reimplementing it). Returns `None` (never
+  a guess) when the opponent's 4 has no resolved typing at all.
+- **`best_selection(team_of_six, opponent_brought)`** — scores every one of
+  the `itertools.combinations(team_of_six, 4)` = 15 possible selections (a
+  real 6 gives exactly 15; this isn't hardcoded, just what 6-choose-4
+  produces), sorted best-first.
+- **`preview_skill(team_of_six, actual_brought, opponent_brought)`** — the
+  full feature: ranks the actual selection among all 15, computes
+  `regret = best_score - selected_score`, `skill_pct = selected/best * 100`,
+  the user's own regret-category labels via boundary buckets at 5/12/20, and
+  a `best_alternative` (framed as a one-mon `swap_out`/`swap_in` when the
+  best candidate differs from the actual by exactly one Pokemon — the
+  readable "instead of X, consider Y" case from the user's own example
+  output; otherwise just the full alternative 4). Returns `None` when
+  `team_of_six` isn't a genuine 6 distinct species or `actual_brought` isn't
+  a resolved 4 — this is deliberate, not a gap: it's exactly why a match hit
+  by the player-brought-<4 extraction bug (see the "brought 3 Pokémon"
+  investigation earlier this session) correctly gets no score instead of a
+  misleading one.
+
+**Explicitly scoped down (Phase 1, same discipline as `team_matchup()`) —
+what's captured vs. what isn't:**
+
+| User's requested category | Status |
+|---|---|
+| Threat Coverage | ✅ `score_selection()`'s offense term |
+| Defensive Stability / Redundancy / Unanswered-Threat Penalty | ✅ `score_selection()`'s defense term (via `team_risk()`) |
+| Best-available comparison / "don't punish for the impossible" | ✅ `best_selection()`'s full 15-way enumeration |
+| Preview Regret + named categories | ✅ `preview_skill()`, using the user's own bucket thresholds |
+| Speed Control / speed-control counterplay | ❌ no speed-tier data anywhere in this codebase |
+| Win Condition Strength/Clarity (Trick Room, Tailwind, redirection, Fake Out, etc.) | ❌ no moveset/ability data — see §14b's same gap |
+| Lead Flexibility (separate from team-selection scoring) | ❌ not built; §15a adds opponent-lead *display* only, not a lead-quality score |
+| Overprediction Risk | ❌ needs a bring-probability model, not built |
+| Opponent bring-probability weighting (vs. treating what they brought as certain) | ❌ this project only knows what the opponent's ONE 4 actually was per match, not a probability distribution over their 6 |
+
+These all remain Phase 2, same as §14b/§14e's "Known limitation" — nothing
+here pretends otherwise, in code comments or in the UI copy.
+
+### 15c. Wiring + frontend
+
+`analytics.compute_opponent_strength()`'s per-match rows gained a
+`team_preview_skill` key (always present; value is `None` when
+`preview_skill()` itself returns `None` — see §15b) alongside the
+pre-existing `team_preview_evaluation`. `OpponentStrength.jsx` gained a
+`TeamPreviewGrade` component rendered inside the existing expanded-row detail
+(same row `TeamPreviewGrade` sits in as the roster/answer-breakdown content
+from §14d) — a regret-category pill (reusing `.pill-good`/`.pill-warn`/
+`.pill-bad`), the selected/best scores + skill % + rank line, and the
+best-alternative swap sentence when one exists. Shows an explanatory note
+("needs a fully-read 6-mon team preview...") rather than blank space when
+`team_preview_skill` is `None`. New CSS: `.team-preview-skill`,
+`.skill-summary-row`.
+
+### 15d. UI structure change: expanded detail moved back inline
+
+Separately in this same session, the responsive-design pass (see the
+un-numbered pass between §13 and this section — not otherwise documented in
+this file) had moved `MatchesTable.jsx`/`OpponentStrength.jsx`'s expanded
+match detail OUT of the table into a standalone card below it, to avoid
+squeezing the detail's own responsive layout into the table's horizontally-
+scrolling `min-width: 640px` box on mobile. Direct user feedback: "instead of
+the card popping up at the bottom of each page, can we have the card expand
+to show the result underneath the match you are selecting?" Reverted both
+components back to the original colSpan-`<tr>`-directly-under-the-clicked-row
+pattern. Reasoning for why this is safe on mobile after all: the summary
+row's 7-8 columns already force horizontal scrolling under 640px regardless,
+so embedding the detail back into the table doesn't introduce a NEW
+scrolling requirement — the detail's own `@media (max-width: 800px)` two-col
+stacking rule still fires off the real viewport width, independent of the
+table's forced min-width. New CSS: `.match-detail-row`, `.match-detail-cell`
+(the `.match-detail-panel`/`.matchup-detail` classes styling the content
+inside that cell are unchanged from §14d/the responsive pass).
+
+### 15e. Tests + verification
+
+`tests/test_type_synergy.py` gained three new classes (19 tests total in the
+file): `TestScoreSelection` (signature/no-winner check, a hand-checkable
+exact score against the static type chart, unresolved-opponent returns
+`None`, score bounded 0-100), `TestBestSelection` (enumerates exactly 15
+distinct combinations from a real 6, sorted best-first, empty when the
+opponent is unresolved), `TestPreviewSkill` (signature/no-winner check, zero
+regret when the actual selection already IS the best, a worst-case selection
+reporting full regret and a correctly-identified one-mon swap, the regret-
+category boundaries at 5/12/20 exactly, and `None` on every incomplete-data
+path: non-6 team, non-4 actual brought, empty opponent). `tests/
+test_analytics.py`'s `TestComputeRecord` gained an `opponent_by_lead`
+shape/bounds test; `TestComputeReport` gained a check that all six `leads`
+keys (player + opponent) are present and opponent_predictability_pct is a
+valid percentage; `TestComputeOpponentStrength` gained four new tests (the
+key is always present even when the value is `None`; resolved rows have the
+full expected shape with `best_score >= selected_score` and
+`candidates_scored == 15`; `team_preview_skill` is structurally `None` for
+any row whose `player_team` isn't a genuine 6; the `preview_skill()`
+signature check). Full suite: `python3 -m unittest tests.test_type_synergy
+tests.test_analytics -v` — 19 + 30 = 49 tests, all passing (pytest isn't
+installed in this sandbox, so this ran via stdlib `unittest` instead; the
+project's usual `py -m unittest discover -s tests` full-suite command should
+be re-run wherever pytest/the full test infra actually lives before treating
+this as a complete regression pass).
+
+**Verification**: hit the project's known bash-mount-desync issue repeatedly
+during this build (`backend/analytics.py`, `coach_report.py`, `frontend/src/
+App.jsx`, `frontend/src/components/RecordCards.jsx` and `OpponentStrength.jsx`,
+`frontend/src/styles.css` all showed truncated/stale content on the bash
+side at various points despite the `Read` tool showing complete, correct
+files). The usual Write-`.fresh`-then-`cp` fix stopped reliably resolving it
+partway through this session; switched to writing files directly via a bash
+heredoc (`cat > file << 'EOF' ... EOF`) instead, which bypasses whatever
+sync layer was going stale, and confirmed every affected file via `ast.parse`
+(Python) or an open-brace/close-brace count (JS/CSS) immediately after.
+Frontend changes reviewed by hand; `npm run build`/live browser preview at
+specific breakpoints not possible in this sandbox (same npm-registry-403
+limitation as §11-§14).
+
+## 16. API-key auth for external clients (2026-07-09) — first piece of the planned Showdown browser extension
+
+**Why this exists:** direct user request/idea: "I had an idea for a browser
+extension where the player can log into pokemon showdown and the extension
+will automatically download the replay and upload it to the analysis tool
+after each pokemon match. How would I go about doing that?" Investigating
+the existing Showdown-import path (`showdown_import.py`'s `read_source()`,
+`POST /jobs` with `source_type="showdown"`) showed the backend already
+fetches and parses a replay from a URL server-side — an extension only ever
+needs to POST a replay URL. The actual blocker was auth: `backend/auth.py`'s
+`current_user()` only accepted a Supabase session JWT, which a content
+script / background service worker running on a different origin
+(`replay.pokemonshowdown.com`) has no way to read. Presented with this,
+build order was confirmed via `AskUserQuestion`: **"Yes, start with backend
+API-key auth (Recommended)"** — this section is that piece. The extension
+itself (manifest, content script, background uploader) is NOT built yet.
+
+### 16a. `backend/api_keys.py` — long-lived, per-user credentials
+
+New module, deliberately mirroring `coaching.py`'s shape (local-dev in-memory
+dict + `configured()`-gated Supabase branch, `audit.record()` calls,
+`_parse_ts`/`_to_iso` dual-shape timestamp helpers) rather than inventing a
+new pattern. Three-function surface: `create_api_key(user_id, label)`,
+`list_api_keys(user_id)`, `revoke_api_key(user_id, key_id)`, plus
+`resolve_api_key(plaintext)` (the one `auth.py` calls) and
+`looks_like_api_key(token)` (a cheap `"vgc_"`-prefix check).
+
+**Key format**: `"vgc_" + secrets.token_urlsafe(32)`. The prefix isn't
+decorative — `current_user()` branches on it to decide whether a bearer
+token should be resolved here or handed to Supabase's `auth.get_user()`,
+without a wasted network round trip for the common (session-token) case.
+
+**Storage — hash only, never plaintext**: `create_api_key()` returns the
+plaintext key exactly once, in its own response (`key` field). Only
+`key_hash` (SHA-256 of the plaintext) and `key_prefix` (first 12 chars, for
+the player's own list to tell keys apart) are ever persisted. This is a
+deliberate departure from `share_links.token`, which IS the access control
+and is looked up by exact value on a PUBLIC read — a share link is meant to
+be handed to someone else, an API key is meant to stay secret to one client,
+so it gets treated like a password instead. `list_api_keys()` never returns
+`key_hash` or a usable credential, even to its own owner.
+
+New Supabase table `api_keys` (`supabase_schema.sql`) — `id`, `user_id`,
+`label`, `key_hash`, `key_prefix`, `created_at`, `last_used_at`,
+`revoked_at` — RLS policies scoped to `auth.uid() = user_id`, same
+defense-in-depth rationale as every other table in that file (the FastAPI
+backend itself uses the service_role key and enforces ownership in
+application code).
+
+### 16b. `auth.current_user()` — accepts either a JWT or an API key
+
+Extended (not replaced): a `Bearer` token starting with `vgc_` is resolved
+via `api_keys.resolve_api_key()` and returns immediately (401 if
+invalid/revoked); anything else falls through to the pre-existing
+`client.auth.get_user(token)` Supabase-JWT path unchanged. `api_keys` is
+imported locally inside the function (not at module top) specifically to
+avoid a circular import — `api_keys.py` itself imports `configured`/
+`get_service_client` from `auth.py` at module load time.
+
+### 16c. Endpoints + frontend
+
+`POST /account/api-keys` (create — returns the plaintext key once),
+`GET /account/api-keys` (list — metadata only), `DELETE
+/account/api-keys/{key_id}` (revoke), all in `backend/main.py` right after
+the coach-sharing section, same `Depends(auth.current_user)` pattern as
+every other account-scoped endpoint. `ApiKeyCreate` model added to
+`models.py`.
+
+Frontend: new `frontend/src/components/ApiKeys.jsx`, mirroring
+`CoachSharing.jsx`'s shape (generate form, `mini-table` list, revoke
+buttons) plus a one-time reveal banner (`.api-key-reveal` in `styles.css`)
+that shows the plaintext key with a copy button and an explicit "won't be
+shown again" warning — `justCreated` state is cleared if that same key is
+revoked from the list below it. Wired into the existing "Coaching Network"
+tab (`App.jsx`) as a third `networkView` option, "API keys", alongside
+"Share your stats" / "Your students" — reuses that tab as the closest
+existing account-settings surface rather than adding a whole new top-level
+tab for one feature. `api.js` gained `createApiKey`/`listApiKeys`/
+`revokeApiKey`.
+
+### 16d. Tests + verification
+
+`tests/test_api_keys.py` (18 tests, new file, same stub-`fastapi`/`supabase`
+pattern as `test_coaching.py`): key-format/prefix-recognition,
+create/list/revoke/resolve round trips, an explicit
+`test_only_a_hash_is_ever_stored_not_the_plaintext` check, ownership
+scoping (can't revoke/see someone else's key), audit-log entries on
+create/revoke, and — the one that actually exercises the real dependency —
+`TestCurrentUserAcceptsApiKeys`, which calls `auth.current_user()` directly
+with a `Bearer vgc_...` header and checks it resolves, rejects a revoked
+key, and rejects a bogus one, all with `HTTPException(401, ...)`. Full
+suite: `python3 -m unittest discover -s tests` — 1011 tests, all passing
+(993 pre-existing + 18 new).
+
+Hit the bash-mount-desync issue again on `auth.py`, `models.py`, `main.py`
+(briefly, resolved as a false alarm — see below), `App.jsx`, `styles.css`,
+and `api.js` during this build — each showed truncated content on the bash
+side despite the `Read` tool showing complete, correct files. Fixed the
+same way as §15's note: rewrote each affected file directly via a bash
+heredoc (or, for the two largest — `App.jsx` and `styles.css` — via a
+`Write` to a scratch `.tmp` file followed by `cp` across mounts, since a
+literal heredoc that size risked its own transcription error) and confirmed
+via `ast.parse`/brace-count/`wc -l` matching the `Read`-tool-verified
+content afterward. `main.py` briefly looked syntactically stale via `grep`
+but a targeted check (`grep -n "api_keys\|ApiKeyCreate" backend/main.py`)
+confirmed it was actually already correct and current — not every bash-side
+oddity in this session was a real desync, so each one was verified against
+its actual content before assuming a rewrite was needed. `npm run build`/
+live browser preview still not possible in this sandbox (same npm-registry-
+403 limitation as every prior frontend section).
+
+**Not yet built** (explicitly deferred, pending the user's next go-ahead):
+the browser extension itself — manifest, a content script to detect
+battle-end and read the replay URL/ID on `play.pokemonshowdown.com`, a
+background service worker to POST it to `/jobs` using the new API key, and
+a popup/options page for the player to paste their key and Showdown
+username into. This section only covers the auth mechanism the extension
+will need.
+
+## 17. Showdown browser extension, Phase 1: replay auto-upload (2026-07-09)
+
+**Why this exists:** direct follow-up to §16's auth work, in the same
+extended request: "I want this extension to be able to automatically
+download and add pokemon showdown replays to the platform, But I also want
+it to function as a live battle assistant." Scoped via `AskUserQuestion`
+into two phases — build order confirmed as **"Replay auto-upload first,
+then live assistant"** — this section is Phase 1 only. Phase 2 (the live
+assistant) was further scoped in the same question round: score the
+heuristic client-side in the extension itself (not a per-turn backend
+round trip), showing score + mistake flags only (no automatic per-turn LLM
+call) — but is **not built yet**, this section covers Phase 1 exclusively.
+
+### 17a. Design decision: read `stepQueue` directly, don't trigger Showdown's own replay-save flow
+
+Researched Showdown's real replay-upload mechanism (public docs/community
+tooling, not hand-verified against this project's own build — see 17d):
+the client sends `<roomid>|/uploadreplay` over its websocket, waits for a
+`|queryresponse|savereplay|...` reply, then POSTs that to Showdown's own
+`action.php` to publish a replay at `replay.pokemonshowdown.com`. That
+requires the format/room to allow public replays, requires the player to
+opt in to publishing one, and is several extra moving parts for something
+this project doesn't actually need — a public, shareable replay URL.
+
+Instead, `extension/inject.js` reads `window.app.rooms[...].battle
+.stepQueue` — the Showdown client's own in-memory array of every
+`|`-delimited protocol line for a battle — directly out of the page, the
+instant a `|win|`/`|tie|` line appears. `stepQueue.join('\n')` produces
+exactly the same `|`-delimited text `showdown_import.py`'s
+`extract_log_text()` already parses via its plain-text fallback branch
+(path 3, originally written for "a human pasting a log by hand" — this
+extension produces byte-for-byte the same shape). This works for every
+format, never touches Showdown's public replay servers, and needs zero
+backend changes — the extension's payload gets wrapped as `{"log": "..."}`
+(matching `extract_log_text`'s path 1, the same shape a real downloaded
+`.json` replay has) and uploaded as a `replay0.json` file through the
+EXISTING `POST /jobs` multipart-file path (`backend/main.py`'s `files`
+param, `source_type="showdown"`) — indistinguishable from a real
+downloaded replay to every step of the pipeline downstream of it.
+
+### 17b. Extension structure (`extension/`)
+
+MV3, unpacked/load-yourself for now (not published to the Chrome Web
+Store). Five pieces, split by which JS world each one runs in:
+
+- **`inject.js`** — injected as a real `<script>` tag (not a normal content
+  script) specifically so it runs in the PAGE's own JS context and can see
+  `window.app` — MV3 content scripts run in an isolated world that can't
+  reach a page's own globals. Polls every 3s for a battle room whose
+  `stepQueue` contains a `|win|`/`|tie|` line, de-dupes by room id in an
+  in-page `Set` (`window.__vgcCoachSeenRooms`), and `window.postMessage`s
+  the finding out.
+- **`content.js`** — the actual MV3 content script (isolated world);
+  injects `inject.js`, relays its `postMessage`s to the extension's
+  background worker via `chrome.runtime.sendMessage`, and relays a
+  "force re-scan" request back down into the page world for the popup's
+  manual-check button.
+- **`background.js`** — MV3 service worker; the only file that talks to
+  the backend. Reads `{baseUrl, apiKey, username}` from
+  `chrome.storage.local`, de-dupes by room id a SECOND time (in
+  extension-level storage, capped at the last 100 — independent of
+  `inject.js`'s own in-page de-dupe, which resets on page reload), builds
+  the `{"log": ...}`-wrapped `FormData` upload, and `POST`s to
+  `${baseUrl}/jobs` with `Authorization: Bearer <apiKey>` (see §16). Shows
+  a `chrome.notifications` toast on success/failure/not-configured.
+- **`popup.html`/`popup.js`** — settings UI (dashboard URL, API key,
+  Showdown username — the last two optional/auto-detected), a "Check
+  current battle now" button (forces a re-scan for a battle that finished
+  before the extension was configured, or one you're only spectating), and
+  a status line showing how many replays have uploaded so far. Saving
+  settings calls `chrome.permissions.request()` for the entered URL's
+  origin (`optional_host_permissions` in `manifest.json` covers `https://
+  */*` and `http://*/*`) — this is what lets the extension work against
+  ANY dashboard URL (a Render deployment, `localhost`, a future custom
+  domain) without editing `manifest.json` by hand for each one.
+
+### 17c. Auth + de-dupe details worth knowing
+
+Uses the API-key path added in §16 exclusively — never asks for or stores
+a Supabase session token, since a browser extension on a different origin
+has no way to obtain one. `username` (the `player` field `POST /jobs`
+already expects — a Showdown username or `p1`/`p2`) falls back through
+three sources in order: the popup's own saved value, `inject.js`'s
+best-effort read of the signed-in Showdown username off `window.app.user`,
+then a hardcoded `"p1"` — matching `POST /jobs`'s own existing default.
+
+### 17d. Honest verification note — this was NOT tested against a live Showdown battle
+
+Everything in `extension/` was built and syntax-verified in this sandbox
+(`manifest.json` JSON-validated, every `.js` file checked with `node -c`
+and a brace/paren-balance count) but **could not be exercised against a
+real, live two-player Showdown match** — this build environment has no way
+to run one. The core assumption (`window.app.rooms[<id>].battle
+.stepQueue` holding the raw protocol log) is grounded in public
+documentation of Showdown's own replay-upload protocol and community-built
+tooling that reads similar client state (see `extension/README.md`'s
+citations), not in hands-on testing against the live client. `extension/
+README.md` has a "Known limitation" section with exact console-log lines
+(`[VGC Coach] ...`) to check for at each stage, specifically so this can be
+diagnosed and `inject.js`'s `findBattleRooms()`/`extractIfFinished()`
+updated quickly if Showdown's client has since renamed the property this
+reads. Every failure path in `inject.js` fails soft (returns nothing)
+rather than throwing into the page's own console, so a wrong assumption
+here can't break the user's actual Showdown client, only silently skip an
+upload.
+
+### 17e. Not yet built
+
+- Phase 2, the live battle assistant (client-side JS port of
+  `strategic_analysis.py`'s per-turn advantage/momentum/mistake-flag
+  heuristic, running incrementally as `stepQueue` grows instead of once
+  after the fact — scoped but not started, see the opening of this
+  section)
+- Chrome Web Store packaging — load-unpacked only for now
+- Firefox/Safari support — Chromium-family (`chrome.*` APIs) only

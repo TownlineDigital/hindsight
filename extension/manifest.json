@@ -1,0 +1,38 @@
+{
+  "manifest_version": 3,
+  "name": "VGC Coach - Showdown Auto-Upload",
+  "version": "0.1.0",
+  "description": "Automatically uploads your Pokemon Showdown replays to your VGC Coach Dashboard after each battle, using a per-account API key instead of your dashboard sign-in.",
+  "permissions": ["storage", "notifications"],
+  "host_permissions": ["https://play.pokemonshowdown.com/*"],
+  "optional_host_permissions": ["https://*/*", "http://*/*"],
+  "background": {
+    "service_worker": "background.js"
+  },
+  "content_scripts": [
+    {
+      "matches": ["https://play.pokemonshowdown.com/*"],
+      "js": ["content.js"],
+      "run_at": "document_idle"
+    }
+  ],
+  "web_accessible_resources": [
+    {
+      "resources": ["inject.js"],
+      "matches": ["https://play.pokemonshowdown.com/*"]
+    }
+  ],
+  "action": {
+    "default_popup": "popup.html",
+    "default_icon": {
+      "16": "icons/icon16.png",
+      "48": "icons/icon48.png",
+      "128": "icons/icon128.png"
+    }
+  },
+  "icons": {
+    "16": "icons/icon16.png",
+    "48": "icons/icon48.png",
+    "128": "icons/icon128.png"
+  }
+}

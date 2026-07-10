@@ -100,12 +100,12 @@ export default function OpponentStrength({ data }) {
           </thead>
           <tbody>
             {!data.matches.length && <tr><td colSpan={7} className="empty">No data</td></tr>}
-            {data.matches.map((m) => {
+            {data.matches.flatMap((m) => {
               const shared = Object.entries(m.shared_weaknesses || {}).map(([t, n]) => `${t} (${n})`).join(", ") || "none";
               const coverageFull = m.coverage === `${(m.opponent_brought || []).length}/${(m.opponent_brought || []).length}`;
               const tpe = m.team_preview_evaluation || {};
               const isOpen = expanded === m.match;
-              return (
+              const row = (
                 <tr key={m.match} className="match-row-clickable" onClick={() => setExpanded(isOpen ? null : m.match)}>
                   <td className="expand-arrow">{isOpen ? "▾" : "▸"}</td>
                   <td>{m.match}</td>
@@ -123,47 +123,47 @@ export default function OpponentStrength({ data }) {
                   <td className={m.player_won ? "good" : "bad"}>{m.player_won ? "You won" : "You lost"}</td>
                 </tr>
               );
+
+              // Expanded detail renders directly under the clicked row
+              // (reverted 2026-07-09, same change as MatchesTable.jsx - see
+              // its comment for the full reasoning on why embedding this
+              // back into the table doesn't create a new mobile-scrolling
+              // problem beyond what the 7-column summary row already has).
+              if (!isOpen) return [row];
+              return [
+                row,
+                <tr key={`${m.match}-detail`} className="match-detail-row">
+                  <td colSpan={7} className="match-detail-cell">
+                    <div className="matchup-detail">
+                      <div className="two-col">
+                        <div>
+                          <h4>Your team preview (all 6)</h4>
+                          <RosterList team={m.player_team} brought={m.player_brought} />
+                        </div>
+                        <div>
+                          <h4>Opponent's team preview (all 6)</h4>
+                          <RosterList team={m.opponent_team} brought={m.opponent_brought} />
+                        </div>
+                      </div>
+                      <p className="note" style={{ marginTop: 10 }}>
+                        Type-only, brought-vs-brought (not the full preview) — see the note above
+                        the table for what this does and doesn't account for.
+                        {tpe.your_coverage && ` You had a type answer to ${tpe.your_coverage} of what they brought.`}
+                        {tpe.their_coverage && ` They had a type answer to ${tpe.their_coverage} of what you brought.`}
+                      </p>
+                      <div className="two-col" style={{ marginTop: 8 }}>
+                        <AnswerBreakdown title="Their brought 4 vs. your types" answers={tpe.your_type_answers} />
+                        <AnswerBreakdown title="Your brought 4 vs. their types" answers={tpe.their_type_answers} />
+                      </div>
+                    </div>
+                  </td>
+                </tr>,
+              ];
             })}
           </tbody>
         </table>
         </div>
       </div>
-      {(() => {
-        // Expanded match-preview detail renders OUTSIDE .table-scroll
-        // (added 2026-07-09, same reasoning as MatchesTable.jsx's own
-        // comment) - its .two-col roster/answer grids have their own
-        // mobile stacking (@media max-width: 800px) that works fine
-        // regardless, but keeping it out of the horizontally-scrolling
-        // table avoids extra empty space filling out the table's
-        // min-width and keeps the detail panel's own width fully fluid.
-        const m = data.matches.find((row) => row.match === expanded);
-        if (!m) return null;
-        const tpe = m.team_preview_evaluation || {};
-        return (
-          <div className="card matchup-detail" style={{ marginTop: 12 }}>
-            <div className="two-col">
-              <div>
-                <h4>Your team preview (all 6)</h4>
-                <RosterList team={m.player_team} brought={m.player_brought} />
-              </div>
-              <div>
-                <h4>Opponent's team preview (all 6)</h4>
-                <RosterList team={m.opponent_team} brought={m.opponent_brought} />
-              </div>
-            </div>
-            <p className="note" style={{ marginTop: 10 }}>
-              Type-only, brought-vs-brought (not the full preview) — see the note above
-              the table for what this does and doesn't account for.
-              {tpe.your_coverage && ` You had a type answer to ${tpe.your_coverage} of what they brought.`}
-              {tpe.their_coverage && ` They had a type answer to ${tpe.their_coverage} of what you brought.`}
-            </p>
-            <div className="two-col" style={{ marginTop: 8 }}>
-              <AnswerBreakdown title="Their brought 4 vs. your types" answers={tpe.your_type_answers} />
-              <AnswerBreakdown title="Your brought 4 vs. their types" answers={tpe.their_type_answers} />
-            </div>
-          </div>
-        );
-      })()}
     </div>
   );
 }

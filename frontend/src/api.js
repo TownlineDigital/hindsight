@@ -197,6 +197,20 @@ export const api = {
     }),
   removeStudent: (playerUserId) => getJSON(`/coach/students/${playerUserId}`, { method: "DELETE" }),
   studentProfile: (playerUserId) => getJSON(`/coach/students/${playerUserId}/profile`),
+
+  // API keys (backend/api_keys.py) - long-lived credentials for external
+  // clients (the Showdown browser extension) that can't hold a short-lived
+  // Supabase session. createApiKey's response includes the plaintext `key`
+  // field exactly once - callers must show/copy it immediately, since no
+  // later call (including listApiKeys) can ever retrieve it again.
+  createApiKey: (label) =>
+    getJSON("/account/api-keys", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ label: label || null }),
+    }),
+  listApiKeys: () => getJSON("/account/api-keys"),
+  revokeApiKey: (keyId) => getJSON(`/account/api-keys/${keyId}`, { method: "DELETE" }),
   studentNotes: (playerUserId) => getJSON(`/coach/students/${playerUserId}/notes`),
   addStudentNote: (playerUserId, text, category) =>
     getJSON(`/coach/students/${playerUserId}/notes`, {

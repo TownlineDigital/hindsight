@@ -42,6 +42,13 @@ def compute_record(events: list) -> dict:
 
     lead_pairs = [(" + ".join(s["player_lead"]) or "(unknown)", s["winner"] == "player")
                   for s in decided if s["player_lead"]]
+    # Your win rate broken down by what the OPPONENT led with (added
+    # 2026-07-09, direct user request: "add Opponents lead to this chart -
+    # right now we only know the players leads"). Same shape as by_lead
+    # above, just keyed on the other side's opening pair - answers "which
+    # opponent leads give me the most trouble," not "how predictable am I."
+    opponent_lead_pairs = [(" + ".join(s["opponent_lead"]) or "(unknown)", s["winner"] == "player")
+                           for s in decided if s["opponent_lead"]]
     bring_pairs = [(mon, s["winner"] == "player")
                    for s in decided for mon in set(s["player_brought"])]
 
@@ -53,6 +60,7 @@ def compute_record(events: list) -> dict:
         "losses": losses,
         "win_rate": round(_cr.pct(wins, n), 1),
         "by_lead": _table_to_json(_cr.winrate_table(lead_pairs)),
+        "opponent_by_lead": _table_to_json(_cr.winrate_table(opponent_lead_pairs)),
         "by_bring": _table_to_json(_cr.winrate_table(bring_pairs)),
     }
 
@@ -128,6 +136,17 @@ def compute_opponent_strength(events: list, min_resolved: int = 2) -> dict:
         # let this branch read s["winner"] before computing it, or it stops
         # being a "before the result" evaluation.
         team_preview_evaluation = type_synergy.team_matchup(s["player_brought"], s["opponent_brought"])
+        # Team Preview Skill Score (added 2026-07-09, direct user request:
+        # "How close was the player's chosen 4 to the best available 4,
+        # using only information visible at team preview?"). Needs a real
+        # 6-mon player_team to enumerate all 15 possible selections against
+        # - preview_skill() itself returns None (not a guess) when
+        # player_team isn't a genuine 6 or actual_brought isn't a resolved
+        # 4, which naturally excludes matches hit by the player-brought-<4
+        # extraction gap (see ARCHITECTURE_HANDOFF.md) rather than scoring
+        # them misleadingly.
+        team_preview_skill = type_synergy.preview_skill(
+            s["player_team"], s["player_brought"], s["opponent_brought"])
         per_match.append({
             "match": m,
             "player_brought": s["player_brought"],
@@ -135,6 +154,7 @@ def compute_opponent_strength(events: list, min_resolved: int = 2) -> dict:
             "player_team": s["player_team"],
             "opponent_team": s["opponent_team"],
             "team_preview_evaluation": team_preview_evaluation,
+            "team_preview_skill": team_preview_skill,
             "winner": s["winner"],
             "player_won": s["winner"] == "player",
             **risk,
@@ -204,6 +224,20 @@ def compute_report(events: list, min_sample: int = 3, rules: dict = None) -> dic
     top_lead, top_lead_n = (lead_counts.most_common(1)[0] if lead_counts else ("(n/a)", 0))
     lead_predictability = _cr.pct(top_lead_n, sum(lead_counts.values()))
 
+    # Opponent-side mirror (added 2026-07-09, direct user request) - how
+    # predictable is the FIELD's leading, and what's your win rate against
+    # their single most common lead specifically (distinct from
+    # opponent_by_lead's full breakdown above - this is just the headline
+    # number for the "Most common opponent lead" card).
+    opponent_lead_counts = Counter(" + ".join(s["opponent_lead"]) for s in decided if s["opponent_lead"])
+    top_opponent_lead, top_opponent_lead_n = (
+        opponent_lead_counts.most_common(1)[0] if opponent_lead_counts else ("(n/a)", 0))
+    opponent_lead_predictability = _cr.pct(top_opponent_lead_n, sum(opponent_lead_counts.values()))
+    vs_top_opponent_lead = [s for s in decided
+                             if " + ".join(s["opponent_lead"]) == top_opponent_lead and s["opponent_lead"]]
+    win_rate_vs_top_opponent_lead = _cr.pct(
+        sum(1 for s in vs_top_opponent_lead if s["winner"] == "player"), len(vs_top_opponent_lead))
+
     throws = 0
     for s in decided:
         if s["winner"] != "opponent":
@@ -261,7 +295,15 @@ def compute_report(events: list, min_sample: int = 3, rules: dict = None) -> dic
             "most_tera_d": tera_mon.most_common(5),
             "player_terastallizations": tera_player,
         } if tera_legal else None),
-        "leads": {"most_common": top_lead, "predictability_pct": round(lead_predictability, 1)},
+        "leads": {
+            "most_common": top_lead, "predictability_pct": round(lead_predictability, 1),
+            # Opponent-side fields (added 2026-07-09) - see the computation
+            # above for what each answers.
+            "opponent_most_common": top_opponent_lead,
+            "opponent_predictability_pct": round(opponent_lead_predictability, 1),
+            "win_rate_vs_opponent_most_common": round(win_rate_vs_top_opponent_lead, 1),
+            "vs_opponent_most_common_n": len(vs_top_opponent_lead),
+        },
         "toughest_matchups": [
             {"pokemon": m, "wins": w, "total": t, "win_pct": round(_cr.pct(w, t), 1)}
             for m, (w, t) in sorted(bogey_tbl.items(), key=lambda kv: _cr.pct(*kv[1]))

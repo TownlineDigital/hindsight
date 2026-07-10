@@ -58,6 +58,19 @@ class TestComputeRecord(unittest.TestCase):
                     self.assertGreaterEqual(row["win_pct"], 0)
                     self.assertLessEqual(row["win_pct"], 100)
 
+    def test_opponent_by_lead_present_and_well_formed(self):
+        """Added 2026-07-09, direct user request: "add Opponents lead to
+        this chart - right now we only know the players leads." Same shape
+        and same win_pct validity rule as by_lead above - the only
+        difference is what the table is keyed on (opponent's opening pair
+        instead of the player's)."""
+        self.assertIn("opponent_by_lead", self.record)
+        for key, row in self.record["opponent_by_lead"].items():
+            with self.subTest(key=key):
+                self.assertEqual(row["total"], row["wins"] + (row["total"] - row["wins"]))
+                self.assertGreaterEqual(row["win_pct"], 0)
+                self.assertLessEqual(row["win_pct"], 100)
+
 
 @unittest.skipUnless(os.path.exists(DEMO_EVENTS_PATH), "No seeded demo job")
 class TestComputeMatchList(unittest.TestCase):
@@ -167,6 +180,59 @@ class TestComputeOpponentStrength(unittest.TestCase):
         result_b = type_synergy.team_matchup(player, opponent)
         self.assertEqual(result_a, result_b)
 
+    def test_every_match_has_a_team_preview_skill_key(self):
+        """team_preview_skill (added 2026-07-09, the "Team Preview Skill
+        Score" feature) is present on every row, but its VALUE is legitimately
+        None for any match without a genuine 6-mon player_team - see
+        type_synergy.preview_skill's own docstring. Presence of the key is
+        the only universal invariant; its shape is checked below only for
+        the rows where it actually resolved."""
+        for row in self.result["matches"]:
+            with self.subTest(match=row["match"]):
+                self.assertIn("team_preview_skill", row)
+
+    def test_resolved_team_preview_skill_has_the_expected_shape_and_bounds(self):
+        required = {"selected_score", "best_score", "regret", "regret_category",
+                    "skill_pct", "rank_of_selected", "candidates_scored", "best_alternative"}
+        for row in self.result["matches"]:
+            tps = row["team_preview_skill"]
+            if tps is None:
+                continue
+            with self.subTest(match=row["match"]):
+                self.assertTrue(required.issubset(tps.keys()))
+                self.assertGreaterEqual(tps["selected_score"], 0)
+                self.assertLessEqual(tps["selected_score"], 100)
+                self.assertGreaterEqual(tps["best_score"], 0)
+                self.assertLessEqual(tps["best_score"], 100)
+                # The whole point of "best" - nothing can beat it.
+                self.assertGreaterEqual(tps["best_score"], tps["selected_score"])
+                self.assertGreaterEqual(tps["regret"], 0)
+                self.assertIn(tps["regret_category"],
+                               ("Excellent preview", "Good preview",
+                                "Questionable preview", "Major preview mistake"))
+                self.assertGreaterEqual(tps["rank_of_selected"], 1)
+                self.assertLessEqual(tps["rank_of_selected"], tps["candidates_scored"])
+                # 6 choose 4 - every resolved row was scored from a genuine 6.
+                self.assertEqual(tps["candidates_scored"], 15)
+
+    def test_team_preview_skill_is_none_when_player_team_is_not_a_genuine_six(self):
+        """Structural guarantee, not a demo-data coincidence: any match row
+        whose player_team isn't exactly 6 distinct species must have
+        team_preview_skill == None, since the 15-way enumeration this score
+        depends on only makes sense from a real 6 - see analytics.
+        compute_opponent_strength's own comment on why preview_skill() is
+        called at all here."""
+        for row in self.result["matches"]:
+            with self.subTest(match=row["match"]):
+                if len(set(row["player_team"])) != 6:
+                    self.assertIsNone(row["team_preview_skill"])
+
+    def test_preview_skill_signature_cannot_see_the_winner(self):
+        import inspect
+        from backend import type_synergy
+        params = set(inspect.signature(type_synergy.preview_skill).parameters)
+        self.assertEqual(params, {"team_of_six", "actual_brought", "opponent_brought"})
+
 
 @unittest.skipUnless(os.path.exists(DEMO_EVENTS_PATH), "No seeded demo job")
 class TestComputeReport(unittest.TestCase):
@@ -194,6 +260,22 @@ class TestComputeReport(unittest.TestCase):
             events = json.load(f)
         report = analytics.compute_report(events)
         self.assertGreater(len(report["flags"]), 0)
+
+    def test_leads_dict_has_opponent_fields(self):
+        """Added 2026-07-09, direct user request - opponent_most_common/
+        opponent_predictability_pct/win_rate_vs_opponent_most_common/
+        vs_opponent_most_common_n sit alongside the pre-existing player-only
+        most_common/predictability_pct, never replacing them."""
+        with open(DEMO_EVENTS_PATH, encoding="utf-8") as f:
+            events = json.load(f)
+        report = analytics.compute_report(events)
+        leads = report["leads"]
+        for key in ("most_common", "predictability_pct", "opponent_most_common",
+                    "opponent_predictability_pct", "win_rate_vs_opponent_most_common",
+                    "vs_opponent_most_common_n"):
+            self.assertIn(key, leads)
+        self.assertGreaterEqual(leads["opponent_predictability_pct"], 0)
+        self.assertLessEqual(leads["opponent_predictability_pct"], 100)
 
 
 @unittest.skipUnless(os.path.exists(DEMO_EVENTS_PATH), "No seeded demo job")

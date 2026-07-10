@@ -304,11 +304,19 @@ tr:last-child td { border-bottom: none; }
 .match-row-clickable { cursor: pointer; }
 .match-row-clickable:hover td { background: var(--surface-2); }
 .expand-arrow { width: 18px; color: var(--muted); text-align: center; }
-/* Matches/OpponentStrength's expanded detail now renders as a plain card
-   below the table (2026-07-09 responsive pass), not a colSpan table row -
-   see each component's own comment. .match-detail-panel is that card;
-   .matchup-detail (OpponentStrength) already has its own rule elsewhere. */
-.match-detail-panel { margin-top: 12px; }
+/* Matches/OpponentStrength's expanded detail renders as a colSpan row
+   directly under the clicked match (reverted 2026-07-09 to this - briefly
+   lived as a standalone card below the whole table instead, see each
+   component's own comment for why that didn't stick). .match-detail-row/
+   .match-detail-cell style the wrapping <tr>/<td>; .match-detail-panel
+   (MatchesTable) and .matchup-detail (OpponentStrength) style the content
+   inside that cell - a light background + top border distinguishes it from
+   the ordinary data rows above it without needing a whole separate card. */
+.match-detail-row td.match-detail-cell {
+  padding: 16px 16px 20px; background: var(--surface-2); border-top: 1px solid var(--border);
+}
+.match-detail-row:hover td { background: var(--surface-2); }
+.match-detail-panel { display: flex; flex-direction: column; }
 
 .match-events { display: flex; flex-direction: column; gap: 10px; }
 .event-row {
@@ -472,6 +480,16 @@ tr:last-child td { border-bottom: none; }
 .matchup-answer-col { min-width: 0; }
 .matchup-answer-list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 4px; font-size: 12.5px; }
 .matchup-answer-list li { line-height: 1.4; }
+
+/* Team Preview Skill Score (OpponentStrength.jsx, added 2026-07-09) - the
+   "how close was your pick to the best of all 15" summary shown above the
+   existing type-answer breakdown in a match's expanded detail. */
+.team-preview-skill {
+  padding: 10px 12px; background: var(--surface); border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+}
+.team-preview-skill h4 { margin: 0 0 8px; font-size: 12.5px; color: var(--muted); font-weight: 650; }
+.skill-summary-row { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
 
 /* MatchSummary.jsx - the default expanded-match view (teams, plain-English
    turn-by-turn recap, result, then any clarification questions). Reuses
@@ -674,6 +692,13 @@ button.accent:hover { background: var(--accent-2); border-color: var(--accent-2)
 .share-link-row:last-child { border-bottom: none; }
 .share-link-main { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; min-width: 0; }
 .share-link-actions { display: flex; gap: 8px; flex-shrink: 0; }
+.api-key-reveal {
+  display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin-top: 8px;
+}
+.api-key-reveal code {
+  padding: 6px 10px; background: var(--surface); border: 1px solid var(--border);
+  border-radius: var(--radius-sm); font-size: 13px; word-break: break-all;
+}
 .pill-good { background: color-mix(in srgb, var(--good) 18%, transparent); color: var(--good); }
 .pill-warn { background: color-mix(in srgb, var(--warn) 18%, transparent); color: var(--warn); }
 .pill-bad { background: color-mix(in srgb, var(--bad) 18%, transparent); color: var(--bad); }

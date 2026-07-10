@@ -206,3 +206,42 @@ create policy "player reads notes about them" on public.coach_notes
 
 create index if not exists coach_notes_coach_player_idx on public.coach_notes(coach_user_id, player_user_id);
 create index if not exists coach_notes_player_idx on public.coach_notes(player_user_id);
+
+-- ---------------------------------------------------------------------------
+-- API keys (backend/api_keys.py) - long-lived, per-user credentials for
+-- external clients (the planned Pokemon Showdown browser extension) that
+-- can't hold a short-lived Supabase session. See that module's docstring for
+-- the full design, especially why only a HASH of each key is ever stored.
+
+create table if not exists public.api_keys (
+  id                text primary key,
+  user_id           uuid not null references auth.users(id) on delete cascade,
+  label             text,              -- the player's own private note (e.g. "Showdown extension")
+  key_hash          text not null,     -- sha256 of the plaintext key - plaintext is never stored
+  key_prefix        text not null,     -- first 12 chars of the plaintext, for the player to tell
+                                        -- keys apart in their own list (never enough to authenticate)
+  created_at        timestamptz not null default now(),
+  last_used_at      timestamptz,
+  revoked_at        timestamptz
+);
+
+alter table public.api_keys enable row level security;
+
+drop policy if exists "select own api keys" on public.api_keys;
+create policy "select own api keys" on public.api_keys
+  for select using (auth.uid() = user_id);
+
+drop policy if exists "insert own api keys" on public.api_keys;
+create policy "insert own api keys" on public.api_keys
+  for insert with check (auth.uid() = user_id);
+
+drop policy if exists "update own api keys" on public.api_keys;
+create policy "update own api keys" on public.api_keys
+  for update using (auth.uid() = user_id);
+
+drop policy if exists "delete own api keys" on public.api_keys;
+create policy "delete own api keys" on public.api_keys
+  for delete using (auth.uid() = user_id);
+
+create index if not exists api_keys_user_id_idx on public.api_keys(user_id);
+create index if not exists api_keys_key_hash_idx on public.api_keys(key_hash);

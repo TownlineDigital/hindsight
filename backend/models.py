@@ -77,6 +77,15 @@ class NoteUpdate(BaseModel):
     category: Optional[str] = None
 
 
+# ------------------------------------------------------------- API keys -----
+# See backend/api_keys.py's module docstring - long-lived credentials for
+# external clients (the planned Showdown browser extension) that can't hold
+# a short-lived Supabase session.
+
+class ApiKeyCreate(BaseModel):
+    label: Optional[str] = None
+
+
 # ---------------------------------------------------------- telemetry -----
 # See backend/audit.py's module docstring - this feeds the SAME internal
 # audit log the action-level events (job_created, coach_question_asked,
